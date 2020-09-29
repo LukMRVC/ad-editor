@@ -3,6 +3,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
+
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
@@ -12,6 +13,7 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "es2020",
+    "esModuleInterop": true,
     "lib": [
       "es2018",
       "dom"

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {KonvaService} from '../../../shared/services/konva.service';
 
 @Component({
   selector: 'app-draw-toolbar',
@@ -7,7 +8,9 @@ import { Component, OnInit } from '@angular/core';
 })
 export class DrawToolbarComponent implements OnInit {
 
-  constructor() { }
+  constructor(
+    public konva: KonvaService
+  ) { }
 
   ngOnInit(): void {
   }

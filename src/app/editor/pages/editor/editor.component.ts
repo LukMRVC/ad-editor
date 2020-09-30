@@ -8,12 +8,15 @@ import {KonvaService} from '../../../shared/services/konva.service';
 })
 export class EditorComponent implements AfterViewInit {
 
+  canvasWidth = 600;
+  canvasHeight = 400;
+
   constructor(
     public konva: KonvaService
   ) { }
 
   ngAfterViewInit(): void {
-    this.konva.init({ container: 'canvas-stage', width: 600, height: 800 });
+    this.konva.init({ container: 'canvas-stage', width: this.canvasWidth, height: this.canvasHeight });
     const layer = this.konva.layer();
     const circle = this.konva.circle({
       x: this.konva.getInstance().width() / 2,
@@ -26,6 +29,11 @@ export class EditorComponent implements AfterViewInit {
     layer.add(circle);
     this.konva.getInstance().add(layer);
     layer.draw();
+  }
+
+  resizeCanvas(): void {
+    this.konva.getInstance().width(this.canvasWidth);
+    this.konva.getInstance().height(this.canvasHeight);
   }
 
 }

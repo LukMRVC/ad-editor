@@ -1,1 +1,27 @@
-<p>draw-toolbar works!</p>
+<aside fxLayout="column" fxLayout.lt-sm="row nowrap" fxLayoutGap="0.5em" fxLayoutAlign="start start" class="drawing-toolbar">
+
+  <button class="draw-tool" mat-button>
+    <fa-icon icon="mouse-pointer" class="draw-tool-fa-icon"></fa-icon>
+  </button>
+
+  <button class="draw-tool" mat-button>
+    <mat-icon class="draw-tool-mat-icon">format_shapes</mat-icon>
+  </button>
+
+  <button class="draw-tool" mat-button>
+    <mat-icon class="draw-tool-mat-icon">crop_din</mat-icon>
+  </button>
+
+  <button (click)="konva.updateSelectedObjectType('shape')" class="draw-tool" mat-button>
+    <mat-icon class="draw-tool-mat-icon">crop</mat-icon>
+  </button>
+
+  <button (click)="konva.updateSelectedObjectType('text')" class="draw-tool" mat-button>
+    <mat-icon class="draw-tool-mat-icon">text_fields</mat-icon>
+  </button>
+
+  <button (click)="konva.updateSelectedObjectType('image')" class="draw-tool" mat-button>
+    <mat-icon class="draw-tool-mat-icon">image</mat-icon>
+  </button>
+
+</aside>

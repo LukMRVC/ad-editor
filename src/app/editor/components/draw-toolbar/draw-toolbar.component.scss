@@ -1,0 +1,23 @@
+@import "src/_variables.scss";
+
+.drawing-toolbar {
+  //min-width: 10%;
+  height: 100%;
+  background-color: #e0e0e0;
+  border-top: 5px solid $accent;
+}
+
+.draw-tool {
+  padding: 1em;
+  text-align: center;
+}
+
+.draw-tool-mat-icon {
+  font-size: 25pt;
+  margin-left: -7px;
+  margin-top: -7px;
+}
+
+.draw-tool-fa-icon {
+  font-size: 20pt;
+}

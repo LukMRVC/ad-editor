@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {MaterialModule} from '@shared/material.module';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @NgModule({
   declarations: [
@@ -17,6 +18,7 @@ import {MaterialModule} from '@shared/material.module';
     FlexLayoutModule,
     BrowserAnimationsModule,
     MaterialModule,
+    FontAwesomeModule,
   ],
   bootstrap: [AppComponent]
 })

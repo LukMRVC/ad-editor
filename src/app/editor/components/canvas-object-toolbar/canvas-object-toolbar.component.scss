@@ -1,0 +1,23 @@
+@import "src/_variables.scss";
+
+.canvas-object-toolbar {
+  border-top: 5px solid $accent;
+  height: 100%;
+  background-color: #e0e0e0;
+}
+
+.canvas-object-toolbar-mat-icon {
+  font-size: 20pt;
+  margin-left: -5px;
+  margin-top: -5px;
+}
+
+.canvas-object-toolbar-fa-icon {
+  font-size: 18pt;
+  //margin-left: -5px;
+  //margin-top: -5px;
+}
+
+.canvas-object-tool {
+  padding: 0.5em;
+}

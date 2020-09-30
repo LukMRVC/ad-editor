@@ -1,3 +1,26 @@
-<div id="canvas-stage">
 
+<div class="main" fxLayout="column">
+  <div fxLayout="row nowrap" fxLayoutGap="10px" fxLayoutAlign=" end" class="stage-settings">
+    <span class="fill-space" fxFlex="25"></span>
+    <mat-form-field fxFlex="nogrow">
+      <mat-label class="label">Width</mat-label>
+      <input [(ngModel)]="canvasWidth" (focusout)="resizeCanvas()" class="hide-number-arrows"
+             matInput name="canvas_width" type="number" min="50" />
+    </mat-form-field>
+    <mat-form-field fxFlex="nogrow">
+      <mat-label class="label">Height</mat-label>
+      <input [(ngModel)]="canvasHeight" (focusout)="resizeCanvas()" class="hide-number-arrows"
+             matInput name="canvas_height" type="number" min="50" />
+    </mat-form-field>
+  </div>
+  <section id="editor" fxFlex="grow" fxLayout="row nowrap" class="editor" fxLayout.lt-sm="column">
+    <app-draw-toolbar ngClass.lt-sm="draw-toolbar-mobile" fxFlexOrder="1" fxFlexAlign.lt-sm="end"></app-draw-toolbar>
+
+    <div fxLayout="row nowrap" fxLayoutAlign="center start" fxFlex class="canvas-wrapper" fxFlexOrder="2" fxFlexOrder.lt-sm="1">
+      <app-canvas></app-canvas>
+    </div>
+
+    <app-canvas-object-toolbar fxFlexOrder="3" fxHide.lt-md></app-canvas-object-toolbar>
+  </section>
 </div>
+

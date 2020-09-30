@@ -1,22 +1,20 @@
 <mat-sidenav-container>
   <mat-sidenav #sidenav [fixedInViewport]="true" class="sidemenu" mode="push" position="start">
-
     <mat-list >
       <a mat-list-item (click)="sidenav.toggle()" >Item 1</a>
       <a mat-list-item (click)="sidenav.toggle()" >Item 2</a>
     </mat-list>
   </mat-sidenav>
   <mat-sidenav-content>
-    <p>
-      <mat-toolbar color="primary">
-        <button (click)="sidenav.toggle()" mat-icon-button aria-label="Menu button" >
-          <mat-icon>menu</mat-icon>
-        </button>
-        <span>
-          {{ title }}
-        </span>
-      </mat-toolbar>
-    </p>
+
+    <mat-toolbar color="primary">
+      <button (click)="sidenav.toggle()" mat-icon-button aria-label="Menu button" >
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span>
+        {{ title }}
+      </span>
+    </mat-toolbar>
 
     <router-outlet></router-outlet>
 

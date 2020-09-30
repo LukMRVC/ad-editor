@@ -1,0 +1,18 @@
+@import '~@angular/material/theming';
+
+$AdEditor-primary: mat-palette($mat-light-blue);
+$AdEditor-accent: mat-palette($mat-indigo, A200, A100, A400);
+
+// The warn palette is optional (defaults to red).
+$AdEditor-warn: mat-palette($mat-red, 600);
+$AdEditor-success: mat-palette($mat-green, A400, A200, A700);
+$AdEditor-info: mat-palette($mat-cyan);
+
+$primary: mat-color($AdEditor-primary);
+$accent: mat-color($AdEditor-accent);
+$warn: mat-color($AdEditor-warn);
+$success: mat-color($AdEditor-success);
+$info: mat-color($AdEditor-info);
+
+$primary-darker: mat-color($AdEditor-primary, A700);
+$primary-darkest: mat-color($AdEditor-primary, 700);

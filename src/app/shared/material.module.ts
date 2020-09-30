@@ -20,6 +20,7 @@ import {MatBadgeModule} from '@angular/material/badge';
 import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
 import {MAT_SNACK_BAR_DEFAULT_OPTIONS, MatSnackBarModule} from '@angular/material/snack-bar';
 import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatTabsModule} from '@angular/material/tabs';
 
 
 @NgModule({
@@ -45,6 +46,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
     MatBottomSheetModule,
     MatSnackBarModule,
     MatTooltipModule,
+    MatTabsModule,
   ],
   providers: [
     { provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: { duration: 2500 } },
@@ -69,7 +71,8 @@ import {MatTooltipModule} from '@angular/material/tooltip';
     MatBadgeModule,
     MatBottomSheetModule,
     MatSnackBarModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatTabsModule,
   ]
 })
 export class MaterialModule { }

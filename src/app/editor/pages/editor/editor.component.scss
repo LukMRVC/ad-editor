@@ -46,3 +46,9 @@
   /*change color of underline when focused*/
   background-color: black !important;;
 }
+
+.canvas-object-toolbar {
+  border-top: 5px solid $accent;
+  //height: 100%;
+  background-color: #e0e0e0;
+}

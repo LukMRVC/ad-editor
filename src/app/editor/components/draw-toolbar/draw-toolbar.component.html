@@ -8,9 +8,18 @@
     <mat-icon class="draw-tool-mat-icon">format_shapes</mat-icon>
   </button>
 
-  <button class="draw-tool" mat-button>
+  <button [matMenuTriggerFor]="shapeMenu" class="draw-tool" mat-button>
     <mat-icon class="draw-tool-mat-icon">crop_din</mat-icon>
   </button>
+
+  <mat-menu yPosition="below" xPosition="before" #shapeMenu>
+    <button class="txt-center" mat-menu-item>
+      <mat-icon class="draw-tool-mat-icon">lens</mat-icon>
+    </button>
+    <button class="txt-center" mat-menu-item>
+      <mat-icon class="draw-tool-mat-icon">change_history</mat-icon>
+    </button>
+  </mat-menu>
 
   <button (click)="konva.updateSelectedObjectType('shape')" class="draw-tool" mat-button>
     <mat-icon class="draw-tool-mat-icon">crop</mat-icon>

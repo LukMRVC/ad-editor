@@ -13,6 +13,7 @@
              matInput name="canvas_height" type="number" min="50" />
     </mat-form-field>
   </div>
+
   <section id="editor" fxFlex="grow" fxLayout="row nowrap" class="editor" fxLayout.lt-sm="column">
     <app-draw-toolbar ngClass.lt-sm="draw-toolbar-mobile" fxFlexOrder="1" fxFlexAlign.lt-sm="end"></app-draw-toolbar>
 
@@ -20,7 +21,9 @@
       <app-canvas></app-canvas>
     </div>
 
-    <app-canvas-object-toolbar fxFlexOrder="3" fxHide.lt-md></app-canvas-object-toolbar>
+    <aside class="canvas-object-toolbar" fxLayout="column" fxLayoutGap="1em" fxFlexOrder="3" fxHide.lt-md>
+      <app-canvas-object-toolbar ></app-canvas-object-toolbar>
+    </aside>
   </section>
 </div>
 

@@ -1,44 +1,49 @@
-<aside class="canvas-object-toolbar" fxLayout="column" fxLayoutGap="1em">
-  <div fxLayout="row" fxLayoutGap="10px">
-    <ng-container *ngIf="canvasObjectType === 'text'; else shapeContainer">
-      <mat-tab-group dynamicHeight>
-        <mat-tab class="canvas-object-tool">
-          <ng-template mat-tab-label>
-              <mat-icon class="canvas-object-toolbar-mat-icon">text_format</mat-icon>
-          </ng-template>
-        </mat-tab>
-        <mat-tab class="canvas-object-tool">
-          <ng-template mat-tab-label>
-              <mat-icon class="canvas-object-toolbar-mat-icon">border_style</mat-icon>
-          </ng-template>
-        </mat-tab>
-        <mat-tab class="canvas-object-tool">
-          <ng-template mat-tab-label>
-              <mat-icon class="canvas-object-toolbar-mat-icon">text_snippet</mat-icon>
-          </ng-template>
-        </mat-tab>
-      </mat-tab-group>
-    </ng-container>
 
-    <ng-template #shapeContainer>
-      <mat-tab-group>
-        <mat-tab>
-          <ng-template mat-tab-label>
-            <fa-icon icon="fill-drip" class="canvas-object-toolbar-fa-icon"></fa-icon>
-          </ng-template>
-        </mat-tab>
-        <mat-tab>
-          <ng-template mat-tab-label>
-            <mat-icon class="canvas-object-toolbar-mat-icon">aspect_ratio</mat-icon>
-          </ng-template>
-        </mat-tab>
-        <mat-tab *ngIf="canvasObjectType !== 'shape'">
-          <ng-template mat-tab-label>
-            <mat-icon class="canvas-object-toolbar-mat-icon">photo</mat-icon>
-          </ng-template>
-        </mat-tab>
-      </mat-tab-group>
-    </ng-template>
+<div fxLayout="row" fxLayoutGap="10px">
+  <ng-container *ngIf="canvasObjectType === 'text'; else shapeContainer">
+    <mat-tab-group dynamicHeight>
+      <mat-tab class="canvas-object-tool">
+        <ng-template mat-tab-label>
+            <mat-icon class="canvas-object-toolbar-mat-icon">text_format</mat-icon>
+        </ng-template>
+      </mat-tab>
+      <mat-tab class="canvas-object-tool">
+        <ng-template mat-tab-label>
+            <mat-icon class="canvas-object-toolbar-mat-icon">border_style</mat-icon>
+        </ng-template>
+      </mat-tab>
+      <mat-tab class="canvas-object-tool">
+        <ng-template mat-tab-label>
+            <mat-icon class="canvas-object-toolbar-mat-icon">text_snippet</mat-icon>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+  </ng-container>
 
-  </div>
-</aside>
+  <ng-template #shapeContainer>
+    <mat-tab-group>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <fa-icon icon="fill-drip" class="canvas-object-toolbar-fa-icon"></fa-icon>
+        </ng-template>
+        <mat-form-field>
+          <mat-label>Fill color</mat-label>
+          <input [ngxMatColorPicker]="picker" [(ngModel)]="inputColour" (colorChange)="colorChanged()" matInput #fillColourInput>
+          <ngx-mat-color-toggle matSuffix [for]="picker"></ngx-mat-color-toggle>
+          <ngx-mat-color-picker [defaultColor]="fillColour" #picker touchUi="false"></ngx-mat-color-picker>
+        </mat-form-field>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="canvas-object-toolbar-mat-icon">aspect_ratio</mat-icon>
+        </ng-template>
+      </mat-tab>
+      <mat-tab *ngIf="canvasObjectType !== 'shape'">
+        <ng-template mat-tab-label>
+          <mat-icon class="canvas-object-toolbar-mat-icon">photo</mat-icon>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+  </ng-template>
+
+</div>

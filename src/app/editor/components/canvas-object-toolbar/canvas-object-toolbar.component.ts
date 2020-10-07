@@ -1,6 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {KonvaService} from '../../../shared/services/konva.service';
 import {Subscription} from 'rxjs';
+import {ThemePalette} from '@angular/material/core';
 
 @Component({
   selector: 'app-canvas-object-toolbar',
@@ -12,6 +13,8 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy {
   canvasObjectType: 'image' | 'text' | 'shape' | 'background';
 
   typeSubscription: Subscription;
+  fillColour: ThemePalette = 'primary';
+  inputColour: string;
 
   constructor(
     public konva: KonvaService
@@ -24,6 +27,11 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.typeSubscription.unsubscribe();
+  }
+
+  colorChanged(): void {
+    //
+    console.log(this.inputColour);
   }
 
 }

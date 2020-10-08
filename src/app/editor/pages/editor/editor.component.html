@@ -12,6 +12,7 @@
       <input [(ngModel)]="canvasHeight" (focusout)="resizeCanvas()" class="hide-number-arrows"
              matInput name="canvas_height" type="number" min="50" />
     </mat-form-field>
+    <mat-checkbox fxFlexAlign="center" [(ngModel)]="konva.addNewShapeToNewLayer">Add new shape to a new layer</mat-checkbox>
   </div>
 
   <section id="editor" fxFlex="grow" fxLayout="row nowrap" class="editor" fxLayout.lt-sm="column">
@@ -23,6 +24,8 @@
 
     <aside class="canvas-object-toolbar" fxLayout="column" fxLayoutGap="1em" fxFlexOrder="3" fxHide.lt-md>
       <app-canvas-object-toolbar ></app-canvas-object-toolbar>
+
+      <app-stage-layers [nestedDataSource]="this.konva.layerTreeData"></app-stage-layers>
     </aside>
   </section>
 </div>

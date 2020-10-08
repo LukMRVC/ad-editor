@@ -13,10 +13,13 @@
   </button>
 
   <mat-menu yPosition="below" xPosition="before" #shapeMenu>
-    <button class="txt-center" mat-menu-item>
+    <button (click)="drawRect()" class="txt-center" mat-menu-item>
+      <mat-icon class="draw-tool-mat-icon">crop_din</mat-icon>
+    </button>
+    <button (click)="drawCircle()" class="txt-center" mat-menu-item>
       <mat-icon class="draw-tool-mat-icon">lens</mat-icon>
     </button>
-    <button class="txt-center" mat-menu-item>
+    <button (click)="drawRegularPolygon()" class="txt-center" mat-menu-item>
       <mat-icon class="draw-tool-mat-icon">change_history</mat-icon>
     </button>
   </mat-menu>

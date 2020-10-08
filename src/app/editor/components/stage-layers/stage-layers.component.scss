@@ -1,0 +1,30 @@
+.fa-tree-icon {
+  font-size: 15pt;
+  padding: 5px;
+}
+
+.tree-icon-button {
+  width: 50px!important;
+}
+
+ul,
+li {
+  list-style-type: none;
+  //margin: 0;
+}
+
+ul { padding-left: 1em; }
+
+.mat-tree-node {
+  //display: unset;
+}
+
+.mat-icon-button {
+  //width:  unset;
+  //height: unset;
+  //line-height: unset;
+}
+
+.node-toggle {
+  cursor: pointer;
+}

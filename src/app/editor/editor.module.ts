@@ -8,9 +8,10 @@ import {FlexLayoutModule} from '@angular/flex-layout';
 import {MaterialModule} from '../shared/material.module';
 import {EditorRoutingModule} from './editor-routing.module';
 import {FaIconLibrary, FontAwesomeModule} from '@fortawesome/angular-fontawesome';
-import {faMousePointer} from '@fortawesome/free-solid-svg-icons';
 import { CanvasObjectToolbarComponent } from './components/canvas-object-toolbar/canvas-object-toolbar.component';
-import {faFillDrip} from '@fortawesome/free-solid-svg-icons/faFillDrip';
+import { StageLayersComponent } from './components/stage-layers/stage-layers.component';
+
+import {faMousePointer, faFillDrip, faShapes, faLayerGroup} from '@fortawesome/free-solid-svg-icons';
 
 @NgModule({
   declarations: [
@@ -18,6 +19,7 @@ import {faFillDrip} from '@fortawesome/free-solid-svg-icons/faFillDrip';
     CanvasComponent,
     DrawToolbarComponent,
     CanvasObjectToolbarComponent,
+    StageLayersComponent,
   ],
   imports: [
     CommonModule,
@@ -30,6 +32,6 @@ import {faFillDrip} from '@fortawesome/free-solid-svg-icons/faFillDrip';
 })
 export class EditorModule {
   constructor(lib: FaIconLibrary) {
-    lib.addIcons(faMousePointer, faFillDrip);
+    lib.addIcons(faMousePointer, faFillDrip, faLayerGroup, faShapes);
   }
 }

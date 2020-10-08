@@ -1,13 +1,14 @@
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
+import {AfterContentInit, AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
 import {KonvaService} from '../../../shared/services/konva.service';
 import {Subscription} from 'rxjs';
+import {LayerData} from '../../components/stage-layers/stage-layers.component';
 
 @Component({
   selector: 'app-editor',
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss']
 })
-export class EditorComponent implements AfterViewInit, OnDestroy {
+export class EditorComponent implements AfterContentInit, OnDestroy {
 
   canvasWidth = 600;
   canvasHeight = 400;
@@ -17,10 +18,10 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     public konva: KonvaService
   ) { }
 
-  ngAfterViewInit(): void {
+  ngAfterContentInit(): void {
     this.konva.init({ container: 'canvas-stage', width: this.canvasWidth, height: this.canvasHeight });
     const stage = this.konva.getInstance();
-    const layer = this.konva.layer();
+    const layer = this.konva.layer({ name: 'Layer 1', id: '123' });
     const circle = this.konva.circle({
       x: this.konva.getInstance().width() / 2,
       y: this.konva.getInstance().height() / 2,
@@ -32,21 +33,9 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     });
     const tr = this.konva.transformer();
     layer.add(circle);
-    tr.nodes([circle]);
     layer.add(tr);
     stage.add(layer);
-
-    layer.on('click tap', (ev) => {
-      if (ev.target === stage) {
-        tr.nodes([]);
-        layer.draw();
-        return;
-      }
-      const isSelected = tr.nodes().indexOf(ev.target) >= 0;
-    });
-
-    this.subscription.add(this.konva.onClickTap.subscribe( (e) => {
-      console.log(this.konva.selectedNodes);
+    this.subscription.add(this.konva.onClickTap$.subscribe( (e) => {
       if (e.target === stage) {
         tr.nodes([]);
         layer.draw();

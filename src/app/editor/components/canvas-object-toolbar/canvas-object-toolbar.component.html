@@ -26,12 +26,22 @@
         <ng-template mat-tab-label>
           <fa-icon icon="fill-drip" class="canvas-object-toolbar-fa-icon"></fa-icon>
         </ng-template>
-        <mat-form-field>
-          <mat-label>Fill color</mat-label>
-          <input [ngxMatColorPicker]="picker" [(ngModel)]="inputColour" (colorChange)="colorChanged()" matInput #fillColourInput>
-          <ngx-mat-color-toggle matSuffix [for]="picker"></ngx-mat-color-toggle>
-          <ngx-mat-color-picker [defaultColor]="fillColour" #picker touchUi="false"></ngx-mat-color-picker>
-        </mat-form-field>
+        <div class="tab-body" fxLayout="row nowrap" fxLayout.lt-md="column" fxLayoutGap="5px">
+          <mat-form-field fxFlex>
+            <mat-label>Fill color</mat-label>
+            <input (keydown.enter)="fillPicker.close()" (focus)="fillPicker.open()"
+                   [ngxMatColorPicker]="fillPicker" (colorChange)="fillColorChanged($event)" matInput #fillColourInput>
+            <ngx-mat-color-toggle matSuffix [for]="fillPicker"></ngx-mat-color-toggle>
+            <ngx-mat-color-picker  [defaultColor]="fillColour" #fillPicker touchUi="false"></ngx-mat-color-picker>
+          </mat-form-field>
+          <mat-form-field fxFlex>
+            <mat-label>Stroke color</mat-label>
+            <input (keydown.enter)="strokePicker.close()" (focus)="strokePicker.open()"
+                   [ngxMatColorPicker]="strokePicker" (colorChange)="strokeColorChanged($event)" matInput #strokeColourInput>
+            <ngx-mat-color-toggle matSuffix [for]="strokePicker"></ngx-mat-color-toggle>
+            <ngx-mat-color-picker [defaultColor]="fillColour" #strokePicker touchUi="false"></ngx-mat-color-picker>
+          </mat-form-field>
+        </div>
       </mat-tab>
       <mat-tab>
         <ng-template mat-tab-label>

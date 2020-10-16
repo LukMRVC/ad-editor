@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { KonvaService } from './konva.service';
+import { KonvaService } from '@core/services/konva.service';
 
 describe('KonvaService', () => {
   let service: KonvaService;

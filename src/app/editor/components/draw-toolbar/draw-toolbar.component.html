@@ -28,12 +28,13 @@
     <mat-icon class="draw-tool-mat-icon">crop</mat-icon>
   </button>
 
-  <button (click)="konva.updateSelectedObjectType('text')" class="draw-tool" mat-button>
+  <button (click)="konva.updateSelectedObjectType('text'); drawText()" class="draw-tool" mat-button>
     <mat-icon class="draw-tool-mat-icon">text_fields</mat-icon>
   </button>
 
-  <button (click)="konva.updateSelectedObjectType('image')" class="draw-tool" mat-button>
+  <button (click)="konva.updateSelectedObjectType('image'); imageInput.click()" class="draw-tool" mat-button>
     <mat-icon class="draw-tool-mat-icon">image</mat-icon>
+    <input hidden accept="image/*" #imageInput id="file" (change)="onFileChange($event)" type="file" />
   </button>
 
 </aside>

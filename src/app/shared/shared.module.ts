@@ -1,21 +1,22 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {KonvaService} from './services/konva.service';
-import {FlexLayoutModule} from '@angular/flex-layout';
-import {FormsModule} from '@angular/forms';
-
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {PopoverModule} from 'ngx-smart-popover';
 
 
 @NgModule({
   declarations: [
-
   ],
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
+    PopoverModule,
   ],
   exports: [
-    FormsModule
+    ReactiveFormsModule,
+    FormsModule,
+    PopoverModule,
   ]
 })
 export class SharedModule { }

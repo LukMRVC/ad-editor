@@ -16,14 +16,15 @@
   </div>
 
   <section id="editor" fxFlex="grow" fxLayout="row nowrap" class="editor" fxLayout.lt-sm="column">
-    <app-draw-toolbar ngClass.lt-sm="draw-toolbar-mobile" fxFlexOrder="1" fxFlexAlign.lt-sm="end"></app-draw-toolbar>
+    <app-draw-toolbar (imageUploaded)="imageUploaded($event)"
+                      ngClass.lt-sm="draw-toolbar-mobile" fxFlexOrder="1" fxFlexAlign.lt-sm="end"></app-draw-toolbar>
 
     <div fxLayout="row nowrap" fxLayoutAlign="center start" fxFlex class="canvas-wrapper" fxFlexOrder="2" fxFlexOrder.lt-sm="1">
       <app-canvas></app-canvas>
     </div>
 
     <aside class="canvas-object-toolbar" fxLayout="column" fxLayoutGap="1em" fxFlexOrder="3" fxHide.lt-md>
-      <app-canvas-object-toolbar ></app-canvas-object-toolbar>
+      <app-canvas-object-toolbar></app-canvas-object-toolbar>
 
       <app-stage-layers [nestedDataSource]="this.konva.layerTreeData"></app-stage-layers>
     </aside>

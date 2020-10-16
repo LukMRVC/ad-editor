@@ -24,6 +24,7 @@ import {MatTabsModule} from '@angular/material/tabs';
 import { MAT_COLOR_FORMATS, NgxMatColorPickerModule, NGX_MAT_COLOR_FORMATS } from '@angular-material-components/color-picker';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatTreeModule} from '@angular/material/tree';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
 
 
 @NgModule({
@@ -43,6 +44,7 @@ import {MatTreeModule} from '@angular/material/tree';
     MatMenuModule,
     MatListModule,
     MatDividerModule,
+    MatAutocompleteModule,
     MatCardModule,
     MatButtonToggleModule,
     MatBadgeModule,
@@ -83,6 +85,7 @@ import {MatTreeModule} from '@angular/material/tree';
     MatTabsModule,
     MatCheckboxModule,
     MatTreeModule,
+    MatAutocompleteModule,
   ]
 })
 export class MaterialModule { }

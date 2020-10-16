@@ -1,8 +1,8 @@
 import {Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
-import {KonvaService} from '../../../shared/services/konva.service';
+import {KonvaService} from '@core/services/konva.service';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {of} from 'rxjs';
-import {MatTreeNestedDataSource} from '@angular/material/tree';
+import {MatTreeNestedDataSource, MatTreeNode} from '@angular/material/tree';
 
 export interface LayerData {
   name: string;
@@ -17,6 +17,8 @@ export interface LayerData {
   styleUrls: ['./stage-layers.component.scss']
 })
 export class StageLayersComponent implements OnInit {
+
+  nodes = new Set();
 
   constructor(
     public konva: KonvaService,
@@ -36,6 +38,18 @@ export class StageLayersComponent implements OnInit {
   hasChild = (_: number, node: LayerData) => !!node.children && node.children.length > 0;
 
   ngOnInit(): void {
+  }
+
+  changeName($event: MouseEvent, node: LayerData): void {
+    this.nodes.add(node.id);
+  }
+
+  shouldChangeName(node: LayerData): boolean {
+    return this.nodes.has(node.id);
+  }
+
+  rename(node: LayerData): void {
+    this.nodes.delete(node.id);
   }
 
 }

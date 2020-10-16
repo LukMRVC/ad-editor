@@ -4,12 +4,7 @@
   "compilerOptions": {
     "outDir": "./out-tsc/app",
     "types": [],
-    "baseUrl": "src/",
-    "paths": {
-      "@env/*": ["environments/*"],
-      "@shared/*": ["app/shared/*"],
-      "@core/*": ["app/core/*"]
-    }
+    "baseUrl": "src/"
   },
   "files": [
     "src/main.ts",

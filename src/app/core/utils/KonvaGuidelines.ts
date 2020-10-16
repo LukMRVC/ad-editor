@@ -1,0 +1,127 @@
+const GUIDELINE_OFFSET = 1;
+
+// tslint:disable-next-line:typedef
+export function getLineGuideStops(stage: any, skipShape: any) {
+  // we can snap to stage borders and the center of the stage
+  const vertical: any[] = [0, stage.width() / 2, stage.width()];
+  const horizontal: any[] = [0, stage.height() / 2, stage.height()];
+
+  // and we snap over edges and center of each object on the canvas
+  stage.find('.object').forEach((guideItem) => {
+    if (guideItem === skipShape) {
+      return;
+    }
+    const box = guideItem.getClientRect();
+    // and we can snap to all edges of shapes
+    vertical.push([box.x, box.x + box.width, box.x + box.width / 2]);
+    horizontal.push([box.y, box.y + box.height, box.y + box.height / 2]);
+  });
+  return {
+    // @ts-ignore
+    vertical: vertical.flat(),
+    // @ts-ignore
+    horizontal: horizontal.flat(),
+  };
+}
+
+// tslint:disable-next-line:typedef
+export function getObjectSnappingEdges(node) {
+  const box = node.getClientRect();
+  const absPos = node.absolutePosition();
+
+  return {
+    vertical: [
+      {
+        guide: Math.round(box.x),
+        offset: Math.round(absPos.x - box.x),
+        snap: 'start',
+      },
+      {
+        guide: Math.round(box.x + box.width / 2),
+        offset: Math.round(absPos.x - box.x - box.width / 2),
+        snap: 'center',
+      },
+      {
+        guide: Math.round(box.x + box.width),
+        offset: Math.round(absPos.x - box.x - box.width),
+        snap: 'end',
+      },
+    ],
+    horizontal: [
+      {
+        guide: Math.round(box.y),
+        offset: Math.round(absPos.y - box.y),
+        snap: 'start',
+      },
+      {
+        guide: Math.round(box.y + box.height / 2),
+        offset: Math.round(absPos.y - box.y - box.height / 2),
+        snap: 'center',
+      },
+      {
+        guide: Math.round(box.y + box.height),
+        offset: Math.round(absPos.y - box.y - box.height),
+        snap: 'end',
+      },
+    ],
+  };
+}
+
+// find all snapping possibilities
+// tslint:disable-next-line:typedef
+export function getGuides(lineGuideStops, itemBounds) {
+  const resultV = [];
+  const resultH = [];
+
+  lineGuideStops.vertical.forEach((lineGuide) => {
+    itemBounds.vertical.forEach((itemBound) => {
+      const diff = Math.abs(lineGuide - itemBound.guide);
+      // if the distance between guild line and object snap point is close we can consider this for snapping
+      if (diff < GUIDELINE_OFFSET) {
+        resultV.push({
+          lineGuide,
+          diff,
+          snap: itemBound.snap,
+          offset: itemBound.offset,
+        });
+      }
+    });
+  });
+
+  lineGuideStops.horizontal.forEach((lineGuide) => {
+    itemBounds.horizontal.forEach((itemBound) => {
+      const diff = Math.abs(lineGuide - itemBound.guide);
+      if (diff < GUIDELINE_OFFSET) {
+        resultH.push({
+          lineGuide,
+          diff,
+          snap: itemBound.snap,
+          offset: itemBound.offset,
+        });
+      }
+    });
+  });
+
+  const guides = [];
+
+  // find closest snap
+  const minV = resultV.sort((a, b) => a.diff - b.diff)[0];
+  const minH = resultH.sort((a, b) => a.diff - b.diff)[0];
+  if (minV) {
+    guides.push({
+      lineGuide: minV.lineGuide,
+      offset: minV.offset,
+      orientation: 'V',
+      snap: minV.snap,
+    });
+  }
+  if (minH) {
+    guides.push({
+      lineGuide: minH.lineGuide,
+      offset: minH.offset,
+      orientation: 'H',
+      snap: minH.snap,
+    });
+  }
+  return guides;
+}

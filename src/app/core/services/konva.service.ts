@@ -11,12 +11,16 @@ import {RectConfig} from 'konva/types/shapes/Rect';
 import {RegularPolygonConfig} from 'konva/types/shapes/RegularPolygon';
 import {EditorModule} from '../../editor/editor.module';
 import {LayerData} from '../../editor/components/stage-layers/stage-layers.component';
+import {getGuides, getLineGuideStops, getObjectSnappingEdges} from '@core/utils/KonvaGuidelines';
+import {TextConfig} from 'konva/types/shapes/Text';
 
 
 @Injectable({
   providedIn: 'root',
 })
 export class KonvaService {
+
+  constructor() {}
 
   private canvas: Konva.default.Stage;
 
@@ -34,7 +38,45 @@ export class KonvaService {
   $selectedObjectType = this.$selectedObject.asObservable();
   layerTreeData: LayerData[] = [];
 
-  constructor() {}
+  private static drawGuides(guides, layer): void {
+    guides.forEach((lg) => {
+      if (lg.orientation === 'H') {
+        const line = new Konva.default.Line({
+          points: [-6000, 0, 6000, 0],
+          stroke: 'rgb(0, 161, 255)',
+          strokeWidth: 1,
+          name: 'guide-line',
+          dash: [4, 6],
+        });
+        layer.add(line);
+        line.absolutePosition({
+          x: 0,
+          y: lg.lineGuide,
+        });
+        layer.batchDraw();
+      } else if (lg.orientation === 'V') {
+        const line = new Konva.default.Line({
+          points: [0, -6000, 0, 6000],
+          stroke: 'rgb(0, 161, 255)',
+          strokeWidth: 1,
+          name: 'guid-line',
+          dash: [4, 6],
+        });
+        layer.add(line);
+        line.absolutePosition({
+          x: lg.lineGuide,
+          y: 0,
+        });
+        layer.batchDraw();
+      }
+    });
+  }
+
+  private static destroyGuideLines($event): void {
+    const layer = $event.currentTarget;
+    layer.find('.guide-line').destroy();
+    layer.batchDraw();
+  }
 
   updateSelectedObjectType(nextVal: 'image' | 'text' | 'shape' | 'background'): void {
     this.$selectedObject.next(nextVal);
@@ -43,14 +85,19 @@ export class KonvaService {
   init(conf: StageConfig): void {
     console.log('Initializing konvaJS stage with', conf);
     this.canvas = new Konva.default.Stage(conf);
-    this.canvas.on('click tap', (e) => {
+    this.canvas.on('click tap', (e: Konva.default.KonvaEventObject<object>) => {
       if (e.target === this.canvas) {
         this.selectedNodes = [];
       } else {
         const isSelected = this.selectedNodes.indexOf(e.target as Konva.default.Shape) >= 0;
         if (!isSelected) {
-          this.selectedNodes.push(e.target as Konva.default.Shape);
-          this.updateSelectedObjectType('shape');
+          // @ts-ignore
+          if (e.ctrlKey) {
+            this.selectedNodes.push(e.target as Konva.default.Shape);
+          } else {
+            this.selectedNodes = [e.target as Konva.default.Shape];
+            this.updateSelectedObjectType('shape');
+          }
         }
       }
       this.onClickTap$.emit(e);
@@ -73,6 +120,8 @@ export class KonvaService {
     this.canvas.add(layer);
     this.onNewLayer$.emit(layer);
     this.layerTreeData = this.layerTreeData.concat([{ name: layer.name(), id: layer.id(), iconName: 'layer-group', children: [] }]);
+    // layer.on('dragmove', this.guidelinesSnapping);
+    // layer.on('dragend', KonvaService.destroyGuideLines);
     return layer;
   }
 
@@ -94,7 +143,7 @@ export class KonvaService {
     // this is here because as a part of workaround between MatTreeModule
     this.layerTreeData = [...this.layerTreeData];
     layer.add(shape);
-    shape.draw();
+    layer.batchDraw();
   }
 
   private mergeConfig(name: string, id: string, conf: object): any {
@@ -128,8 +177,20 @@ export class KonvaService {
     return regPolygon;
   }
 
-  image(conf: ImageConfig): Konva.default.Image {
-    return new Konva.default.Image(conf);
+  image(conf?: ImageConfig): Konva.default.Image {
+    const layer = this.getWorkingLayerInstance();
+    conf = this.mergeConfig(`Image 1`, `${layer.id()}:1`, conf);
+    const img = new Konva.default.Image(conf);
+    this.addShapeToLayer(img, layer);
+    return img;
+  }
+
+  text(conf?: TextConfig): Konva.default.Text {
+    const layer = this.getWorkingLayerInstance();
+    conf = this.mergeConfig(`Text 1`, `${layer.id()}:1`, conf);
+    const txt = new Konva.default.Text(conf);
+    this.addShapeToLayer(txt, layer);
+    return txt;
   }
 
   updateSelectedFillColor(color: Color): void {
@@ -146,4 +207,76 @@ export class KonvaService {
     }
     this.canvas.draw();
   }
+
+  guidelinesSnapping($event): void {
+    const layer = $event.currentTarget;
+    const guideStops = getLineGuideStops(layer.getParent(), $event.target);
+    const itemBounds = getObjectSnappingEdges($event.target);
+    const guides = getGuides(guideStops, itemBounds);
+    if (!guides.length) {
+      return;
+    }
+    KonvaService.drawGuides(guides, layer);
+    const absPos = $event.target.absolutePosition();
+    // lg for line guide
+    guides.forEach((lg) => {
+      switch (lg.snap) {
+        case 'start': {
+          switch (lg.orientation) {
+            case 'V': {
+              absPos.x = lg.lineGuide + lg.offset;
+              break;
+            }
+            case 'H': {
+              absPos.y = lg.lineGuide + lg.offset;
+              break;
+            }
+          }
+          break;
+        }
+        case 'center': {
+          switch (lg.orientation) {
+            case 'V': {
+              absPos.x = lg.lineGuide + lg.offset;
+              break;
+            }
+            case 'H': {
+              absPos.y = lg.lineGuide + lg.offset;
+              break;
+            }
+          }
+          break;
+        }
+        case 'end': {
+          switch (lg.orientation) {
+            case 'V': {
+              absPos.x = lg.lineGuide + lg.offset;
+              break;
+            }
+            case 'H': {
+              absPos.y = lg.lineGuide + lg.offset;
+              break;
+            }
+          }
+          break;
+        }
+      }
+    });
+    $event.target.absolutePosition(absPos);
+  }
+
+  deleteSelected(): void {
+    this.selectedNodes.forEach(n => {
+      const layer = this.layers.find(l => l.id() === n.getLayer().id());
+      if (!layer) { return; }
+      const indexOfLayer = this.layerTreeData.findIndex(l => l.id === layer.id());
+      this.layerTreeData[indexOfLayer].children
+        .splice(this.layerTreeData[indexOfLayer].children.findIndex(node => node.id === n.id()), 1);
+      n.destroy();
+      layer.batchDraw();
+    });
+    this.layerTreeData = [...this.layerTreeData];
+  }
+
+
 }

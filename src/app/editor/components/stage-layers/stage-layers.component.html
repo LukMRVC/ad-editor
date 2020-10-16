@@ -2,12 +2,16 @@
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
     <li>
       <div>
-<!--        <span class=""></span>-->
         <button class="tree-icon-button" mat-icon-button disabled>
           <mat-icon>remove</mat-icon>
         </button>
         <fa-icon class="fa-tree-icon" [icon]=node.iconName></fa-icon>
-        {{ node.name }}
+        <span *ngIf="!shouldChangeName(node)" (dblclick)="changeName($event, node)">
+          {{ node.name }}
+        </span>
+        <mat-form-field (focusout)="rename(node)" autofocus (keydown.enter)="rename(node)" *ngIf="shouldChangeName(node)">
+          <input matInput type="text" [(ngModel)]="node.name"/>
+        </mat-form-field>
       </div>
     </li>
   </mat-tree-node>
@@ -21,7 +25,12 @@
           </mat-icon>
           <fa-icon class="fa-tree-icon" [icon]="node.iconName"></fa-icon>
         </button>
-        {{ node.name }}
+        <span *ngIf="!shouldChangeName(node)" (dblclick)="changeName($event, node)">
+          {{ node.name }}
+        </span>
+        <mat-form-field (focusout)="rename(node)" autofocus (keydown.enter)="rename(node)" *ngIf="shouldChangeName(node)">
+          <input matInput type="text" [(ngModel)]="node.name"/>
+        </mat-form-field>
       </div>
       <ul [hidden]="!nestedTreeControl.isExpanded(node)">
         <ng-container matTreeNodeOutlet></ng-container>

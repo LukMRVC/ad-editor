@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
 import {KonvaService} from '@core/services/konva.service';
 import {Observable, Subscription} from 'rxjs';
 import {ThemePalette} from '@angular/material/core';
@@ -6,6 +6,9 @@ import {NgxMatColorPickerInputEvent} from '@angular-material-components/color-pi
 import {GoogleFontService, WebFont} from '@shared/services/google-font.service';
 import {FormControl} from '@angular/forms';
 import {map, startWith} from 'rxjs/operators';
+import {MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
+
+import * as WebFontLoader from 'webfontloader';
 
 @Component({
   selector: 'app-canvas-object-toolbar',
@@ -21,7 +24,7 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy {
   fontList: WebFont[] = [];
   fontFamilyControl: FormControl = new FormControl();
   filteredFonts: Observable<WebFont[]>;
-
+  @Output() fontChanged = new EventEmitter<string>();
 
   constructor(
     public konva: KonvaService,
@@ -48,12 +51,16 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy {
   }
 
   private _filter(fontFamilyName: string): WebFont[] {
-    // console.log(fontFamilyName);
+    // console.log({familyName: fontFamilyName});
     if (fontFamilyName === '') {
       return this.fontList.slice(0, 50);
+    } else if (typeof fontFamilyName === 'string') {
+      const filterValue = fontFamilyName.toLowerCase();
+      return this.fontList.filter(font => font.family.toLowerCase().indexOf(filterValue) === 0);
+    } else {
+      const filterValue = (fontFamilyName as WebFont).family.toLowerCase();
+      return this.fontList.filter(font => font.family.toLowerCase().indexOf(filterValue) === 0);
     }
-    const filterValue = fontFamilyName.toLowerCase();
-    return this.fontList.filter(font => font.family.toLowerCase().indexOf(filterValue) === 0);
   }
 
   fillColorChanged(ev: NgxMatColorPickerInputEvent): void {
@@ -66,4 +73,15 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy {
     this.konva.updateSelectedStrokeColor(ev.value);
   }
 
+  loadFont($event: MatAutocompleteSelectedEvent): void {
+    console.log($event);
+    const optionValue = $event.option.value;
+    console.log(optionValue);
+    WebFontLoader.load({
+      fontactive: (familyName, fvd) => { this.fontChanged.emit(familyName); },
+      google: {
+        families: [optionValue.family]
+      }
+    });
+  }
 }

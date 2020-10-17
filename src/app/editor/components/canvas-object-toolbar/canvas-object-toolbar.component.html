@@ -10,7 +10,9 @@
           <mat-form-field>
             <mat-label>Font family</mat-label>
             <input [formControl]="fontFamilyControl" type="text" matInput aria-label="Font family" [matAutocomplete]="auto">
-            <mat-autocomplete [displayWith]="autocompleteDisplay" autoActiveFirstOption="true" #auto="matAutocomplete">
+            <mat-autocomplete (optionSelected)="loadFont($event)"
+                              [displayWith]="autocompleteDisplay"
+                              autoActiveFirstOption="true" #auto="matAutocomplete">
               <mat-option *ngFor="let font of this.filteredFonts | async" [value]="font">
                 {{ font.family }}
               </mat-option>

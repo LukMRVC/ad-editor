@@ -85,4 +85,8 @@ export class EditorComponent implements AfterContentInit, OnDestroy {
     image.src = imageUrl;
     image.onload = () => this.konva.image({ image, scaleX: 0.3, scaleY: 0.3, draggable: true });
   }
+
+  onFontChange($fontFamilyName: string): void {
+    this.konva.changeFontFamilyForSelected($fontFamilyName);
+  }
 }

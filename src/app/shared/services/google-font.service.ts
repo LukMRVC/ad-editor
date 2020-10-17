@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
+import {environment} from '@env/environment';
 
 
 @Injectable({
@@ -9,7 +10,7 @@ import {Observable} from 'rxjs';
 export class GoogleFontService {
 
   // load Google API key
-  apiKey = '';
+  apiKey = environment.fontApiKey;
   baseUrl = 'https://www.googleapis.com/webfonts/v1/webfonts';
 
   constructor(

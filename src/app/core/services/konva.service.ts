@@ -279,4 +279,14 @@ export class KonvaService {
   }
 
 
+  changeFontFamilyForSelected($fontFamilyName: string): void {
+    this.selectedNodes.forEach(node => {
+      const layer = this.layers.find(l => l.id() === node.getLayer().id());
+      if (node.getClassName() === 'Text') {
+        console.log('Changing font of node to: ', $fontFamilyName);
+        (node as Konva.default.Text).fontFamily($fontFamilyName);
+      }
+      layer.batchDraw();
+    });
+  }
 }

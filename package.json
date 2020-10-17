@@ -31,6 +31,7 @@
     "ngx-smart-popover": "^1.4.0",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
+    "webfontloader": "^1.6.28",
     "zone.js": "~0.10.2"
   },
   "devDependencies": {

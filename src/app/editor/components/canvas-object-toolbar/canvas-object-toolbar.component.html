@@ -1,72 +1,103 @@
 
 <div fxLayout="row" fxLayoutGap="10px">
-  <ng-container *ngIf="canvasObjectType === 'text'; else shapeContainer">
     <mat-tab-group dynamicHeight>
-      <mat-tab class="canvas-object-tool">
-        <ng-template mat-tab-label>
-            <mat-icon class="canvas-object-toolbar-mat-icon">text_format</mat-icon>
-        </ng-template>
-        <form>
-          <mat-form-field>
-            <mat-label>Font family</mat-label>
-            <input [formControl]="fontFamilyControl" type="text" matInput aria-label="Font family" [matAutocomplete]="auto">
-            <mat-autocomplete (optionSelected)="loadFont($event)"
-                              [displayWith]="autocompleteDisplay"
-                              autoActiveFirstOption="true" #auto="matAutocomplete">
-              <mat-option *ngFor="let font of this.filteredFonts | async" [value]="font">
-                {{ font.family }}
-              </mat-option>
-            </mat-autocomplete>
-          </mat-form-field>
-        </form>
-      </mat-tab>
-      <mat-tab class="canvas-object-tool">
-        <ng-template mat-tab-label>
-            <mat-icon class="canvas-object-toolbar-mat-icon">border_style</mat-icon>
-        </ng-template>
-      </mat-tab>
-      <mat-tab class="canvas-object-tool">
-        <ng-template mat-tab-label>
-            <mat-icon class="canvas-object-toolbar-mat-icon">text_snippet</mat-icon>
-        </ng-template>
-      </mat-tab>
-    </mat-tab-group>
-  </ng-container>
-
-  <ng-template #shapeContainer>
-    <mat-tab-group>
       <mat-tab>
         <ng-template mat-tab-label>
           <fa-icon icon="fill-drip" class="canvas-object-toolbar-fa-icon"></fa-icon>
         </ng-template>
-        <div class="tab-body" fxLayout="row nowrap" fxLayout.lt-md="column" fxLayoutGap="5px">
-          <mat-form-field fxFlex>
-            <mat-label>Fill color</mat-label>
-            <input (keydown.enter)="fillPicker.close()" (focus)="fillPicker.open()"
-                   [ngxMatColorPicker]="fillPicker" (colorChange)="fillColorChanged($event)" matInput #fillColourInput>
-            <ngx-mat-color-toggle matSuffix [for]="fillPicker"></ngx-mat-color-toggle>
-            <ngx-mat-color-picker  [defaultColor]="fillColour" #fillPicker touchUi="false"></ngx-mat-color-picker>
-          </mat-form-field>
-          <mat-form-field fxFlex>
-            <mat-label>Stroke color</mat-label>
-            <input (keydown.enter)="strokePicker.close()" (focus)="strokePicker.open()"
-                   [ngxMatColorPicker]="strokePicker" (colorChange)="strokeColorChanged($event)" matInput #strokeColourInput>
-            <ngx-mat-color-toggle matSuffix [for]="strokePicker"></ngx-mat-color-toggle>
-            <ngx-mat-color-picker [defaultColor]="fillColour" #strokePicker touchUi="false"></ngx-mat-color-picker>
-          </mat-form-field>
+        <div class="tab-body" fxLayout="column">
+          <div fxLayout="row nowrap" fxLayoutAlign="space-around center" fxLayoutGap="5px">
+            <mat-form-field fxFlex>
+              <mat-label>Fill color</mat-label>
+              <input [(ngModel)]="fillColor" (keydown.enter)="fillPicker.close()" (focus)="fillPicker.open()"
+                     [ngxMatColorPicker]="fillPicker" (colorChange)="fillColorChanged($event)" matInput #fillColourInput>
+              <ngx-mat-color-toggle matSuffix [for]="fillPicker"></ngx-mat-color-toggle>
+              <ngx-mat-color-picker [defaultColor]="defaultFillColour" #fillPicker touchUi="false"></ngx-mat-color-picker>
+            </mat-form-field>
+            <mat-form-field fxFlex>
+              <mat-label>Stroke color</mat-label>
+              <input [(ngModel)]="strokeColor" (keydown.enter)="strokePicker.close()" (focus)="strokePicker.open()"
+                     [ngxMatColorPicker]="strokePicker" (colorChange)="strokeColorChanged($event)" matInput #strokeColourInput>
+              <ngx-mat-color-toggle matSuffix [for]="strokePicker"></ngx-mat-color-toggle>
+              <ngx-mat-color-picker [defaultColor]="defaultFillColour" #strokePicker touchUi="false"></ngx-mat-color-picker>
+            </mat-form-field>
+          </div>
+          <div fxLayout="row nowrap" fxLayoutAlign="space-around center" fxLayoutGap="5px">
+            <mat-checkbox fxFlex [(ngModel)]="strokeEnabled" (change)="strokeEnableChanged()">Stroke</mat-checkbox>
+            <mat-form-field fxFlex>
+              <mat-label>Stroke width</mat-label>
+              <input matInput type="number" [(ngModel)]="strokeWidth" (focusout)="strokeWidthChanged()"
+                     (keydown.enter)="strokeWidthChanged()">
+            </mat-form-field>
+          </div>
+          <div>
+            <div fxFlex id="gradient-stage"></div>
+            <div fxFlex fxLayout="column">
+              <mat-button-toggle-group (change)="changeFillStyle()" [(ngModel)]="fillStyle" name="fillStyle" aria-label="Fill Style">
+                <mat-button-toggle checked="true" value="color">Solid</mat-button-toggle>
+                <mat-button-toggle value="linear-gradient">Linear</mat-button-toggle>
+                <mat-button-toggle value="radial-gradient">Radial</mat-button-toggle>
+              </mat-button-toggle-group>
+
+            </div>
+          </div>
+
         </div>
       </mat-tab>
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <mat-icon class="canvas-object-toolbar-mat-icon">aspect_ratio</mat-icon>
-        </ng-template>
-      </mat-tab>
-      <mat-tab *ngIf="canvasObjectType !== 'shape'">
-        <ng-template mat-tab-label>
-          <mat-icon class="canvas-object-toolbar-mat-icon">photo</mat-icon>
-        </ng-template>
-      </mat-tab>
+      <ng-container *ngIf="this.canvasObjectType === 'text'; else shapeContainer">
+        <mat-tab class="canvas-object-tool">
+          <ng-template mat-tab-label>
+              <mat-icon class="canvas-object-toolbar-mat-icon">text_format</mat-icon>
+          </ng-template>
+          <div class="tab-body" fxLayout="column" fxLayoutGap="5px">
+            <div fxLayout="row nowrap">
+              <mat-form-field fxFlex>
+                <mat-label>Text content</mat-label>
+                <textarea (keydown.enter)="this.textChanged()" (focusout)="this.textChanged()"
+                          [(ngModel)]="text" name="text" id="text" matInput>
+              </textarea>
+              </mat-form-field>
+            </div>
+            <div fxLayout="row nowrap" fxLayoutAlign="space-around center" fxLayoutGap="5px">
+                <mat-form-field>
+                  <mat-label>Font family</mat-label>
+                  <input [formControl]="fontFamilyControl" type="text" matInput aria-label="Font family" [matAutocomplete]="auto">
+                  <mat-autocomplete (optionSelected)="loadFont($event)"
+                                    [displayWith]="autocompleteDisplay"
+                                    autoActiveFirstOption="true" #auto="matAutocomplete">
+                    <mat-option *ngFor="let font of this.filteredFonts | async" [value]="font">
+                      {{ font.family }}
+                    </mat-option>
+                  </mat-autocomplete>
+                </mat-form-field>
+                <mat-form-field>
+                  <mat-label>Font size</mat-label>
+                  <input type="number" matInput [(ngModel)]="fontSize" (keydown.enter)="this.fontSizeChanged()"
+                         (focusout)="this.fontSizeChanged()">
+                </mat-form-field>
+            </div>
+          </div>
+        </mat-tab>
+        <mat-tab class="canvas-object-tool">
+          <ng-template mat-tab-label>
+              <mat-icon class="canvas-object-toolbar-mat-icon">border_style</mat-icon>
+          </ng-template>
+        </mat-tab>
+      </ng-container>
+      <ng-template #shapeContainer>
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="canvas-object-toolbar-mat-icon">aspect_ratio</mat-icon>
+          </ng-template>
+        </mat-tab>
+        <ng-container *ngIf="this.canvasObjectType === 'image'">
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="canvas-object-toolbar-mat-icon">photo</mat-icon>
+            </ng-template>
+          </mat-tab>
+        </ng-container>
+      </ng-template>
     </mat-tab-group>
-  </ng-template>
 
 </div>

@@ -24,7 +24,7 @@
     </div>
 
     <aside class="canvas-object-toolbar" fxLayout="column" fxLayoutGap="1em" fxFlexOrder="3" fxHide.lt-md>
-      <app-canvas-object-toolbar (fontChanged)="onFontChange($event)" ></app-canvas-object-toolbar>
+      <app-canvas-object-toolbar></app-canvas-object-toolbar>
 
       <app-stage-layers [nestedDataSource]="this.konva.layerTreeData"></app-stage-layers>
     </aside>

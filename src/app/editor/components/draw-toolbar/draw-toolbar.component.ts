@@ -6,13 +6,13 @@ const DEFAULT_CIRCLE_CONFIG = {
   radius: 30,
   x: 30,
   y: 30,
-  fill: 'red',
-  stroke: 'black',
+  fill: '#ff0000ff',
+  stroke: '#000000ff',
 };
 
 const DEFAULT_RECT_CONFIG = {
-  fill: 'red',
-  stroke: 'black',
+  fill: '#ff0000ff',
+  stroke: '#000000ff',
   width: 30,
   height: 30,
   x: 0,
@@ -23,8 +23,8 @@ const DEFAULT_RECT_CONFIG = {
 const DEFAULT_REG_POLYGON_CONFIG = {
   x: 15,
   y: 15,
-  stroke: 'black',
-  fill: 'red',
+  stroke: '#000000ff',
+  fill: '#ff0000ff',
   draggable: true,
   sides: 3,
   radius: 30,
@@ -35,7 +35,7 @@ const DEFAULT_TEXT_CONFIG = {
   fontFamily: 'Calibri',
   x: 20,
   y: 15,
-  fill: 'black',
+  fill: '#000000ff',
   text: 'Text',
   draggable: true,
 };

@@ -28,9 +28,9 @@ export class EditorComponent implements AfterContentInit, OnDestroy {
     const circle = this.konva.circle({
       x: this.konva.getInstance().width() / 2,
       y: this.konva.getInstance().height() / 2,
-      radius: 70,
-      fill: 'red',
-      stroke: 'black',
+      radius: 100,
+      fill: '#ff0000ff',
+      stroke: '#000000ff',
       strokeWidth: 5,
       draggable: true,
     });
@@ -84,9 +84,5 @@ export class EditorComponent implements AfterContentInit, OnDestroy {
     // image.width = this.canvasWidth / 2;
     image.src = imageUrl;
     image.onload = () => this.konva.image({ image, scaleX: 0.3, scaleY: 0.3, draggable: true });
-  }
-
-  onFontChange($fontFamilyName: string): void {
-    this.konva.changeFontFamilyForSelected($fontFamilyName);
   }
 }

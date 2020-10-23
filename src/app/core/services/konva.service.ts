@@ -1,15 +1,13 @@
 import {EventEmitter, Injectable, Output} from '@angular/core';
-import * as Konva from 'konva';
+import Konva from 'konva';
 import { StageConfig } from 'konva/types/Stage';
 import { LayerConfig } from 'konva/types/Layer';
 import { CircleConfig } from 'konva/types/shapes/Circle';
 import { ImageConfig } from 'konva/types/shapes/Image';
 import { TransformerConfig } from 'konva/types/shapes/Transformer';
 import { BehaviorSubject } from 'rxjs';
-import {Color} from '@angular-material-components/color-picker';
 import {RectConfig} from 'konva/types/shapes/Rect';
 import {RegularPolygonConfig} from 'konva/types/shapes/RegularPolygon';
-import {EditorModule} from '../../editor/editor.module';
 import {LayerData} from '../../editor/components/stage-layers/stage-layers.component';
 import {getGuides, getLineGuideStops, getObjectSnappingEdges} from '@core/utils/KonvaGuidelines';
 import {TextConfig} from 'konva/types/shapes/Text';
@@ -22,13 +20,13 @@ export class KonvaService {
 
   constructor() {}
 
-  private canvas: Konva.default.Stage;
+  private canvas: Konva.Stage;
 
   onClickTap$: EventEmitter<any> = new EventEmitter<any>();
-  onNewLayer$: EventEmitter<Konva.default.Layer> = new EventEmitter<Konva.default.Layer>();
-  selectedNodes: Konva.default.Shape[] = [];
+  onNewLayer$: EventEmitter<Konva.Layer> = new EventEmitter<Konva.Layer>();
+  selectedNodes: Konva.Shape[] = [];
 
-  private layers: Konva.default.Layer[] = [];
+  private layers: Konva.Layer[] = [];
   public addNewShapeToNewLayer = false;
   public workingLayer = 0;
 
@@ -41,7 +39,7 @@ export class KonvaService {
   private static drawGuides(guides, layer): void {
     guides.forEach((lg) => {
       if (lg.orientation === 'H') {
-        const line = new Konva.default.Line({
+        const line = new Konva.Line({
           points: [-6000, 0, 6000, 0],
           stroke: 'rgb(0, 161, 255)',
           strokeWidth: 1,
@@ -55,7 +53,7 @@ export class KonvaService {
         });
         layer.batchDraw();
       } else if (lg.orientation === 'V') {
-        const line = new Konva.default.Line({
+        const line = new Konva.Line({
           points: [0, -6000, 0, 6000],
           stroke: 'rgb(0, 161, 255)',
           strokeWidth: 1,
@@ -82,20 +80,23 @@ export class KonvaService {
     this.$selectedObject.next(nextVal);
   }
 
+  createInstance(conf: StageConfig): Konva.Stage {
+    return new Konva.Stage(conf);
+  }
+
   init(conf: StageConfig): void {
     console.log('Initializing konvaJS stage with', conf);
-    this.canvas = new Konva.default.Stage(conf);
-    this.canvas.on('click tap', (e: Konva.default.KonvaEventObject<object>) => {
+    this.canvas = new Konva.Stage(conf);
+    this.canvas.on('click tap', (e: Konva.KonvaEventObject<object>) => {
       if (e.target === this.canvas) {
         this.selectedNodes = [];
       } else {
-        const isSelected = this.selectedNodes.indexOf(e.target as Konva.default.Shape) >= 0;
+        const isSelected = this.selectedNodes.indexOf(e.target as Konva.Shape) >= 0;
         if (!isSelected) {
-          // @ts-ignore
-          if (e.ctrlKey) {
-            this.selectedNodes.push(e.target as Konva.default.Shape);
+          if ((e.evt as MouseEvent).ctrlKey) {
+            this.selectedNodes.push(e.target as Konva.Shape);
           } else {
-            this.selectedNodes = [e.target as Konva.default.Shape];
+            this.selectedNodes = [e.target as Konva.Shape];
             this.updateSelectedObjectType('shape');
           }
         }
@@ -105,17 +106,18 @@ export class KonvaService {
     // this.canvas.on('')
   }
 
-  getInstance(): Konva.default.Stage {
+  getInstance(): Konva.Stage {
     return this.canvas;
   }
 
-  transformer(conf?: TransformerConfig): Konva.default.Transformer {
-    return new Konva.default.Transformer();
+  transformer(conf?: TransformerConfig): Konva.Transformer {
+    return new Konva.Transformer();
   }
 
-  layer(conf?: LayerConfig): Konva.default.Layer {
+  layer(conf?: LayerConfig, addToInstance = true): Konva.Layer {
     conf = { ...{name: `Layer ${this.layers.length + 1}`, id: `${this.layers.length}`}, ...conf };
-    const layer = new Konva.default.Layer(conf);
+    const layer = new Konva.Layer(conf);
+    if (!addToInstance) { return layer; }
     this.layers.push(layer);
     this.canvas.add(layer);
     this.onNewLayer$.emit(layer);
@@ -125,14 +127,14 @@ export class KonvaService {
     return layer;
   }
 
-  private getWorkingLayerInstance(): Konva.default.Layer {
+  private getWorkingLayerInstance(): Konva.Layer {
     if (this.addNewShapeToNewLayer) {
       return this.layer();
     }
     return this.layers[this.workingLayer];
   }
 
-  private addShapeToLayer(shape: Konva.default.Shape, layer: Konva.default.Layer): void {
+  private addShapeToLayer(shape: Konva.Shape, layer: Konva.Layer): void {
     const indexOfLayer = this.layerTreeData.findIndex(l => l.id === layer.id());
     this.layerTreeData[indexOfLayer].children.push({
       name: shape.name(),
@@ -150,62 +152,64 @@ export class KonvaService {
     return { ...{name, id}, ...conf };
   }
 
-  circle(conf?: CircleConfig): Konva.default.Circle {
+  circle(conf?: CircleConfig): Konva.Circle {
     const layer = this.getWorkingLayerInstance();
     const shapesCount = layer.getChildren(c => c.getClassName() !== 'Transformer').length;
     conf = this.mergeConfig(`Shape ${shapesCount + 1}`, `${layer.id()}:${shapesCount}`, conf);
-    const circle = new Konva.default.Circle(conf);
+    const circle = new Konva.Circle(conf);
     this.addShapeToLayer(circle, layer);
     return circle;
   }
 
-  rect(conf?: RectConfig): Konva.default.Rect {
+  rect(conf?: RectConfig, addToInstance = true): Konva.Rect {
+    if (!addToInstance) {
+      return new Konva.Rect(conf);
+    }
     const layer = this.getWorkingLayerInstance();
     const shapesCount = layer.getChildren(c => c.getClassName() !== 'Transformer').length;
     conf = this.mergeConfig(`Shape ${shapesCount + 1}`, `${layer.id()}:${shapesCount}`, conf);
-    const rect = new Konva.default.Rect(conf);
+    const rect = new Konva.Rect(conf);
     this.addShapeToLayer(rect, layer);
     return rect;
   }
 
-  regularPolygon(conf?: RegularPolygonConfig): Konva.default.RegularPolygon {
+  regularPolygon(conf?: RegularPolygonConfig): Konva.RegularPolygon {
     const layer = this.getWorkingLayerInstance();
     const shapesCount = layer.getChildren(c => c.getClassName() !== 'Transformer').length;
     conf = this.mergeConfig(`Shape ${shapesCount + 1}`, `${layer.id()}:${shapesCount}`, conf);
-    const regPolygon = new Konva.default.RegularPolygon(conf);
+    const regPolygon = new Konva.RegularPolygon(conf);
     this.addShapeToLayer(regPolygon, layer);
     return regPolygon;
   }
 
-  image(conf?: ImageConfig): Konva.default.Image {
+  image(conf?: ImageConfig): Konva.Image {
     const layer = this.getWorkingLayerInstance();
     conf = this.mergeConfig(`Image 1`, `${layer.id()}:1`, conf);
-    const img = new Konva.default.Image(conf);
+    const img = new Konva.Image(conf);
     this.addShapeToLayer(img, layer);
     return img;
   }
 
-  text(conf?: TextConfig): Konva.default.Text {
+  text(conf?: TextConfig): Konva.Text {
     const layer = this.getWorkingLayerInstance();
     conf = this.mergeConfig(`Text 1`, `${layer.id()}:1`, conf);
-    const txt = new Konva.default.Text(conf);
+    const txt = new Konva.Text(conf);
     this.addShapeToLayer(txt, layer);
+    txt.on('transform', () => {
+      txt.setAttrs({
+        width: Math.max(txt.width() + txt.scaleX(), 20),
+        scaleX: 1,
+        scaleY: 1,
+      });
+    });
     return txt;
   }
 
-  updateSelectedFillColor(color: Color): void {
+  updateSelected(updatedValues: object): void {
     for (const shape of this.selectedNodes) {
-      shape.fill(color.toRgba());
-      shape.alpha(color.a);
+      shape.setAttrs(updatedValues);
     }
-    this.canvas.draw();
-  }
-
-  updateSelectedStrokeColor(color: Color): void {
-    for (const shape of this.selectedNodes) {
-      shape.stroke(color.toRgba());
-    }
-    this.canvas.draw();
+    this.layers.forEach(layer => layer.batchDraw());
   }
 
   guidelinesSnapping($event): void {
@@ -278,15 +282,7 @@ export class KonvaService {
     this.layerTreeData = [...this.layerTreeData];
   }
 
-
-  changeFontFamilyForSelected($fontFamilyName: string): void {
-    this.selectedNodes.forEach(node => {
-      const layer = this.layers.find(l => l.id() === node.getLayer().id());
-      if (node.getClassName() === 'Text') {
-        console.log('Changing font of node to: ', $fontFamilyName);
-        (node as Konva.default.Text).fontFamily($fontFamilyName);
-      }
-      layer.batchDraw();
-    });
+  redraw(): void {
+    this.layers.forEach(l => l.batchDraw());
   }
 }

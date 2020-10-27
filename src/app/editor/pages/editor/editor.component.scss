@@ -26,12 +26,6 @@
   background-color: $primary-darker;
 }
 
-.hide-number-arrows {
-  -webkit-appearance: none;
-  margin: 0;
-  -moz-appearance: textfield;
-}
-
 ::ng-deep .mat-focused .mat-form-field-label {
   /*change color of label*/
   color: black !important;

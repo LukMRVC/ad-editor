@@ -3,7 +3,7 @@ import {KonvaService} from '@core/services/konva.service';
 
 const DEFAULT_CIRCLE_CONFIG = {
   draggable: true,
-  radius: 30,
+  radius: 80,
   x: 30,
   y: 30,
   fill: '#ff0000ff',
@@ -36,6 +36,7 @@ const DEFAULT_TEXT_CONFIG = {
   x: 20,
   y: 15,
   fill: '#000000ff',
+  strokeEnabled: false,
   text: 'Text',
   draggable: true,
 };

@@ -1,16 +1,18 @@
 
 <div class="main" fxLayout="column">
-  <div fxLayout="row nowrap" fxLayoutGap="10px" fxLayoutAlign=" end" class="stage-settings">
+  <div fxLayout="row nowrap" fxLayoutGap="10px" fxLayoutAlign="start end" class="stage-settings">
     <span class="fill-space" fxFlex="25"></span>
-    <mat-form-field fxFlex="nogrow">
+    <mat-form-field appearance="fill" fxFlex="nogrow">
       <mat-label class="label">Width</mat-label>
       <input [(ngModel)]="canvasWidth" (focusout)="resizeCanvas()" class="hide-number-arrows"
              matInput name="canvas_width" type="number" min="50" />
+      <span matSuffix>px</span>
     </mat-form-field>
-    <mat-form-field fxFlex="nogrow">
+    <mat-form-field fxFlexAlign="end" appearance="fill" fxFlex="nogrow">
       <mat-label class="label">Height</mat-label>
       <input [(ngModel)]="canvasHeight" (focusout)="resizeCanvas()" class="hide-number-arrows"
              matInput name="canvas_height" type="number" min="50" />
+      <span matSuffix>px</span>
     </mat-form-field>
     <mat-checkbox fxFlexAlign="center" [(ngModel)]="konva.addNewShapeToNewLayer">Add new shape to a new layer</mat-checkbox>
   </div>

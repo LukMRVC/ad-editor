@@ -26,7 +26,7 @@ export class KonvaService {
   onNewLayer$: EventEmitter<Konva.Layer> = new EventEmitter<Konva.Layer>();
   selectedNodes: Konva.Shape[] = [];
 
-  private layers: Konva.Layer[] = [];
+  public layers: Konva.Layer[] = [];
   public addNewShapeToNewLayer = false;
   public workingLayer = 0;
 
@@ -141,6 +141,15 @@ export class KonvaService {
       id: shape.id(),
       iconName: 'shapes',
       children: [],
+    });
+    shape.on('transform', () => {
+      shape.width(Math.max(5, Math.round(shape.width() * shape.scaleX())));
+      shape.height(Math.max(5, Math.round(shape.height() * shape.scaleY())));
+      /*if ('radius' in shape) {
+        (shape as Konva.Circle).radius( Math.max(5, (shape as Konva.Circle).radius() * (shape as Konva.Circle).scaleX()));
+      }*/
+      shape.scaleX(1);
+      shape.scaleY(1);
     });
     // this is here because as a part of workaround between MatTreeModule
     this.layerTreeData = [...this.layerTreeData];

@@ -21,15 +21,17 @@ import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
 import {MAT_SNACK_BAR_DEFAULT_OPTIONS, MatSnackBarModule} from '@angular/material/snack-bar';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {MatTabsModule} from '@angular/material/tabs';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatTreeModule} from '@angular/material/tree';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {MatSliderModule} from '@angular/material/slider';
 import {
   MAT_COLOR_FORMATS,
   NgxMatColorPickerModule,
   NGX_MAT_COLOR_FORMATS,
   MatColorFormats
 } from '@angular-material-components/color-picker';
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatTreeModule} from '@angular/material/tree';
-import {MatAutocompleteModule} from '@angular/material/autocomplete';
+
 
 const CUSTOM_MAT_COLOR_FORMATS: MatColorFormats = {
   display: {
@@ -65,6 +67,7 @@ const CUSTOM_MAT_COLOR_FORMATS: MatColorFormats = {
     NgxMatColorPickerModule,
     MatCheckboxModule,
     MatTreeModule,
+    MatSliderModule,
   ],
   providers: [
     { provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: { duration: 2500 } },
@@ -76,6 +79,7 @@ const CUSTOM_MAT_COLOR_FORMATS: MatColorFormats = {
     MatIconModule,
     MatButtonModule,
     MatDialogModule,
+    MatSliderModule,
     MatFormFieldModule,
     MatSelectModule,
     MatInputModule,

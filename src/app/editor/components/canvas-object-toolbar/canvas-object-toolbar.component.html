@@ -1,11 +1,12 @@
 
 <div fxLayout="row" fxLayoutGap="10px">
     <mat-tab-group dynamicHeight>
+      <!-- Fill colors, strokes, gradients -->
       <mat-tab>
         <ng-template mat-tab-label>
           <fa-icon icon="fill-drip" class="canvas-object-toolbar-fa-icon"></fa-icon>
         </ng-template>
-        <div class="tab-body" fxLayout="column">
+        <div class="tab-body" fxLayout="column" fxLayoutGap="0.5em">
           <div fxLayout="row nowrap" fxLayoutAlign="space-around center" fxLayoutGap="5px">
             <mat-form-field fxFlex>
               <mat-label>Fill color</mat-label>
@@ -22,36 +23,88 @@
               <ngx-mat-color-picker [defaultColor]="defaultFillColour" #strokePicker touchUi="false"></ngx-mat-color-picker>
             </mat-form-field>
           </div>
-          <div fxLayout="row nowrap" fxLayoutAlign="space-around center" fxLayoutGap="5px">
+          <!-- Stroke  -->
+          <section id="stroke-section" fxLayout="row nowrap" fxLayoutAlign="space-around center" fxLayoutGap="5px">
             <mat-checkbox fxFlex [(ngModel)]="strokeEnabled" (change)="strokeEnableChanged()">Stroke</mat-checkbox>
             <mat-form-field fxFlex>
               <mat-label>Stroke width</mat-label>
-              <input matInput type="number" [(ngModel)]="strokeWidth" (focusout)="strokeWidthChanged()"
+              <input matInput type="number" class="hide-number-arrows" [(ngModel)]="strokeWidth" (focusout)="strokeWidthChanged()"
                      (keydown.enter)="strokeWidthChanged()">
+              <span matSuffix>px</span>
             </mat-form-field>
-          </div>
-          <div>
+          </section>
+          <!-- Gradients -->
+          <section fxLayout="row nowrap" fxLayoutGap="5px">
             <div fxFlex id="gradient-stage"></div>
-            <div fxFlex fxLayout="column">
+            <div fxFlex fxLayout="column" fxLayoutGap="5px">
               <mat-button-toggle-group (change)="changeFillStyle()" [(ngModel)]="fillStyle" name="fillStyle" aria-label="Fill Style">
                 <mat-button-toggle checked="true" value="color">Solid</mat-button-toggle>
                 <mat-button-toggle value="linear-gradient">Linear</mat-button-toggle>
                 <mat-button-toggle value="radial-gradient">Radial</mat-button-toggle>
               </mat-button-toggle-group>
+              <ng-container *ngIf="fillStyle !== 'color'">
+                <mat-form-field>
+                  <mat-label>Gradient color</mat-label>
+                  <input [(ngModel)]="defaultGradientColor" (keydown.enter)="gradientPicker.close()" (focus)="gradientPicker.open()"
+                         [ngxMatColorPicker]="gradientPicker" (colorChange)="gradientColorChanged($event)" matInput #gradientColourInput>
+                  <ngx-mat-color-toggle matSuffix [for]="gradientPicker"></ngx-mat-color-toggle>
+                  <ngx-mat-color-picker [defaultColor]="defaultGradientColor" #gradientPicker touchUi="false"></ngx-mat-color-picker>
+                </mat-form-field>
+              </ng-container>
+              <div fxLayout="column" fxFlex *ngIf="fillStyle === 'radial-gradient'">
+                <span>Radius</span>
+                <mat-slider thumbLabel (change)="radialGradientRadiusChanged($event)" [(ngModel)]="radialGradientRadius"
+                            min="1" step="1" max="100" >
+                </mat-slider>
+              </div>
+            </div>
+          </section>
+          <!-- Shadows -->
+          <section fxLayout="column" fxLayoutGap="0.5em">
+            <div fxLayout="row nowrap" fxLayoutGap="5px">
+              <mat-slide-toggle (change)="shadowChanged()" [(ngModel)]="shadow.enabled" fxFlex="nogrow">Shadow enabled</mat-slide-toggle>
+            </div>
+            <div fxLayout="row nowrap" fxLayoutGap="5px">
+              <mat-form-field fxFlex *ngIf="shadow.enabled">
+                <mat-label>Shadow color</mat-label>
+                <input [(ngModel)]="defaultShadowColor" (keydown.enter)="shadowPicker.close()" (focus)="shadowPicker.open()"
+                       [ngxMatColorPicker]="shadowPicker" (colorChange)="shadowChanged()" matInput #shadowColourInput>
+                <ngx-mat-color-toggle matSuffix [for]="shadowPicker"></ngx-mat-color-toggle>
+                <ngx-mat-color-picker [defaultColor]="defaultShadowColor" #shadowPicker touchUi="false"></ngx-mat-color-picker>
+              </mat-form-field>
+              <div fxLayout="column" fxFlex *ngIf="shadow.enabled">
+                <span>Shadow blur</span>
+                <mat-slider label="Show blur" (change)="shadowChanged()"
+                            [(ngModel)]="shadow.blur" thumbLabel min="0" max="100" fxFlex="grow"></mat-slider>
+              </div>
 
             </div>
-          </div>
+            <div fxLayout="row nowrap" fxLayoutGap="5px" *ngIf="shadow.enabled">
+              <div fxLayout="column" fxFlex>
+                <span>Shadow offset X</span>
+                <mat-slider (change)="shadowChanged()" [(ngModel)]="shadow.offset.x"
+                            thumbLabel min="0" max="100" fxFlex></mat-slider>
+              </div>
+              <div fxLayout="column" fxFlex>
+                <span>Shadow offset Y</span>
+                <mat-slider (change)="shadowChanged()" [(ngModel)]="shadow.offset.y"
+                            thumbLabel min="0" max="100" fxFlex></mat-slider>
+              </div>
+            </div>
+          </section>
 
         </div>
       </mat-tab>
+
       <ng-container *ngIf="this.canvasObjectType === 'text'; else shapeContainer">
+        <!-- Text font family, font size etc. -->
         <mat-tab class="canvas-object-tool">
           <ng-template mat-tab-label>
               <mat-icon class="canvas-object-toolbar-mat-icon">text_format</mat-icon>
           </ng-template>
           <div class="tab-body" fxLayout="column" fxLayoutGap="5px">
             <div fxLayout="row nowrap">
-              <mat-form-field fxFlex>
+              <mat-form-field appearance="outline" fxFlex>
                 <mat-label>Text content</mat-label>
                 <textarea (keydown.enter)="this.textChanged()" (focusout)="this.textChanged()"
                           [(ngModel)]="text" name="text" id="text" matInput>
@@ -78,6 +131,7 @@
             </div>
           </div>
         </mat-tab>
+        <!-- Text border -->
         <mat-tab class="canvas-object-tool">
           <ng-template mat-tab-label>
               <mat-icon class="canvas-object-toolbar-mat-icon">border_style</mat-icon>
@@ -85,11 +139,45 @@
         </mat-tab>
       </ng-container>
       <ng-template #shapeContainer>
+        <!-- Coordinates, ratios, scales and dimensions -->
         <mat-tab>
           <ng-template mat-tab-label>
             <mat-icon class="canvas-object-toolbar-mat-icon">aspect_ratio</mat-icon>
           </ng-template>
+          <div class="tab-body" fxLayout="column" fxLayoutGap="0.5em">
+            <!--X and Y coordinates-->
+            <div fxLayout="row nowrap" fxLayoutGap="0.5em">
+              <mat-form-field fxFlex>
+                <mat-label>X</mat-label>
+                <input matInput type="number" name="drawPoint[x]" class="hide-number-arrows" [(ngModel)]="drawPoint.x" />
+                <span matSuffix>px</span>
+              </mat-form-field>
+              <mat-form-field fxFlex>
+                <mat-label>Y</mat-label>
+                <input matInput type="number" name="drawPoint[y]" class="hide-number-arrows" [(ngModel)]="drawPoint.y" />
+                <span matSuffix>px</span>
+              </mat-form-field>
+            </div>
+            <!-- Dimensions -->
+            <div fxLayout="row nowrap" fxLayoutGap="0.5em">
+              <mat-form-field fxFlex>
+                <mat-label>Width</mat-label>
+                <input matInput type="number" class="hide-number-arrows" name="dimension[x]" [(ngModel)]="dimension.w" />
+                <span matSuffix>
+                  <fa-icon icon="arrows-alt-h"></fa-icon>
+                </span>
+              </mat-form-field>
+              <mat-form-field fxFlex>
+                <mat-label>Height</mat-label>
+                <input matInput type="number" class="hide-number-arrows" name="dimension[y]" [(ngModel)]="dimension.h" />
+                <span matSuffix>
+                  <fa-icon icon="arrows-alt-v"></fa-icon>
+                </span>
+              </mat-form-field>
+            </div>
+          </div>
         </mat-tab>
+        <!-- Image options -->
         <ng-container *ngIf="this.canvasObjectType === 'image'">
           <mat-tab>
             <ng-template mat-tab-label>

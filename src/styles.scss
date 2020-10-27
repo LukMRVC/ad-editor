@@ -41,3 +41,14 @@ $AdEditor-theme: mat-light-theme((
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+input.hide-number-arrows {
+  -webkit-appearance: none;
+  margin: 0;
+  -moz-appearance: textfield;
+}
+
+input.hide-number-arrows::-webkit-outer-spin-button,
+input.hide-number-arrows::-webkit-inner-spin-button {
+  display: none;
+}

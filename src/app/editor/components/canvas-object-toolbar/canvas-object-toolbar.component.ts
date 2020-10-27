@@ -14,6 +14,7 @@ import {MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import * as WebFontLoader from 'webfontloader';
 import Konva from 'konva';
 import KonvaEventObject = Konva.KonvaEventObject;
+import {MatSliderChange} from '@angular/material/slider';
 
 @Component({
   selector: 'app-canvas-object-toolbar',
@@ -26,6 +27,8 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
 
   subscription: Subscription = new Subscription();
   defaultFillColour = new Color(255, 0, 0, 255);
+  defaultGradientColor = new Color(255, 255, 255, 0);
+  defaultShadowColor = new Color(0, 0, 0, 255);
   fontList: WebFont[] = [];
   fontFamilyControl: FormControl = new FormControl();
   filteredFonts: Observable<WebFont[]>;
@@ -36,6 +39,10 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
   strokeEnabled = true;
   strokeWidth = 1;
   fillStyle = 'color';
+  radialGradientRadius = 50;
+  drawPoint: {x: number, y: number} = { x: 0, y: 0 };
+  dimension: {w: number, h: number} = { w: 0, h: 0 };
+  shadow: { enabled: boolean, blur: number, offset: { x: 0, y: 0} } = { enabled: false, blur: 50, offset: { x: 0, y: 0} };
 
   @ViewChild('fillPicker') fillPicker: NgxMatColorPickerComponent;
   gradientStage: Konva.Stage;
@@ -62,6 +69,7 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
     );
     const hexToRgb = (hex: string) => {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      console.log(result);
       return {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
@@ -71,16 +79,21 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
     };
     this.subscription.add(this.konva.onClickTap$.subscribe(ev => {
       if (this.konva.selectedNodes.length === 1) {
-        const selected = ev.target;
-        if (selected.getClassName() === 'Text') {
+        const node = ev.target;
+        this.drawPoint = { x: Math.round(node.x()), y: Math.round(node.y()) };
+        this.dimension = { w: node.width(), h: node.height() };
+        if (node.getClassName() === 'Text') {
           this.text = ev.target.text();
         }
-        let rgb = hexToRgb(selected.fill());
+        console.log(node.fill());
+        let rgb = hexToRgb(node.fill());
         this.fillColor = new Color(rgb.r, rgb.g, rgb.b, rgb.a);
-        rgb = hexToRgb(selected.stroke());
-        this.strokeColor = new Color(rgb.r, rgb.g, rgb.b, rgb.a);
-        this.strokeEnabled = selected.strokeEnabled();
-        this.strokeWidth = selected.strokeWidth();
+        this.strokeEnabled = node.strokeEnabled();
+        if (node.strokeEnabled()) {
+          rgb = hexToRgb(node.stroke());
+          this.strokeColor = new Color(rgb.r, rgb.g, rgb.b, rgb.a);
+          this.strokeWidth = node.strokeWidth();
+        }
       }
     }));
   }
@@ -168,16 +181,11 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
       fillRadialGradientStartPoint: { x: this.gradientPoints[2].x(), y: this.gradientPoints[2].y() },
       fillRadialGradientStartRadius: 0,
       fillRadialGradientEndPoint: { x: this.gradientPoints[2].x() + 10, y: this.gradientPoints[2].y() + 10 },
-      fillRadialGradientEndRadius: 70,
-      fillRadialGradientColorStops: [0, 'white', 1, this.fillColor.toHexString()],
+      fillRadialGradientEndRadius: (this.radialGradientRadius / 100) * this.gradientStage.width(),
+      fillRadialGradientColorStops: [0, this.defaultGradientColor.toHex8String(), 1, this.fillColor.toHexString()],
       fillLinearGradientStartPoint: { x: this.gradientPoints[0].x(), y: this.gradientPoints[0].y() },
       fillLinearGradientEndPoint: { x: this.gradientPoints[1].x(), y: this.gradientPoints[1].y() },
-      fillLinearGradientColorStops: [
-        0,
-        'white',
-        1,
-        this.fillColor.toHexString(),
-      ],
+      fillLinearGradientColorStops: [0, this.defaultGradientColor.toHex8String(), 1, this.fillColor.toHexString()],
     });
 
     layer.add(this.gradientBackgroundRect);
@@ -202,8 +210,19 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
   }
 
   fillColorChanged(ev: NgxMatColorPickerInputEvent): void {
-    // console.log(ev.value.toRgba());
-    this.konva.updateSelected({ fill: ev.value.toHex8String(true), alpha: ev.value.a });
+    const fillAttributes = {
+      fill: this.fillColor.toHex8String(),
+      alpha: ev.value.a,
+      fillLinearGradientColorStops: [0, this.defaultGradientColor.toHex8String() , 1, this.fillColor.toHex8String()],
+      fillRadialGradientColorStops: [0, this.defaultGradientColor.toHex8String(), 1, this.fillColor.toHexString()],
+    };
+    this.konva.selectedNodes.forEach(node => {
+      node.setAttrs(fillAttributes);
+    });
+    this.gradientBackgroundRect.setAttrs(fillAttributes);
+    this.konva.redraw();
+    this.gradientStage.batchDraw();
+    // this.konva.updateSelected({ fill: ev.value.toHex8String(true), alpha: ev.value.a });
     // this.konva.updateSelectedFillColor(ev.value);
   }
 
@@ -280,34 +299,64 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
 
   private setSelectedFillStyle(): void {
     this.konva.selectedNodes.forEach(node => {
-      node.fillPriority(this.fillStyle);
-      if (this.fillStyle === 'color') {
-        node.fill(this.fillColor.toHex8String());
-      } else if (this.fillStyle === 'linear-gradient') {
-        node.setAttrs({
-          fillLinearGradientStartPoint: { x: this.gradientPoints[0].x(), y: this.gradientPoints[0].y() },
-          fillLinearGradientEndPoint: { x: this.gradientPoints[1].x(), y: this.gradientPoints[1].y() },
-          fillLinearGradientColorStops: [
-            0,
-            'white',
-            1,
-            this.fillColor.toHexString(),
-          ],
-        });
-      } else if (this.fillStyle === 'radial-gradient') {
-        node.setAttrs({
-          fillRadialGradientStartPoint: { x: this.gradientPoints[2].x(), y: this.gradientPoints[2].y() },
-          fillRadialGradientEndPoint: { x: this.gradientPoints[2].x(), y: this.gradientPoints[2].y() },
-          fillRadialGradientStartRadius: 0,
-          fillRadialGradientEndRadius: 50,
-          fillRadialGradientColorStops: [
-            0,
-            'white',
-            1,
-            this.fillColor.toHexString(),
-          ],
-        });
+      const ratioX = node.width() / this.gradientBackgroundRect.width();
+      const ratioY = node.height() / this.gradientBackgroundRect.height();
+      let circularOffset = 0;
+      if ('radius' in node) {
+        circularOffset = -this.gradientStage.width() / 2;
       }
+      console.log('X ratio:', ratioX);
+      node.fillPriority(this.fillStyle);
+      const calculatedCoordinates = (pointIdx) => {
+        return {
+          x: (this.gradientPoints[pointIdx].x() + circularOffset) * ratioX,
+          y: (this.gradientPoints[pointIdx].y() + circularOffset) * ratioY,
+        };
+      };
+      node.setAttrs({
+        fill: this.fillColor.toHex8String(),
+        fillLinearGradientStartPoint: calculatedCoordinates(0),
+        fillLinearGradientEndPoint: calculatedCoordinates(1),
+        fillLinearGradientColorStops: [0, this.defaultGradientColor.toHex8String(), 1, this.fillColor.toHexString()],
+        fillRadialGradientStartPoint: calculatedCoordinates(2),
+        fillRadialGradientEndPoint: calculatedCoordinates(2),
+        fillRadialGradientStartRadius: 0,
+        fillRadialGradientEndRadius: (this.radialGradientRadius / 100) * node.width(),
+        fillRadialGradientColorStops: [0, this.defaultGradientColor.toHex8String(), 1, this.fillColor.toHexString()],
+      });
+    });
+    this.konva.redraw();
+  }
+
+  radialGradientRadiusChanged($event: MatSliderChange): void {
+    this.gradientBackgroundRect.fillRadialGradientEndRadius((this.radialGradientRadius / 100) * this.gradientBackgroundRect.width());
+    this.konva.selectedNodes.forEach(node => node.setAttr('fillRadialGradientEndRadius', (this.radialGradientRadius / 100) * node.width()));
+    this.konva.redraw();
+    this.gradientStage.batchDraw();
+  }
+
+  gradientColorChanged($event: NgxMatColorPickerInputEvent): void {
+    const fillAttributes = {
+      fillLinearGradientColorStops: [0, $event.value.toHex8String() , 1, this.fillColor.toHex8String()],
+      fillRadialGradientColorStops: [0, $event.value.toHex8String(), 1, this.fillColor.toHexString()],
+    };
+    this.konva.selectedNodes.forEach(node => {
+      node.setAttrs(fillAttributes);
+    });
+    this.gradientBackgroundRect.setAttrs(fillAttributes);
+    this.konva.redraw();
+    this.gradientStage.batchDraw();
+  }
+
+  shadowChanged(): void {
+    this.konva.selectedNodes.forEach(node => {
+      node.setAttrs({
+        shadowEnabled: this.shadow.enabled,
+        shadowBlur: this.shadow.blur,
+        shadowColor: this.defaultShadowColor.toHexString(),
+        shadowOffset: this.shadow.offset,
+        shadowOpacity: this.defaultShadowColor.a,
+      });
     });
     this.konva.redraw();
   }

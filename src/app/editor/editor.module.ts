@@ -11,7 +11,7 @@ import {FaIconLibrary, FontAwesomeModule} from '@fortawesome/angular-fontawesome
 import { CanvasObjectToolbarComponent } from './components/canvas-object-toolbar/canvas-object-toolbar.component';
 import { StageLayersComponent } from './components/stage-layers/stage-layers.component';
 
-import {faMousePointer, faFillDrip, faShapes, faLayerGroup} from '@fortawesome/free-solid-svg-icons';
+import {faMousePointer, faFillDrip, faShapes, faLayerGroup, faArrowsAltH, faArrowsAltV} from '@fortawesome/free-solid-svg-icons';
 
 @NgModule({
   declarations: [
@@ -32,6 +32,6 @@ import {faMousePointer, faFillDrip, faShapes, faLayerGroup} from '@fortawesome/f
 })
 export class EditorModule {
   constructor(lib: FaIconLibrary) {
-    lib.addIcons(faMousePointer, faFillDrip, faLayerGroup, faShapes);
+    lib.addIcons(faMousePointer, faFillDrip, faLayerGroup, faShapes, faArrowsAltH, faArrowsAltV);
   }
 }

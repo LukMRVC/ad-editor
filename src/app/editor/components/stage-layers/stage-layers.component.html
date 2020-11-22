@@ -1,3 +1,4 @@
+<!-- This is non-collapsible node -> children -->
 <mat-tree [dataSource]="this.actualDataSource" [treeControl]="nestedTreeControl">
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
     <li>
@@ -9,13 +10,14 @@
         <span *ngIf="!shouldChangeName(node)" (dblclick)="changeName($event, node)">
           {{ node.name }}
         </span>
-        <mat-form-field (focusout)="rename(node)" autofocus (keydown.enter)="rename(node)" *ngIf="shouldChangeName(node)">
+        <mat-form-field (focusout)="rename(node)" (keydown.enter)="rename(node)"
+                        *ngIf="this.shouldChangeName(node)">
           <input matInput type="text" [(ngModel)]="node.name"/>
         </mat-form-field>
       </div>
     </li>
   </mat-tree-node>
-
+  <!-- This is the collapsible node-->
   <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
     <li>
       <div matTreeNodeToggle class="node-toggle mat-tree-node">
@@ -28,7 +30,8 @@
         <span *ngIf="!shouldChangeName(node)" (dblclick)="changeName($event, node)">
           {{ node.name }}
         </span>
-        <mat-form-field (focusout)="rename(node)" autofocus (keydown.enter)="rename(node)" *ngIf="shouldChangeName(node)">
+        <mat-form-field (focusout)="rename(node)" (keydown.enter)="rename(node)"
+                        *ngIf="this.shouldChangeName(node)">
           <input matInput type="text" [(ngModel)]="node.name"/>
         </mat-form-field>
       </div>

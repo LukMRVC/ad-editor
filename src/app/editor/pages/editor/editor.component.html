@@ -15,6 +15,21 @@
       <span matSuffix>px</span>
     </mat-form-field>
     <mat-checkbox fxFlexAlign="center" [(ngModel)]="konva.addNewShapeToNewLayer">Add new shape to a new layer</mat-checkbox>
+    <div class="layerMoveButtonGroup" fxFlexAlign="center">
+      <button mat-icon-button (click)="moveObjectInLayer('down')">
+        <fa-icon icon="angle-double-down"></fa-icon>
+      </button>
+      <button mat-icon-button (click)="moveObjectInLayer('down-one')">
+        <fa-icon icon="long-arrow-alt-down"></fa-icon>
+      </button>
+      <button mat-icon-button (click)="moveObjectInLayer('up-one')">
+        <fa-icon icon="long-arrow-alt-up"></fa-icon>
+      </button>
+      <button mat-icon-button (click)="moveObjectInLayer('up')">
+        <fa-icon icon="angle-double-up"></fa-icon>
+      </button>
+    </div>
+
   </div>
 
   <section id="editor" fxFlex="grow" fxLayout="row nowrap" class="editor" fxLayout.lt-sm="column">

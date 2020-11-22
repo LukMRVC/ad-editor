@@ -69,7 +69,7 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
     );
     const hexToRgb = (hex: string) => {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      console.log(result);
+      // console.log(result);
       return {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
@@ -79,13 +79,13 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
     };
     this.subscription.add(this.konva.onClickTap$.subscribe(ev => {
       if (this.konva.selectedNodes.length === 1) {
-        const node = ev.target;
+        const node = this.konva.selectedNodes[0];
         this.drawPoint = { x: Math.round(node.x()), y: Math.round(node.y()) };
         this.dimension = { w: node.width(), h: node.height() };
         if (node.getClassName() === 'Text') {
           this.text = ev.target.text();
         }
-        console.log(node.fill());
+        console.log('Node: ', node);
         let rgb = hexToRgb(node.fill());
         this.fillColor = new Color(rgb.r, rgb.g, rgb.b, rgb.a);
         this.strokeEnabled = node.strokeEnabled();
@@ -94,6 +94,10 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
           this.strokeColor = new Color(rgb.r, rgb.g, rgb.b, rgb.a);
           this.strokeWidth = node.strokeWidth();
         }
+        this.gradientBackgroundRect.setAttrs({
+          fill: this.fillColor.toHex8String(),
+        });
+        this.gradientStage.batchDraw();
       }
     }));
   }
@@ -305,7 +309,7 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
       if ('radius' in node) {
         circularOffset = -this.gradientStage.width() / 2;
       }
-      console.log('X ratio:', ratioX);
+      // console.log('X ratio:', ratioX);
       node.fillPriority(this.fillStyle);
       const calculatedCoordinates = (pointIdx) => {
         return {

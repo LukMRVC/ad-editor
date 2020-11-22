@@ -28,7 +28,8 @@ export class KonvaService {
 
   public layers: Konva.Layer[] = [];
   public addNewShapeToNewLayer = false;
-  public workingLayer = 0;
+  public workingLayer = -1;
+  private background: Konva.Rect;
 
   private $selectedObject: BehaviorSubject<'image' | 'text' | 'shape' | 'background'> =
     new BehaviorSubject<'image' | 'text' | 'shape' | 'background'>('background');
@@ -89,7 +90,8 @@ export class KonvaService {
     this.canvas = new Konva.Stage(conf);
     this.canvas.on('click tap', (e: Konva.KonvaEventObject<object>) => {
       if (e.target === this.canvas) {
-        this.selectedNodes = [];
+        this.updateSelectedObjectType('background');
+        this.selectedNodes = [this.background];
       } else {
         const isSelected = this.selectedNodes.indexOf(e.target as Konva.Shape) >= 0;
         if (!isSelected) {
@@ -103,6 +105,17 @@ export class KonvaService {
       }
       this.onClickTap$.emit(e);
     });
+    const bgLayer = this.layer({ id: 'background', name: 'Background' });
+    this.background = this.rect({
+      id: 'bg-rect',
+      strokeEnabled: false,
+      width: this.canvas.width(),
+      height: this.canvas.height(),
+      fill: '#00000000',
+      draggable: false,
+      listening: false,
+    });
+    bgLayer.add(this.background);
     // this.canvas.on('')
   }
 
@@ -120,8 +133,11 @@ export class KonvaService {
     if (!addToInstance) { return layer; }
     this.layers.push(layer);
     this.canvas.add(layer);
+    this.workingLayer++;
     this.onNewLayer$.emit(layer);
-    this.layerTreeData = this.layerTreeData.concat([{ name: layer.name(), id: layer.id(), iconName: 'layer-group', children: [] }]);
+    this.layerTreeData = this.layerTreeData.concat(
+      [{ name: layer.name(), id: layer.id(), iconName: 'layer-group', children: [], zIdx: layer.getZIndex() }]
+    );
     // layer.on('dragmove', this.guidelinesSnapping);
     // layer.on('dragend', KonvaService.destroyGuideLines);
     return layer;
@@ -141,7 +157,9 @@ export class KonvaService {
       id: shape.id(),
       iconName: 'shapes',
       children: [],
+      zIdx: shape.getZIndex(),
     });
+    this.layerTreeData[indexOfLayer].children.sort( (a, b) => a.zIdx - b.zIdx );
     shape.on('transform', () => {
       shape.width(Math.max(5, Math.round(shape.width() * shape.scaleX())));
       shape.height(Math.max(5, Math.round(shape.height() * shape.scaleY())));

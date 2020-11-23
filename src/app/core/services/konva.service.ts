@@ -8,7 +8,7 @@ import { TransformerConfig } from 'konva/types/shapes/Transformer';
 import { BehaviorSubject } from 'rxjs';
 import {RectConfig} from 'konva/types/shapes/Rect';
 import {RegularPolygonConfig} from 'konva/types/shapes/RegularPolygon';
-import {LayerData} from '../../editor/components/stage-layers/stage-layers.component';
+import {FlatLayerData, LayerData} from '../../editor/components/stage-layers/stage-layers.component';
 import {getGuides, getLineGuideStops, getObjectSnappingEdges} from '@core/utils/KonvaGuidelines';
 import {TextConfig} from 'konva/types/shapes/Text';
 
@@ -136,7 +136,7 @@ export class KonvaService {
     this.workingLayer++;
     this.onNewLayer$.emit(layer);
     this.layerTreeData = this.layerTreeData.concat(
-      [{ name: layer.name(), id: layer.id(), iconName: 'layer-group', children: [], zIdx: layer.getZIndex() }]
+      [{ name: layer.name(), id: layer.id(), iconName: 'layer-group', children: [], zIdx: () => layer.getZIndex() }]
     );
     // layer.on('dragmove', this.guidelinesSnapping);
     // layer.on('dragend', KonvaService.destroyGuideLines);
@@ -157,9 +157,8 @@ export class KonvaService {
       id: shape.id(),
       iconName: 'shapes',
       children: [],
-      zIdx: shape.getZIndex(),
+      zIdx: () => shape.getZIndex(),
     });
-    this.layerTreeData[indexOfLayer].children.sort( (a, b) => a.zIdx - b.zIdx );
     shape.on('transform', () => {
       shape.width(Math.max(5, Math.round(shape.width() * shape.scaleX())));
       shape.height(Math.max(5, Math.round(shape.height() * shape.scaleY())));
@@ -311,5 +310,55 @@ export class KonvaService {
 
   redraw(): void {
     this.layers.forEach(l => l.batchDraw());
+  }
+
+  moveObjectZIndices(direction: 'down' | 'down-one' | 'up-one' | 'up'): void {
+    switch (direction) {
+      case 'down':
+        this.selectedNodes.forEach(n => n.moveToBottom());
+        break;
+      case 'down-one':
+        this.selectedNodes.forEach(n => n.moveDown());
+        break;
+      case 'up-one':
+        this.selectedNodes.forEach(n => n.moveUp());
+        break;
+      case 'up':
+        this.selectedNodes.forEach(n => n.moveToTop());
+        break;
+    }
+    this.redraw();
+    this.layerTreeData = [...this.layerTreeData];
+  }
+
+
+  // TODO: Dodelat presouvani mezi vrstavama
+  moveObjectInStage(previous: FlatLayerData, current: FlatLayerData): void {
+    const prevId = previous.id;
+    const curId = current.id;
+    if (prevId !== curId) {
+      const isLayer = prevId.indexOf(':') === -1;
+      if (isLayer && curId.indexOf(':') === -1) { // valid move of layer to another layer
+
+      } else if (!isLayer && curId.indexOf(':') !== -1) { // valid move of shape
+        const prevLayerId = prevId.substring(0, prevId.indexOf(':'));
+        const currentLayerId = curId.substring(0, curId.indexOf(':'));
+        if (prevLayerId === currentLayerId) { // just a move in layer
+          console.log(`moving ${prevId} to ${curId}`);
+          const layer = this.layers.find(l => l.id() === currentLayerId);
+          const previousChild = layer.getChildren(n => n.id() === prevId);
+          const currentChild = layer.getChildren(n => n.id() === curId);
+          console.log(previousChild[0].getZIndex());
+          console.log(currentChild[0].getZIndex());
+          previousChild[0].zIndex(previous.zIdx());
+          currentChild[0].zIndex(current.zIdx());
+
+        } else { // move to another layer
+
+        }
+
+      }
+      this.layerTreeData = [...this.layerTreeData];
+    }
   }
 }

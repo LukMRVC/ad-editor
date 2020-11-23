@@ -86,25 +86,7 @@ export class EditorComponent implements AfterContentInit, OnDestroy {
     image.onload = () => this.konva.image({ image, scaleX: 0.3, scaleY: 0.3, draggable: true });
   }
 
-  moveObjectInLayer(direction: string): void {
-    switch (direction) {
-      case 'down':
-        this.konva.selectedNodes.forEach(n => n.moveToBottom());
-        break;
-      case 'down-one':
-        this.konva.selectedNodes.forEach(n => n.moveDown());
-        break;
-      case 'up-one':
-        this.konva.selectedNodes.forEach(n => n.moveUp());
-        break;
-      case 'up':
-        this.konva.selectedNodes.forEach(n => n.moveToTop());
-        break;
-    }
-    this.konva.redraw();
-    this.konva.layerTreeData.forEach( layer => {
-      layer.children.sort( (a, b) => a.zIdx - b.zIdx);
-    });
-    this.konva.layerTreeData = [...this.konva.layerTreeData];
+  moveObjectInLayer(direction: 'down' | 'down-one' | 'up-one' | 'up'): void {
+    this.konva.moveObjectZIndices(direction);
   }
 }

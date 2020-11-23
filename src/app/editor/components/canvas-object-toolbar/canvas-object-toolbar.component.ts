@@ -85,7 +85,7 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
         if (node.getClassName() === 'Text') {
           this.text = ev.target.text();
         }
-        console.log('Node: ', node);
+        // console.log('Node: ', node);
         let rgb = hexToRgb(node.fill());
         this.fillColor = new Color(rgb.r, rgb.g, rgb.b, rgb.a);
         this.strokeEnabled = node.strokeEnabled();

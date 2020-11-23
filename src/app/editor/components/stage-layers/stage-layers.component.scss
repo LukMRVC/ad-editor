@@ -1,6 +1,7 @@
 .fa-tree-icon {
   font-size: 15pt;
   padding: 5px;
+  margin-left: .25em;
 }
 
 .tree-icon-button {
@@ -27,12 +28,4 @@ ul { padding-left: 1em; }
 
 .node-toggle {
   cursor: pointer;
-}
-
-.hide-node-rename {
-  display: none;
-}
-
-.display-node-rename {
-  display: inherit;
 }

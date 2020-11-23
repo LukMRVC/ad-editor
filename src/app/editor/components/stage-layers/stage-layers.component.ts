@@ -1,16 +1,25 @@
-import {AfterContentInit, AfterViewInit, Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren} from '@angular/core';
+import {Component, Input, QueryList, ViewChildren} from '@angular/core';
 import {KonvaService} from '@core/services/konva.service';
-import {NestedTreeControl} from '@angular/cdk/tree';
-import {of} from 'rxjs';
-import {MatTreeNestedDataSource, MatTreeNode} from '@angular/material/tree';
+import {FlatTreeControl} from '@angular/cdk/tree';
+import {MatTreeFlatDataSource, MatTreeFlattener} from '@angular/material/tree';
 import {MatInput} from '@angular/material/input';
+import {CdkDragDrop} from '@angular/cdk/drag-drop';
 
 export interface LayerData {
   name: string;
   id: string;
   children?: LayerData[];
   iconName: string;
-  zIdx: number,
+  zIdx: (z?: number) => number;
+}
+
+export interface FlatLayerData {
+  id: string;
+  name: string;
+  level: number;
+  expandable: boolean;
+  iconName: string;
+  zIdx: (z?: number) => number;
 }
 
 @Component({
@@ -18,42 +27,79 @@ export interface LayerData {
   templateUrl: './stage-layers.component.html',
   styleUrls: ['./stage-layers.component.scss']
 })
-export class StageLayersComponent implements AfterViewInit {
+export class StageLayersComponent {
 
-  nodes = new Set();
-
-  @ViewChildren(MatInput) viewNodes: QueryList<MatInput>;
+  @Input()
+  set nestedDataSource(val: LayerData[]) {
+    // this data value is set to null first as a part of a workaround to refresh the mat tree
+    // this.actualDataSource.data = null;
+    const expandedNodeIds: string[] = [];
+    if (this.treeControl.dataNodes) {
+      this.treeControl.dataNodes.forEach( (node: FlatLayerData) => {
+        if (this.treeControl.isExpandable(node) && this.treeControl.isExpanded(node)) {
+          expandedNodeIds.push(node.id);
+        }
+      });
+    }
+    val = val.sort( (a, b) => b.zIdx() - a.zIdx() );
+    for (const layer of val) {
+      if (layer.children.length > 0) {
+        layer.children = layer.children.sort( (a, b) => b.zIdx() - a.zIdx() );
+      }
+    }
+    console.log(val);
+    this.actualDataSource.data = val;
+    this.treeControl.dataNodes.filter(node => expandedNodeIds.find(id => id === node.id))
+      .forEach(nodeToExpand => {
+        this.expandNode(nodeToExpand);
+      });
+  }
 
   constructor(
     public konva: KonvaService,
   ) { }
 
-  @Input()
-  set nestedDataSource(val: LayerData[]) {
-    // this data value is set to null first as a part of a workaround to refresh the mat tree
-    this.actualDataSource.data = null;
-    this.actualDataSource.data = val;
+  nodes = new Set();
+
+  @ViewChildren(MatInput) viewNodes: QueryList<MatInput>;
+
+  treeControl = new FlatTreeControl<FlatLayerData>(node => node.level, node => node.expandable);
+
+  private transformer = (node: LayerData, level: number) => {
+    return {
+      id: node.id,
+      expandable: !!node.children && node.children.length > 0 && node.id !== 'background',
+      name: node.name,
+      level,
+      iconName: node.iconName,
+      zIdx: node.zIdx
+    };
   }
 
-  actualDataSource = new MatTreeNestedDataSource<LayerData>();
+  // tslint:disable-next-line
+  treeFlattener = new MatTreeFlattener(
+    this.transformer, node => node.level, node => node.expandable, node => node.children
+  );
 
-  nestedTreeControl = new NestedTreeControl<LayerData>(node => node.children);
+  // tslint:disable-next-line
+  actualDataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
 
-  hasChild = (_: number, node: LayerData) => !!node.children && node.children.length > 0;
-
-  ngAfterViewInit(): void {
-    this.viewNodes.forEach(n => console.log(n));
-    // this.viewNodes.changes.subscribe(change => {
-    //   console.log(change);
-    // });
-  }
+  hasChildAndIsntBackground = (_: number, node: FlatLayerData) => node.expandable;
 
   changeName($event: MouseEvent, node: LayerData): void {
     // console.log(this.viewNodes);
     this.nodes.add(node.id);
-    console.log(node.id);
-    setTimeout(() => this.viewNodes.forEach(n => n.focus({  })), 10);
+    setTimeout(() => this.viewNodes.forEach(n => n.focus()), 10);
 
+  }
+
+  expandNode(nodeToExpand: FlatLayerData): void {
+    if (!nodeToExpand) {
+      return;
+    }
+    if (this.treeControl.isExpandable(nodeToExpand)) {
+      this.treeControl.expand(nodeToExpand);
+    }
   }
 
   shouldChangeName(node: LayerData): boolean {
@@ -64,6 +110,13 @@ export class StageLayersComponent implements AfterViewInit {
     this.nodes.delete(node.id);
   }
 
+  // first template arg is container data, second is item data
+  onDrop($event: CdkDragDrop<FlatLayerData, FlatLayerData>): void {
+    const log = console.log;
+    this.konva.moveObjectInStage(
+      this.treeControl.dataNodes[$event.previousIndex],
+      this.treeControl.dataNodes[$event.currentIndex]
+    );
 
-
+  }
 }

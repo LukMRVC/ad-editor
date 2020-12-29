@@ -31,6 +31,7 @@ import {
   NGX_MAT_COLOR_FORMATS,
   MatColorFormats
 } from '@angular-material-components/color-picker';
+import {MatRippleModule} from '@angular/material/core';
 
 
 const CUSTOM_MAT_COLOR_FORMATS: MatColorFormats = {
@@ -68,6 +69,7 @@ const CUSTOM_MAT_COLOR_FORMATS: MatColorFormats = {
     MatCheckboxModule,
     MatTreeModule,
     MatSliderModule,
+    MatRippleModule,
   ],
   providers: [
     { provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: { duration: 2500 } },
@@ -100,6 +102,7 @@ const CUSTOM_MAT_COLOR_FORMATS: MatColorFormats = {
     MatCheckboxModule,
     MatTreeModule,
     MatAutocompleteModule,
+    MatRippleModule,
   ]
 })
 export class MaterialModule { }

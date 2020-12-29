@@ -17,8 +17,15 @@ li {
 ul { padding-left: 1em; }
 
 .mat-tree-node {
+  cursor: pointer;
   //display: unset;
 }
+
+.mat-tree-node:hover {
+  background-color: #f0f0f0;
+}
+
+
 
 .mat-icon-button {
   //width:  unset;

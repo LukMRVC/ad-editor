@@ -2,9 +2,10 @@ import {AfterContentInit, AfterViewInit, Component, HostListener, OnDestroy, OnI
 // @ts-ignore
 import {KonvaService} from '@core/services/konva.service';
 import {Subscription} from 'rxjs';
-import {LayerData} from '../../components/stage-layers/stage-layers.component';
+import {FlatLayerData, LayerData} from '../../components/stage-layers/stage-layers.component';
 import {buffer} from 'rxjs/operators';
 import {$} from 'protractor';
+import Konva from 'konva';
 
 @Component({
   selector: 'app-editor',
@@ -34,9 +35,9 @@ export class EditorComponent implements AfterContentInit, OnDestroy {
       strokeWidth: 5,
       draggable: true,
     });
-    const tr = this.konva.transformer();
+    const tr = this.konva.getLayerTransformer(layer);
     layer.add(circle);
-    layer.add(tr);
+    // layer.add(tr);
     stage.add(layer);
     this.subscription.add(this.konva.onClickTap$.subscribe( (e) => {
       if (e.target.getClassName() === 'Text') {
@@ -88,5 +89,29 @@ export class EditorComponent implements AfterContentInit, OnDestroy {
 
   moveObjectInLayer(direction: 'down' | 'down-one' | 'up-one' | 'up'): void {
     this.konva.moveObjectZIndices(direction);
+  }
+
+  addToSelected($event: { ev: MouseEvent, node: FlatLayerData }): void {
+    console.log($event);
+    const layer = this.konva.layers.find(l => l.id() === $event.node.id.substring(0, $event.node.id.indexOf(':')));
+    if (!layer) {
+      return;
+    }
+    const tr = this.konva.getLayerTransformer(layer);
+    const isSelected = tr.nodes().findIndex(shape => shape.id() === $event.node.id) >= 0;
+    if (!isSelected) {
+      const shape = layer.getChildren(n => n.id() === $event.node.id)[0];
+      if (($event.ev as MouseEvent).ctrlKey) {
+        tr.nodes(tr.nodes().concat([shape]));
+        this.konva.selectedNodes.push(shape as Konva.Shape);
+      } else {
+        tr.nodes([shape]);
+        this.konva.selectedNodes = [shape as Konva.Shape];
+        this.konva.updateSelectedObjectType('shape');
+      }
+      this.konva.redraw(layer);
+    }
+
+
   }
 }

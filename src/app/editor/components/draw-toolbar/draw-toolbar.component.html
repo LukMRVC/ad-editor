@@ -37,4 +37,13 @@
     <input hidden accept="image/*" #imageInput id="file" (change)="onFileChange($event)" type="file" />
   </button>
 
+  <button [matMenuTriggerFor]="exportMenu" class="draw-tool" mat-button>
+    Export
+  </button>
+
+  <mat-menu yPosition="below" xPosition="before" #exportMenu>
+    <button (click)="konva.exportAsImage('image/png')" mat-menu-item>PNG</button>
+    <button (click)="konva.exportAsImage('image/jpeg')" mat-menu-item>JPEG</button>
+  </mat-menu>
+
 </aside>

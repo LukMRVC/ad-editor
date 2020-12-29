@@ -85,6 +85,26 @@ export class KonvaService {
     return new Konva.Stage(conf);
   }
 
+  private initZoom(stage: Konva.Stage, scaleBy: number): void {
+    stage.on('wheel', ev => {
+      ev.evt.preventDefault();
+      const oldScale = stage.scaleX();
+      const pointer = stage.getPointerPosition();
+      const mousePointsTo = {
+        x: (pointer.x - stage.x()) / oldScale,
+        y: (pointer.y - stage.y()) / oldScale,
+      };
+      const newScale = ev.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+      stage.scale({ x: newScale, y: newScale });
+      const newPos = {
+        x: pointer.x - mousePointsTo.x * newScale,
+        y: pointer.y - mousePointsTo.y * newScale,
+      };
+      stage.position(newPos);
+      stage.batchDraw();
+    });
+  }
+
   init(conf: StageConfig): void {
     console.log('Initializing konvaJS stage with', conf);
     this.canvas = new Konva.Stage(conf);
@@ -105,6 +125,8 @@ export class KonvaService {
       }
       this.onClickTap$.emit(e);
     });
+    this.initZoom(this.canvas, 1.02);
+
     const bgLayer = this.layer({ id: 'background', name: 'Background' });
     this.background = this.rect({
       id: 'bg-rect',
@@ -131,6 +153,8 @@ export class KonvaService {
     conf = { ...{name: `Layer ${this.layers.length + 1}`, id: `${this.layers.length}`}, ...conf };
     const layer = new Konva.Layer(conf);
     if (!addToInstance) { return layer; }
+    const tr = this.transformer({});
+    layer.add(tr);
     this.layers.push(layer);
     this.canvas.add(layer);
     this.workingLayer++;
@@ -141,6 +165,11 @@ export class KonvaService {
     // layer.on('dragmove', this.guidelinesSnapping);
     // layer.on('dragend', KonvaService.destroyGuideLines);
     return layer;
+  }
+
+  getLayerTransformer(layer: Konva.Layer): Konva.Transformer {
+    const transformers = layer.getChildren(c => c.getClassName() === 'Transformer');
+    return transformers[0] as Konva.Transformer;
   }
 
   private getWorkingLayerInstance(): Konva.Layer {
@@ -167,6 +196,7 @@ export class KonvaService {
       }*/
       shape.scaleX(1);
       shape.scaleY(1);
+      layer.batchDraw();
     });
     // this is here because as a part of workaround between MatTreeModule
     this.layerTreeData = [...this.layerTreeData];
@@ -299,6 +329,8 @@ export class KonvaService {
     this.selectedNodes.forEach(n => {
       const layer = this.layers.find(l => l.id() === n.getLayer().id());
       if (!layer) { return; }
+      const tr = this.getLayerTransformer(layer);
+      tr.nodes([]);
       const indexOfLayer = this.layerTreeData.findIndex(l => l.id === layer.id());
       this.layerTreeData[indexOfLayer].children
         .splice(this.layerTreeData[indexOfLayer].children.findIndex(node => node.id === n.id()), 1);
@@ -308,7 +340,11 @@ export class KonvaService {
     this.layerTreeData = [...this.layerTreeData];
   }
 
-  redraw(): void {
+  redraw(layer?: Konva.Layer): void {
+    if (layer) {
+      layer.batchDraw();
+      return;
+    }
     this.layers.forEach(l => l.batchDraw());
   }
 
@@ -348,10 +384,12 @@ export class KonvaService {
           const layer = this.layers.find(l => l.id() === currentLayerId);
           const previousChild = layer.getChildren(n => n.id() === prevId);
           const currentChild = layer.getChildren(n => n.id() === curId);
-          console.log(previousChild[0].getZIndex());
-          console.log(currentChild[0].getZIndex());
-          previousChild[0].zIndex(previous.zIdx());
-          currentChild[0].zIndex(current.zIdx());
+          console.log('Previous:', previousChild[0].getZIndex(), previousChild[0].name());
+          console.log('Current:', currentChild[0].getZIndex(), currentChild[0].name());
+          const direction = 0;
+          // const direction = previousChild[0].getZIndex() > currentChild[0].getZIndex() ? 1 : -1;
+          previousChild[0].zIndex(direction - currentChild[0].zIndex());
+          currentChild[0].zIndex( direction + previousChild[0].zIndex());
 
         } else { // move to another layer
 
@@ -360,5 +398,18 @@ export class KonvaService {
       }
       this.layerTreeData = [...this.layerTreeData];
     }
+    this.redraw();
+  }
+
+  exportAsImage(mime: 'image/jpeg' | 'image/png'): void {
+    const dataUrl = this.canvas.toDataURL({
+      mimeType: mime,
+    });
+    const link = document.createElement('a');
+    link.download = 'Ad1-file.jpeg';
+    link.href = dataUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

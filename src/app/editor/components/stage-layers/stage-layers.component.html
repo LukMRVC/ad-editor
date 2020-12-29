@@ -3,7 +3,7 @@
             [dataSource]="this.actualDataSource"
             [treeControl]="treeControl">
     <!-- This is non-collapsible node -> children -->
-    <mat-tree-node cdkDrag cdkDragBoundary=".layer-tree-wrap"
+    <mat-tree-node matRipple (click)="selectCanvasNode($event, node)" cdkDrag cdkDragBoundary=".layer-tree-wrap"
                    [cdkDragData]="node" *matTreeNodeDef="let node" matTreeNodePadding>
   <!--    <li>-->
   <!--      <div>-->
@@ -23,7 +23,8 @@
   <!--    </li>-->
     </mat-tree-node>
     <!-- This is the collapsible node-->
-    <mat-tree-node cdkDrag cdkDragBoundary=".layer-tree-wrap" [cdkDragData]="node" *matTreeNodeDef="let node; when: hasChildAndIsntBackground" matTreeNodePadding>
+    <mat-tree-node (click)="this.treeControl.toggle(node)" cdkDrag cdkDragBoundary=".layer-tree-wrap"
+                   [cdkDragData]="node" *matTreeNodeDef="let node; when: hasChildAndIsntBackground" matTreeNodePadding>
       <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle' + node.name">
         <mat-icon>
           {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}

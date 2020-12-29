@@ -1,11 +1,5 @@
-::ng-deep #canvas-stage > .konvajs-content {
-  border: 2px dashed grey;
-}
-
 #canvas-stage {
-  background-image: url("~assets/bg-empty.jpg");
-  background-repeat: repeat;
-  background-size: cover;
+  background-color: white;
 }
 
 /*# sourceMappingURL=canvas.component.css.map */

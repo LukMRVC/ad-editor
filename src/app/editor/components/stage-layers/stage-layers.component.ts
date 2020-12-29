@@ -1,4 +1,4 @@
-import {Component, Input, QueryList, ViewChildren} from '@angular/core';
+import {Component, EventEmitter, Input, Output, QueryList, ViewChildren} from '@angular/core';
 import {KonvaService} from '@core/services/konva.service';
 import {FlatTreeControl} from '@angular/cdk/tree';
 import {MatTreeFlatDataSource, MatTreeFlattener} from '@angular/material/tree';
@@ -54,6 +54,8 @@ export class StageLayersComponent {
         this.expandNode(nodeToExpand);
       });
   }
+
+  @Output() nodeClicked: EventEmitter<{ev: MouseEvent, node: FlatLayerData}> = new EventEmitter<{ev: MouseEvent, node: FlatLayerData}>();
 
   constructor(
     public konva: KonvaService,
@@ -118,5 +120,9 @@ export class StageLayersComponent {
       this.treeControl.dataNodes[$event.currentIndex]
     );
 
+  }
+
+  selectCanvasNode(ev: MouseEvent, node: FlatLayerData): void {
+    this.nodeClicked.emit({ ev, node });
   }
 }

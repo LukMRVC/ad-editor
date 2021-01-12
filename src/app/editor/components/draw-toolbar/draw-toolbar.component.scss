@@ -1,8 +1,8 @@
 @import "src/_variables.scss";
 
 .drawing-toolbar {
-  min-width: min-content;
-  width: auto;
+  min-width: 20rem;
+  max-width: max-content;
   height: 100%;
   background-color: #e0e0e0;
   border-top: 5px solid $accent;
@@ -26,4 +26,12 @@
 
 .txt-center {
   text-align: center;
+}
+
+.radius-none {
+  border-radius: 0;
+}
+
+.expansion-panel {
+  margin-bottom: 0!important;
 }

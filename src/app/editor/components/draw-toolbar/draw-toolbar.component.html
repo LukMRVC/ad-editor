@@ -1,63 +1,48 @@
-<aside fxLayout="column" fxLayout.lt-sm="row nowrap" fxLayoutGap="0.5em" fxLayoutAlign="start start" class="drawing-toolbar">
+<aside fxLayout="column" fxLayoutGap="0.5em" fxLayoutAlign="start" class="drawing-toolbar">
 
-  <button class="draw-tool" (click)="this.konva.newLayerGroup()" mat-button>
-    <fa-icon icon="layer-group" class="draw-tool-fa-icon"></fa-icon>
-  </button>
-
-  <button class="draw-tool" mat-button>
-    <mat-icon class="draw-tool-mat-icon">format_shapes</mat-icon>
-  </button>
-
-<!--  <button [matMenuTriggerFor]="shapeMenu" class="draw-tool" mat-button>-->
-<!--    <mat-icon class="draw-tool-mat-icon">crop_din</mat-icon>-->
-<!--  </button>-->
-
-<!--  <mat-menu yPosition="below" xPosition="before" #shapeMenu>-->
-<!--    <button (click)="this.konva.prepareDraw('rect')" class="txt-center" mat-menu-item>-->
-<!--      <mat-icon class="draw-tool-mat-icon">crop_din</mat-icon>-->
-<!--    </button>-->
-<!--    <button (click)="this.konva.prepareDraw('circle')" class="txt-center" mat-menu-item>-->
-<!--      <mat-icon class="draw-tool-mat-icon">lens</mat-icon>-->
-<!--    </button>-->
-<!--    <button (click)="this.konva.prepareDraw('polygon')" class="txt-center" mat-menu-item>-->
-<!--      <mat-icon class="draw-tool-mat-icon">change_history</mat-icon>-->
-<!--    </button>-->
-<!--  </mat-menu>-->
-
-  <button (click)="konva.updateSelectedObjectType('shape')" class="draw-tool" mat-button>
-    <mat-icon class="draw-tool-mat-icon">crop</mat-icon>
-  </button>
-
-  <button (click)="konva.updateSelectedObjectType('text'); drawText()" class="draw-tool" mat-button>
-    <mat-icon class="draw-tool-mat-icon">text_fields</mat-icon>
-  </button>
-
-  <button (click)="konva.updateSelectedObjectType('image'); imageInput.click()" class="draw-tool" mat-button>
-    <mat-icon class="draw-tool-mat-icon">image</mat-icon>
-    <input hidden accept="image/*" #imageInput id="file" (change)="onFileChange($event)" type="file" />
-  </button>
-
-  <button [matMenuTriggerFor]="exportMenu" class="draw-tool" mat-button>
-    Export
-  </button>
-
-  <mat-menu yPosition="below" xPosition="before" #exportMenu>
-    <button (click)="konva.exportAsImage('image/png')" mat-menu-item>PNG</button>
-    <button (click)="konva.exportAsImage('image/jpeg')" mat-menu-item>JPEG</button>
-  </mat-menu>
-
-  <mat-expansion-panel>
+  <mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none">
     <mat-expansion-panel-header>
       <mat-panel-title>
-        Buttons
+        Logo
       </mat-panel-title>
     </mat-expansion-panel-header>
     <ng-template matExpansionPanelContent>
-      <div fxLayout="column" cdkDropList fxLayoutAlign="center stretch" style="margin: 0.5rem" fxLayoutGap="0.5rem">
-        <button draggable="true" disableRipple mat-raised-button>Raised</button>
-        <button draggable="true" disableRipple mat-stroked-button>Stroked</button>
-        <button draggable="true" disableRipple mat-flat-button>Flat</button>
+      <div  fxLayout="column" fxLayoutAlign="start" fxLayoutGap="0.5rem">
+        <button mat-raised-button color="primary">Upload logo</button>
       </div>
+    </ng-template>
+  </mat-expansion-panel>
+
+  <mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Headline
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <ng-template matExpansionPanelContent>
+
+    </ng-template>
+  </mat-expansion-panel>
+
+  <mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Background
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <ng-template matExpansionPanelContent>
+
+    </ng-template>
+  </mat-expansion-panel>
+
+  <mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Button
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <ng-template matExpansionPanelContent>
+
     </ng-template>
   </mat-expansion-panel>
 

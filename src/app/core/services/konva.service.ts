@@ -1,4 +1,4 @@
-import {EventEmitter, Injectable, Output} from '@angular/core';
+import {EventEmitter, Injectable} from '@angular/core';
 import Konva from 'konva';
 import { StageConfig } from 'konva/types/Stage';
 import { LayerConfig } from 'konva/types/Layer';
@@ -11,16 +11,23 @@ import {RegularPolygonConfig} from 'konva/types/shapes/RegularPolygon';
 import {FlatLayerData, LayerData} from '../../editor/components/stage-layers/stage-layers.component';
 import {getGuides, getLineGuideStops, getObjectSnappingEdges} from '@core/utils/KonvaGuidelines';
 import {TextConfig} from 'konva/types/shapes/Text';
-
+import {takeWhile, throttle, throttleTime} from 'rxjs/operators';
+import {ResizeService, Size} from '@core/services/resize.service';
+import { fromEvent } from 'rxjs';
+import {getAriaReferenceIds} from '@angular/cdk/a11y/aria-describer/aria-reference';
 
 @Injectable({
   providedIn: 'root',
 })
 export class KonvaService {
 
-  constructor() {}
+  constructor(
+    public resizer: ResizeService,
+  ) {}
 
   private canvas: Konva.Stage;
+  private drawing = false;
+  private transformers: Konva.Transformer;
 
   onClickTap$: EventEmitter<any> = new EventEmitter<any>();
   onNewLayer$: EventEmitter<Konva.Layer> = new EventEmitter<Konva.Layer>();
@@ -29,7 +36,6 @@ export class KonvaService {
   public layers: Konva.Layer[] = [];
   public addNewShapeToNewLayer = false;
   public workingLayer = -1;
-  private background: Konva.Rect;
 
   private $selectedObject: BehaviorSubject<'image' | 'text' | 'shape' | 'background'> =
     new BehaviorSubject<'image' | 'text' | 'shape' | 'background'>('background');
@@ -87,6 +93,10 @@ export class KonvaService {
 
   private initZoom(stage: Konva.Stage, scaleBy: number): void {
     stage.on('wheel', ev => {
+      let scaling = scaleBy;
+      if (ev.evt.ctrlKey) {
+        scaling += 0.06;
+      }
       ev.evt.preventDefault();
       const oldScale = stage.scaleX();
       const pointer = stage.getPointerPosition();
@@ -94,7 +104,7 @@ export class KonvaService {
         x: (pointer.x - stage.x()) / oldScale,
         y: (pointer.y - stage.y()) / oldScale,
       };
-      const newScale = ev.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+      const newScale = ev.evt.deltaY > 0 ? oldScale * scaling : oldScale / scaling;
       stage.scale({ x: newScale, y: newScale });
       const newPos = {
         x: pointer.x - mousePointsTo.x * newScale,
@@ -108,37 +118,23 @@ export class KonvaService {
   init(conf: StageConfig): void {
     console.log('Initializing konvaJS stage with', conf);
     this.canvas = new Konva.Stage(conf);
-    this.canvas.on('click tap', (e: Konva.KonvaEventObject<object>) => {
-      if (e.target === this.canvas) {
-        this.updateSelectedObjectType('background');
-        this.selectedNodes = [this.background];
-      } else {
-        const isSelected = this.selectedNodes.indexOf(e.target as Konva.Shape) >= 0;
-        if (!isSelected) {
-          if ((e.evt as MouseEvent).ctrlKey) {
-            this.selectedNodes.push(e.target as Konva.Shape);
-          } else {
-            this.selectedNodes = [e.target as Konva.Shape];
-            this.updateSelectedObjectType('shape');
-          }
-        }
-      }
+    this.canvas.on('click tap', (e: Konva.KonvaEventObject<MouseEvent>) => {
       this.onClickTap$.emit(e);
     });
-    this.initZoom(this.canvas, 1.02);
+    this.canvas.scale({ x: 0.5, y: 0.5 });
 
-    const bgLayer = this.layer({ id: 'background', name: 'Background' });
-    this.background = this.rect({
-      id: 'bg-rect',
-      strokeEnabled: false,
-      width: this.canvas.width(),
-      height: this.canvas.height(),
-      fill: '#00000000',
-      draggable: false,
-      listening: false,
+    this.initZoom(this.canvas, 1.02);
+    const bgLayer = new Konva.Layer();
+
+    this.canvas.add(bgLayer);
+    this.layers.push(bgLayer);
+    this.canvas.draw();
+    this.canvas.on('dragend', end => {
+      console.log('Drag end');
     });
-    bgLayer.add(this.background);
-    // this.canvas.on('')
+    this.transformers = this.transformer();
+    bgLayer.add(this.transformers);
+    this.testWorkGroup();
   }
 
   getInstance(): Konva.Stage {
@@ -146,7 +142,47 @@ export class KonvaService {
   }
 
   transformer(conf?: TransformerConfig): Konva.Transformer {
-    return new Konva.Transformer();
+    const tr = new Konva.Transformer();
+    tr.moveToTop();
+    this.canvas.on('click', ev => {
+      // console.log(ev.target.id());
+      if (this.drawing) {
+        return;
+      }
+      let nodes = tr.nodes().slice();
+      if (ev.target === this.canvas) {
+        nodes = [];
+      } else if (ev.target.getAttr('transformable') !== false) {
+        if (ev.evt.ctrlKey) {
+          nodes.push(ev.target);
+        } else {
+          nodes = [ev.target];
+        }
+      } else {
+        nodes = [];
+      }
+
+      tr.nodes(nodes);
+      this.redraw();
+      // console.log(layer);
+    });
+    tr.on('transformend', () => {
+      for (const shape of tr.nodes()) {
+        if (shape.id() === 'layer-bg') {
+          this.layers[0].width( Math.round(shape.width() * shape.scaleX()) );
+          this.layers[0].height( Math.round(shape.height() * shape.scaleY()) );
+        }
+        // adjust size to scale
+        // and set minimal size
+        shape.width(Math.max(5, shape.width() * shape.scaleX()));
+        shape.height(Math.max(5, shape.height() * shape.scaleY()));
+        // reset scale to 1
+        shape.scaleX(1);
+        shape.scaleY(1);
+        this.redraw();
+      }
+    });
+    return tr;
   }
 
   layer(conf?: LayerConfig, addToInstance = true): Konva.Layer {
@@ -179,16 +215,16 @@ export class KonvaService {
     return this.layers[this.workingLayer];
   }
 
-  private addShapeToLayer(shape: Konva.Shape, layer: Konva.Layer): void {
+  private addShapeToLayer(shape: Konva.Shape|Konva.Label, layer: Konva.Layer): void {
     const indexOfLayer = this.layerTreeData.findIndex(l => l.id === layer.id());
-    this.layerTreeData[indexOfLayer].children.push({
-      name: shape.name(),
-      id: shape.id(),
-      iconName: 'shapes',
-      children: [],
-      zIdx: () => shape.getZIndex(),
-    });
-    shape.on('transform', () => {
+    // this.layerTreeData[indexOfLayer].children.push({
+    //   name: shape.name(),
+    //   id: shape.id(),
+    //   iconName: 'shapes',
+    //   children: [],
+    //   zIdx: () => shape.getZIndex(),
+    // });
+    (shape as Konva.Shape).on('transform', () => {
       shape.width(Math.max(5, Math.round(shape.width() * shape.scaleX())));
       shape.height(Math.max(5, Math.round(shape.height() * shape.scaleY())));
       /*if ('radius' in shape) {
@@ -201,7 +237,8 @@ export class KonvaService {
     // this is here because as a part of workaround between MatTreeModule
     this.layerTreeData = [...this.layerTreeData];
     layer.add(shape);
-    layer.batchDraw();
+    this.transformers.moveToTop();
+    this.redraw();
   }
 
   private mergeConfig(name: string, id: string, conf: object): any {
@@ -402,7 +439,8 @@ export class KonvaService {
   }
 
   exportAsImage(mime: 'image/jpeg' | 'image/png'): void {
-    const dataUrl = this.canvas.toDataURL({
+    const layer = this.canvas.getLayers()[2];
+    const dataUrl = layer.toDataURL({
       mimeType: mime,
     });
     const link = document.createElement('a');
@@ -412,4 +450,184 @@ export class KonvaService {
     link.click();
     document.body.removeChild(link);
   }
+
+  newLayerGroup(): void {
+    this.prepareDraw();
+    this.onClickTap$.pipe(takeWhile( evt => evt.target !== this.canvas && this.drawing, true)).subscribe(evt => {
+      this.endDraw();
+      const position = this.canvas.getPointerPosition();
+      const layerGroup = new Konva.Group({
+        x: position.x,
+        y: position.y,
+        width: 300,
+        height: 300,
+        clipWidth: 300,
+        clipHeight: 300,
+        clipX: -1,
+        clipY: -1,
+        draggable: true,
+      });
+      const bg = new Konva.Rect({ id: 'group-1-bg', width: 300, height: 300, draggable: false, x: 0, y: 0, fill: '#fff' });
+      layerGroup.add(bg);
+      layerGroup.moveToBottom();
+      this.layers[0].add(layerGroup);
+      this.redraw();
+      console.log(this.canvas.getPointerPosition());
+      this.canvas.container().classList.remove('drawing');
+      console.log('Still taking event');
+    });
+
+  }
+
+  prepareDraw(): void {
+    this.drawing = true;
+    this.canvas.container().classList.add('drawing');
+  }
+
+  private endDraw(): void {
+    this.drawing = false;
+    this.canvas.container().classList.remove('drawing');
+  }
+
+  button(): Konva.Label {
+    const button = new Konva.Label({
+      x: 400,
+      y: 500,
+      opacity: 0.75,
+      draggable: false,
+    });
+
+    button.add(new Konva.Tag({
+      fill: 'black',
+      lineJoin: 'round',
+      shadowColor: 'black',
+      shadowBlur: 10,
+      shadowOffset: { x: 10, y: 10 },
+      shadowOpacity: 0.5
+    }));
+
+    button.add(new Konva.Text({
+      text: 'Button 1',
+      fontFamily: 'Calibri',
+      fontSize: 18,
+      padding: 5,
+      fill: 'white'
+    }));
+
+    return button;
+
+    // this.addShapeToLayer(button, this.layers[0]);
+  }
+
+  testWorkGroup(): void {
+    const lineSpacing = 20;
+    let lineStartX = lineSpacing;
+    let lineY = lineSpacing;
+
+    let lineNum = 0;
+    let lineHeight = 0;
+    this.resizer.computer.forEach(size => {
+      const group = new Konva.Group({
+        id: `group-${size.name}`,
+        draggable: false,
+        clipY: lineY,
+        clipX: lineStartX,
+        clipWidth: size.width,
+        clipHeight: size.height,
+        width: size.width,
+        height: size.height,
+      });
+
+      const bg = this.rect({
+        x: lineStartX,
+        y: lineY,
+        width: size.width,
+        height: size.height,
+        fill: '#fff',
+        transformable: false,
+      }, false);
+
+      const label = new Konva.Label({
+        y: lineY + size.height,
+        opacity: 0.75,
+      });
+
+      label.add(new Konva.Tag({
+        fill: '#fcfcfc',
+        cornerRadius: 5,
+        lineJoin: 'round',
+      }));
+
+      label.add(new Konva.Text({
+        text: `${size.width}x${size.height}`,
+        fontFamily: 'Arial',
+        fontSize: 15,
+        padding: 5,
+        fill: 'black',
+      }));
+      label.x( lineStartX + size.width - label.width() );
+      group.clipHeight(group.clipHeight() + label.height());
+      bg.cache();
+      label.cache();
+
+      const rect = this.rect({
+        name: 'rect-test',
+        x: lineStartX,
+        y: lineY,
+        width: 90,
+        height: 50,
+        draggable: true,
+        fill: '#aa45ce',
+        transformable: false,
+
+      }, false);
+
+      rect.on('dragmove', dragging => {
+        // console.log(dragging);
+        const banners = this.layers[0].getChildren(shape => shape.id().includes('group-'));
+        // X is relative to the stage, to make it relative to the group we make a difference
+        // between the target X position and group X position and take a center
+        const relativeCenterX = dragging.target.x() - group.clipX() + dragging.target.width() / 2;
+        const relativeCenterY = dragging.target.y() - group.clipY() + dragging.target.height() / 2;
+
+        // then compute the X position as percent between start and end of group container
+        const percentageInGroupX = ((relativeCenterX - dragging.target.width() / 2) / (group.width() - dragging.target.width())) * 100;
+        const percentageInGroupY = ((relativeCenterY - dragging.target.height() / 2) / (group.height() - dragging.target.height())) * 100;
+
+        banners.each((banner: Konva.Group) => {
+          const testRect = banner.getChildren(shape => shape.name() === 'rect-test').toArray()[0];
+          // now compute the center of test rectangle in other groups based on their width
+          const relativeTestRectCenterX = (percentageInGroupX / 100) * (banner.width() - testRect.width());
+          const relativeTestRectCenterY = (percentageInGroupY / 100) * (banner.height() - testRect.height());
+
+          // console.log(`${testRectXRelative} for ${banner.id()} ${banner.width()}`);
+          if (testRect !== dragging.target) {
+            testRect.x(relativeTestRectCenterX + banner.clipX());
+            testRect.y(relativeTestRectCenterY + banner.clipY());
+          }
+        });
+        this.redraw();
+
+        // console.log(children);
+      });
+
+      group.add(bg, label, rect);
+
+      lineStartX += size.width + lineSpacing;
+
+      lineHeight = Math.max(lineHeight, size.height);
+      this.layers[0].add(group);
+
+      // console.log(lineStartX);
+      // console.log(lineHeight);
+      if (lineStartX >= 1400) {
+        lineStartX = lineSpacing;
+        lineNum++;
+        lineY += lineHeight + lineSpacing;
+      }
+
+    });
+    this.redraw();
+  }
+
 }

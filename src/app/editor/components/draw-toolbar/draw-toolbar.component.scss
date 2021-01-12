@@ -1,7 +1,8 @@
 @import "src/_variables.scss";
 
 .drawing-toolbar {
-  //min-width: 10%;
+  min-width: min-content;
+  width: auto;
   height: 100%;
   background-color: #e0e0e0;
   border-top: 5px solid $accent;

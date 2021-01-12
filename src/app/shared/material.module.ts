@@ -32,6 +32,8 @@ import {
   MatColorFormats
 } from '@angular-material-components/color-picker';
 import {MatRippleModule} from '@angular/material/core';
+import {MatExpansionModule} from '@angular/material/expansion';
+import {DragDropModule} from '@angular/cdk/drag-drop';
 
 
 const CUSTOM_MAT_COLOR_FORMATS: MatColorFormats = {
@@ -70,6 +72,8 @@ const CUSTOM_MAT_COLOR_FORMATS: MatColorFormats = {
     MatTreeModule,
     MatSliderModule,
     MatRippleModule,
+    MatExpansionModule,
+    DragDropModule,
   ],
   providers: [
     { provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: { duration: 2500 } },
@@ -103,6 +107,8 @@ const CUSTOM_MAT_COLOR_FORMATS: MatColorFormats = {
     MatTreeModule,
     MatAutocompleteModule,
     MatRippleModule,
+    MatExpansionModule,
+    DragDropModule,
   ]
 })
 export class MaterialModule { }

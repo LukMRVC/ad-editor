@@ -1,28 +1,28 @@
 <aside fxLayout="column" fxLayout.lt-sm="row nowrap" fxLayoutGap="0.5em" fxLayoutAlign="start start" class="drawing-toolbar">
 
-  <button class="draw-tool" mat-button>
-    <fa-icon icon="mouse-pointer" class="draw-tool-fa-icon"></fa-icon>
+  <button class="draw-tool" (click)="this.konva.newLayerGroup()" mat-button>
+    <fa-icon icon="layer-group" class="draw-tool-fa-icon"></fa-icon>
   </button>
 
   <button class="draw-tool" mat-button>
     <mat-icon class="draw-tool-mat-icon">format_shapes</mat-icon>
   </button>
 
-  <button [matMenuTriggerFor]="shapeMenu" class="draw-tool" mat-button>
-    <mat-icon class="draw-tool-mat-icon">crop_din</mat-icon>
-  </button>
+<!--  <button [matMenuTriggerFor]="shapeMenu" class="draw-tool" mat-button>-->
+<!--    <mat-icon class="draw-tool-mat-icon">crop_din</mat-icon>-->
+<!--  </button>-->
 
-  <mat-menu yPosition="below" xPosition="before" #shapeMenu>
-    <button (click)="drawRect()" class="txt-center" mat-menu-item>
-      <mat-icon class="draw-tool-mat-icon">crop_din</mat-icon>
-    </button>
-    <button (click)="drawCircle()" class="txt-center" mat-menu-item>
-      <mat-icon class="draw-tool-mat-icon">lens</mat-icon>
-    </button>
-    <button (click)="drawRegularPolygon()" class="txt-center" mat-menu-item>
-      <mat-icon class="draw-tool-mat-icon">change_history</mat-icon>
-    </button>
-  </mat-menu>
+<!--  <mat-menu yPosition="below" xPosition="before" #shapeMenu>-->
+<!--    <button (click)="this.konva.prepareDraw('rect')" class="txt-center" mat-menu-item>-->
+<!--      <mat-icon class="draw-tool-mat-icon">crop_din</mat-icon>-->
+<!--    </button>-->
+<!--    <button (click)="this.konva.prepareDraw('circle')" class="txt-center" mat-menu-item>-->
+<!--      <mat-icon class="draw-tool-mat-icon">lens</mat-icon>-->
+<!--    </button>-->
+<!--    <button (click)="this.konva.prepareDraw('polygon')" class="txt-center" mat-menu-item>-->
+<!--      <mat-icon class="draw-tool-mat-icon">change_history</mat-icon>-->
+<!--    </button>-->
+<!--  </mat-menu>-->
 
   <button (click)="konva.updateSelectedObjectType('shape')" class="draw-tool" mat-button>
     <mat-icon class="draw-tool-mat-icon">crop</mat-icon>
@@ -45,5 +45,20 @@
     <button (click)="konva.exportAsImage('image/png')" mat-menu-item>PNG</button>
     <button (click)="konva.exportAsImage('image/jpeg')" mat-menu-item>JPEG</button>
   </mat-menu>
+
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Buttons
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <ng-template matExpansionPanelContent>
+      <div fxLayout="column" cdkDropList fxLayoutAlign="center stretch" style="margin: 0.5rem" fxLayoutGap="0.5rem">
+        <button draggable="true" disableRipple mat-raised-button>Raised</button>
+        <button draggable="true" disableRipple mat-stroked-button>Stroked</button>
+        <button draggable="true" disableRipple mat-flat-button>Flat</button>
+      </div>
+    </ng-template>
+  </mat-expansion-panel>
 
 </aside>

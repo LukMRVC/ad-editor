@@ -1,5 +1,13 @@
 @import "src/_variables.scss";
 
+.object-toolbar {
+  width: 300px;
+}
+
+::ng-deep .mat-tab-label, ::ng-deep .mat-tab-label-active {
+  min-width: 100px!important;
+}
+
 .canvas-object-toolbar-mat-icon {
   font-size: 20pt;
   margin-left: -5px;

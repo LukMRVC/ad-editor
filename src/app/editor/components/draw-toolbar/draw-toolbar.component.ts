@@ -1,5 +1,6 @@
 import {Component, ElementRef, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
 import {KonvaService} from '@core/services/konva.service';
+import {CdkDragEnd} from '@angular/cdk/drag-drop';
 
 const DEFAULT_CIRCLE_CONFIG = {
   draggable: true,
@@ -87,6 +88,11 @@ export class DrawToolbarComponent implements OnInit {
 
   drawText(): void {
     this.konva.text(DEFAULT_TEXT_CONFIG);
+  }
+
+  dragEnd($event: CdkDragEnd): void {
+    console.log($event);
+
   }
 }
 

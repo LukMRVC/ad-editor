@@ -1,49 +1,39 @@
 
 <div class="main" fxLayout="column">
-  <div fxLayout="row nowrap" fxLayoutGap="10px" fxLayoutAlign="start end" class="stage-settings">
-    <span class="fill-space" fxFlex="25"></span>
-    <mat-form-field appearance="fill" fxFlex="nogrow">
-      <mat-label class="label">Width</mat-label>
-      <input [(ngModel)]="canvasWidth" (focusout)="resizeCanvas()" class="hide-number-arrows"
-             matInput name="canvas_width" type="number" min="50" />
-      <span matSuffix>px</span>
-    </mat-form-field>
-    <mat-form-field fxFlexAlign="end" appearance="fill" fxFlex="nogrow">
-      <mat-label class="label">Height</mat-label>
-      <input [(ngModel)]="canvasHeight" (focusout)="resizeCanvas()" class="hide-number-arrows"
-             matInput name="canvas_height" type="number" min="50" />
-      <span matSuffix>px</span>
-    </mat-form-field>
-    <mat-checkbox fxFlexAlign="center" [(ngModel)]="konva.addNewShapeToNewLayer">Add new shape to a new layer</mat-checkbox>
-    <div class="layerMoveButtonGroup" fxFlexAlign="center">
-      <button mat-icon-button (click)="moveObjectInLayer('down')">
-        <fa-icon icon="angle-double-down"></fa-icon>
-      </button>
-      <button mat-icon-button (click)="moveObjectInLayer('down-one')">
-        <fa-icon icon="long-arrow-alt-down"></fa-icon>
-      </button>
-      <button mat-icon-button (click)="moveObjectInLayer('up-one')">
-        <fa-icon icon="long-arrow-alt-up"></fa-icon>
-      </button>
-      <button mat-icon-button (click)="moveObjectInLayer('up')">
-        <fa-icon icon="angle-double-up"></fa-icon>
-      </button>
-    </div>
+<!--  <div fxLayout="row nowrap" fxLayoutGap="10px" fxLayoutAlign="start end" class="stage-settings">-->
+<!--    <span class="fill-space" fxFlex="25"></span>-->
+<!--&lt;!&ndash;    <mat-checkbox fxFlexAlign="center" [(ngModel)]="konva.addNewShapeToNewLayer">Add new shape to a new layer</mat-checkbox>&ndash;&gt;-->
+<!--    <div class="layerMoveButtonGroup" fxFlexAlign="center">-->
+<!--      <button mat-icon-button (click)="moveObjectInLayer('down')">-->
+<!--        <fa-icon icon="angle-double-down"></fa-icon>-->
+<!--      </button>-->
+<!--      <button mat-icon-button (click)="moveObjectInLayer('down-one')">-->
+<!--        <fa-icon icon="long-arrow-alt-down"></fa-icon>-->
+<!--      </button>-->
+<!--      <button mat-icon-button (click)="moveObjectInLayer('up-one')">-->
+<!--        <fa-icon icon="long-arrow-alt-up"></fa-icon>-->
+<!--      </button>-->
+<!--      <button mat-icon-button (click)="moveObjectInLayer('up')">-->
+<!--        <fa-icon icon="angle-double-up"></fa-icon>-->
+<!--      </button>-->
+<!--    </div>-->
 
-  </div>
+<!--  </div>-->
 
-  <section id="editor" fxFlex="grow" fxLayout="row nowrap" class="editor" fxLayout.lt-sm="column">
+  <section id="editor" fxFlex="grow" fxLayout="row nowrap" class="editor">
     <app-draw-toolbar (imageUploaded)="imageUploaded($event)"
                       ngClass.lt-sm="draw-toolbar-mobile" fxFlexOrder="1" fxFlexAlign.lt-sm="end"></app-draw-toolbar>
 
-    <div fxLayout="row nowrap" fxLayoutAlign="center start" fxFlex class="canvas-wrapper" fxFlexOrder="2" fxFlexOrder.lt-sm="1">
-      <app-canvas></app-canvas>
+    <div fxLayout="row nowrap" #stageWrapper
+
+         fxLayoutAlign="center start" fxFlex class="canvas-wrapper" fxFlexOrder="2">
+      <div id="stage" (dragover)="$event.preventDefault()" (drop)="this.dropped($event)" class="canvas-stage" ></div>
     </div>
 
-    <aside class="canvas-object-toolbar" fxLayout="column" fxLayoutGap="1em" fxFlexOrder="3" fxHide.lt-md>
+    <aside class="canvas-object-toolbar" fxLayout="column" fxLayoutGap="1em" fxFlexOrder="3">
       <app-canvas-object-toolbar></app-canvas-object-toolbar>
 
-      <app-stage-layers (nodeClicked)="addToSelected($event)" [nestedDataSource]="this.konva.layerTreeData"></app-stage-layers>
+<!--      <app-stage-layers (nodeClicked)="addToSelected($event)" [nestedDataSource]="this.konva.layerTreeData"></app-stage-layers>-->
     </aside>
   </section>
 </div>

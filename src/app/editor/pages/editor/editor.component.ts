@@ -1,75 +1,57 @@
-import {AfterContentInit, AfterViewInit, Component, HostListener, OnDestroy, OnInit} from '@angular/core';
-// @ts-ignore
+import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild} from '@angular/core';
+
 import {KonvaService} from '@core/services/konva.service';
 import {Subscription} from 'rxjs';
-import {FlatLayerData, LayerData} from '../../components/stage-layers/stage-layers.component';
-import {buffer} from 'rxjs/operators';
-import {$} from 'protractor';
-import Konva from 'konva';
 
 @Component({
   selector: 'app-editor',
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss']
 })
-export class EditorComponent implements AfterContentInit, OnDestroy {
+export class EditorComponent implements AfterViewInit, OnDestroy {
 
-  canvasWidth = 600;
-  canvasHeight = 400;
+  @ViewChild('stageWrapper') stageWrapper: ElementRef;
   private subscription: Subscription = new Subscription();
 
   constructor(
     public konva: KonvaService
   ) { }
 
-  ngAfterContentInit(): void {
-    this.konva.init({ container: 'canvas-stage', width: this.canvasWidth, height: this.canvasHeight });
-    const stage = this.konva.getInstance();
-    const layer = this.konva.layer({ name: 'Layer 1', id: '123' });
-    const circle = this.konva.circle({
-      x: this.konva.getInstance().width() / 2,
-      y: this.konva.getInstance().height() / 2,
-      radius: 100,
-      fill: '#ff0000ff',
-      stroke: '#000000ff',
-      strokeWidth: 5,
+  ngAfterViewInit(): void {
+    console.log(this.stageWrapper);
+    this.konva.init({
+      container: 'stage',
       draggable: true,
+      dragBoundFunc: (pos) => {
+        let x = pos.x;
+        let y = pos.y;
+        if (pos.x > 500) {
+          x = 500;
+        } else if (pos.x < -500) {
+          x = -500;
+        }
+
+        if (pos.y > 500) {
+          y = 500;
+        } else if (pos.y < -500) {
+          y = -500;
+        }
+
+        return { x, y };
+      },
+      width: this.stageWrapper.nativeElement.offsetWidth,
+      height: this.stageWrapper.nativeElement.offsetHeight,
     });
-    const tr = this.konva.getLayerTransformer(layer);
-    layer.add(circle);
-    // layer.add(tr);
-    stage.add(layer);
-    this.subscription.add(this.konva.onClickTap$.subscribe( (e) => {
-      if (e.target.getClassName() === 'Text') {
-        this.konva.updateSelectedObjectType('text');
-      }
-      if (e.target === stage) {
-        tr.nodes([]);
-        layer.draw();
-        return;
-      }
-      const metaPressed = e.evt.ctrlKey || e.evt.metaKey;
-      const isSelected = tr.nodes().indexOf(e.target) >= 0;
-      if (!metaPressed && !isSelected) {
-        tr.nodes([e.target]);
-      } else if (metaPressed && isSelected) {
-        const nodes = tr.nodes().filter( node => node !== e.target );
-        tr.nodes(nodes);
-      } else if (metaPressed && !isSelected) {
-        tr.nodes(tr.nodes().concat([e.target]));
-      }
-      layer.batchDraw();
-    }));
-    layer.batchDraw();
   }
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
   }
 
-  resizeCanvas(): void {
-    this.konva.getInstance().width(this.canvasWidth);
-    this.konva.getInstance().height(this.canvasHeight);
+  @HostListener('window:resize', ['$event'])
+  onWindowResize($event): void {
+    this.konva.getInstance().width(this.stageWrapper.nativeElement.offsetWidth);
+    this.konva.getInstance().height(this.stageWrapper.nativeElement.offsetHeight);
   }
 
   @HostListener('document:keydown.delete')
@@ -91,27 +73,9 @@ export class EditorComponent implements AfterContentInit, OnDestroy {
     this.konva.moveObjectZIndices(direction);
   }
 
-  addToSelected($event: { ev: MouseEvent, node: FlatLayerData }): void {
+  dropped($event): void {
     console.log($event);
-    const layer = this.konva.layers.find(l => l.id() === $event.node.id.substring(0, $event.node.id.indexOf(':')));
-    if (!layer) {
-      return;
-    }
-    const tr = this.konva.getLayerTransformer(layer);
-    const isSelected = tr.nodes().findIndex(shape => shape.id() === $event.node.id) >= 0;
-    if (!isSelected) {
-      const shape = layer.getChildren(n => n.id() === $event.node.id)[0];
-      if (($event.ev as MouseEvent).ctrlKey) {
-        tr.nodes(tr.nodes().concat([shape]));
-        this.konva.selectedNodes.push(shape as Konva.Shape);
-      } else {
-        tr.nodes([shape]);
-        this.konva.selectedNodes = [shape as Konva.Shape];
-        this.konva.updateSelectedObjectType('shape');
-      }
-      this.konva.redraw(layer);
-    }
-
-
+    this.konva.getInstance().setPointersPositions($event);
+    this.konva.button();
   }
 }

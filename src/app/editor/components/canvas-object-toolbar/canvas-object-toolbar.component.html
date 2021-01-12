@@ -1,5 +1,4 @@
-
-<div fxLayout="row" fxLayoutGap="10px">
+<div class="object-toolbar" fxLayout="column" fxLayoutGap="10px">
     <mat-tab-group dynamicHeight>
       <!-- Fill colors, strokes, gradients -->
       <mat-tab>
@@ -7,7 +6,7 @@
           <fa-icon icon="fill-drip" class="canvas-object-toolbar-fa-icon"></fa-icon>
         </ng-template>
         <div class="tab-body" fxLayout="column" fxLayoutGap="0.5em">
-          <div fxLayout="row nowrap" fxLayoutAlign="space-around center" fxLayoutGap="5px">
+          <div fxLayout="row wrap" fxLayoutAlign="space-around center" fxLayoutGap="5px">
             <mat-form-field fxFlex>
               <mat-label>Fill color</mat-label>
               <input [(ngModel)]="fillColor" (keydown.enter)="fillPicker.close()" (focus)="fillPicker.open()"
@@ -15,7 +14,8 @@
               <ngx-mat-color-toggle matSuffix [for]="fillPicker"></ngx-mat-color-toggle>
               <ngx-mat-color-picker [defaultColor]="defaultFillColour" #fillPicker touchUi="false"></ngx-mat-color-picker>
             </mat-form-field>
-            <mat-form-field fxFlex>
+            <mat-checkbox #strokeCheckbox fxFlex [(ngModel)]="strokeEnabled" (change)="strokeEnableChanged()">Stroke</mat-checkbox>
+            <mat-form-field fxFlex *ngIf="strokeCheckbox.checked">
               <mat-label>Stroke color</mat-label>
               <input [(ngModel)]="strokeColor" (keydown.enter)="strokePicker.close()" (focus)="strokePicker.open()"
                      [ngxMatColorPicker]="strokePicker" (colorChange)="strokeColorChanged($event)" matInput #strokeColourInput>
@@ -24,9 +24,8 @@
             </mat-form-field>
           </div>
           <!-- Stroke  -->
-          <section id="stroke-section" fxLayout="row nowrap" fxLayoutAlign="space-around center" fxLayoutGap="5px">
-            <mat-checkbox fxFlex [(ngModel)]="strokeEnabled" (change)="strokeEnableChanged()">Stroke</mat-checkbox>
-            <mat-form-field fxFlex>
+          <section id="stroke-section" fxLayout="row wrap" fxLayoutAlign="space-around center" fxLayoutGap="5px">
+            <mat-form-field fxFlex *ngIf="strokeCheckbox.checked">
               <mat-label>Stroke width</mat-label>
               <input matInput type="number" class="hide-number-arrows" [(ngModel)]="strokeWidth" (focusout)="strokeWidthChanged()"
                      (keydown.enter)="strokeWidthChanged()">
@@ -34,7 +33,7 @@
             </mat-form-field>
           </section>
           <!-- Gradients -->
-          <section fxLayout="row nowrap" fxLayoutGap="5px">
+          <section fxLayout="row wrap" fxLayoutGap="5px">
             <div fxFlex id="gradient-stage"></div>
             <div fxFlex fxLayout="column" fxLayoutGap="5px">
               <mat-button-toggle-group (change)="changeFillStyle()" [(ngModel)]="fillStyle" name="fillStyle" aria-label="Fill Style">
@@ -103,7 +102,7 @@
               <mat-icon class="canvas-object-toolbar-mat-icon">text_format</mat-icon>
           </ng-template>
           <div class="tab-body" fxLayout="column" fxLayoutGap="5px">
-            <div fxLayout="row nowrap">
+            <div fxLayout="row wrap">
               <mat-form-field appearance="outline" fxFlex>
                 <mat-label>Text content</mat-label>
                 <textarea (keydown.enter)="this.textChanged()" (focusout)="this.textChanged()"
@@ -111,7 +110,7 @@
               </textarea>
               </mat-form-field>
             </div>
-            <div fxLayout="row nowrap" fxLayoutAlign="space-around center" fxLayoutGap="5px">
+            <div fxLayout="row wrap" fxLayoutAlign="space-around center" fxLayoutGap="5px">
                 <mat-form-field>
                   <mat-label>Font family</mat-label>
                   <input [formControl]="fontFamilyControl" type="text" matInput aria-label="Font family" [matAutocomplete]="auto">
@@ -146,7 +145,7 @@
           </ng-template>
           <div class="tab-body" fxLayout="column" fxLayoutGap="0.5em">
             <!--X and Y coordinates-->
-            <div fxLayout="row nowrap" fxLayoutGap="0.5em">
+            <div fxLayout="row wrap" fxLayoutGap="0.5em">
               <mat-form-field fxFlex>
                 <mat-label>X</mat-label>
                 <input matInput type="number" name="drawPoint[x]" class="hide-number-arrows" [(ngModel)]="drawPoint.x" />
@@ -159,7 +158,7 @@
               </mat-form-field>
             </div>
             <!-- Dimensions -->
-            <div fxLayout="row nowrap" fxLayoutGap="0.5em">
+            <div fxLayout="row wrap" fxLayoutGap="0.5em">
               <mat-form-field fxFlex>
                 <mat-label>Width</mat-label>
                 <input matInput type="number" class="hide-number-arrows" name="dimension[x]" [(ngModel)]="dimension.w" />

@@ -12,25 +12,26 @@
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
-$AdEditor-primary: mat-palette($mat-light-blue);
-$AdEditor-accent: mat-palette($mat-indigo, A200, A100, A400);
-
-// The warn palette is optional (defaults to red).
-$AdEditor-warn: mat-palette($mat-red, 600);
-$AdEditor-success: mat-palette($mat-green, A400, A200, A700);
-$AdEditor-info: mat-palette($mat-cyan);
-
-// Create the theme object. A theme consists of configurations for individual
-// theming systems such as "color" or "typography".
-$AdEditor-theme: mat-light-theme((
-  color: (
-    primary: $AdEditor-primary,
-    accent: $AdEditor-accent,
-    warn: $AdEditor-warn,
-    success: $AdEditor-success,
-    info: $AdEditor-info,
-  )
-));
+//$AdEditor-primary: mat-palette($mat-light-blue);
+//$AdEditor-accent: mat-palette($mat-indigo, A200, A100, A400);
+//
+//// The warn palette is optional (defaults to red).
+//$AdEditor-warn: mat-palette($mat-red, 600);
+//$AdEditor-success: mat-palette($mat-green, A400, A200, A700);
+//$AdEditor-info: mat-palette($mat-cyan);
+//
+//// Create the theme object. A theme consists of configurations for individual
+//// theming systems such as "color" or "typography".
+//$AdEditor-theme: mat-light-theme((
+//  color: (
+//    primary: $AdEditor-primary,
+//    accent: $AdEditor-accent,
+//    warn: $AdEditor-warn,
+//    success: $AdEditor-success,
+//    info: $AdEditor-info,
+//  )
+//));
+@import "app-theme.scss";
 
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component

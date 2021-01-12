@@ -2,7 +2,6 @@
 
 $AdEditor-primary: mat-palette($mat-light-blue);
 $AdEditor-accent: mat-palette($mat-indigo, A200, A100, A400);
-//$AdEditor-dark: mat-palette();
 
 // The warn palette is optional (defaults to red).
 $AdEditor-warn: mat-palette($mat-yellow, 600);
@@ -17,3 +16,15 @@ $info: mat-color($AdEditor-info);
 
 $primary-darker: mat-color($AdEditor-primary, A700);
 $primary-darkest: mat-color($AdEditor-primary, 700);
+
+$AdEditor-theme: mat-light-theme((
+  color: (
+    primary: $AdEditor-primary,
+    accent: $AdEditor-accent,
+    warn: $AdEditor-warn,
+    success: $AdEditor-success,
+    info: $AdEditor-info,
+  )
+));
+
+

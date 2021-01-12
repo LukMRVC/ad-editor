@@ -1,6 +1,9 @@
 import {Component, ElementRef, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
 import {KonvaService} from '@core/services/konva.service';
 import {CdkDragEnd} from '@angular/cdk/drag-drop';
+import {FileSystemFileEntry, NgxFileDropEntry} from 'ngx-file-drop';
+import {$e} from 'codelyzer/angular/styles/chars';
+import {reduce} from 'rxjs/operators';
 
 const DEFAULT_CIRCLE_CONFIG = {
   draggable: true,
@@ -53,6 +56,8 @@ export class DrawToolbarComponent implements OnInit {
 
   @Output() imageUploaded = new EventEmitter<{ file: File, buffer: ArrayBuffer }>();
 
+  public imageSources: string[] = [];
+
   constructor(
     public konva: KonvaService
   ) { }
@@ -92,6 +97,27 @@ export class DrawToolbarComponent implements OnInit {
 
   dragEnd($event: CdkDragEnd): void {
     console.log($event);
+
+  }
+
+  fileDropped($event: NgxFileDropEntry[]): void {
+    for (const droppedFile of $event) {
+      if (droppedFile.fileEntry.isFile) {
+        const fileEntry = droppedFile.fileEntry as FileSystemFileEntry;
+        fileEntry.file( (file: File) => {
+          const reader = new FileReader();
+          reader.onload = (e: ProgressEvent<FileReader>) => {
+            if (reader.readyState === reader.DONE) {
+              console.log('Image uploaded', reader.result);
+              this.imageSources.push(reader.result as string);
+              // this.imageUploaded.emit();
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+
+      }
+    }
 
   }
 }

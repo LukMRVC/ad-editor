@@ -7,8 +7,16 @@
       </mat-panel-title>
     </mat-expansion-panel-header>
     <ng-template matExpansionPanelContent>
-      <div  fxLayout="column" fxLayoutAlign="start" fxLayoutGap="0.5rem">
+      <div fxLayout="column" fxLayoutAlign="start" fxLayoutGap="0.5rem">
         <button mat-raised-button color="primary">Upload logo</button>
+        <ngx-file-drop dropZoneLabel="Drop logo here" (onFileDrop)="fileDropped($event)">
+
+        </ngx-file-drop>
+
+        <div fxLayout="row wrap" fxLayoutGap="0.25rem" class="logo-gallery">
+          <img fxFlex *ngFor="let imageSource of this.imageSources" [src]="imageSource" />
+        </div>
+
       </div>
     </ng-template>
   </mat-expansion-panel>
@@ -20,6 +28,12 @@
       </mat-panel-title>
     </mat-expansion-panel-header>
     <ng-template matExpansionPanelContent>
+      <div fxLayout="column">
+        <mat-form-field fxFlex appearance="outline">
+          <mat-label>Headline</mat-label>
+          <textarea matInput></textarea>
+        </mat-form-field>
+      </div>
 
     </ng-template>
   </mat-expansion-panel>

@@ -1,8 +1,7 @@
 @import "src/_variables.scss";
 
 .drawing-toolbar {
-  min-width: 20rem;
-  max-width: max-content;
+  width: 20rem;
   height: 100%;
   background-color: #e0e0e0;
   border-top: 5px solid $accent;
@@ -34,4 +33,9 @@
 
 .expansion-panel {
   margin-bottom: 0!important;
+}
+
+.logo-gallery img {
+  max-width: 8rem;
+  object-fit: scale-down;
 }

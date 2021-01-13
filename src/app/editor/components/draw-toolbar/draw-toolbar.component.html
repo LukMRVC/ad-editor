@@ -1,6 +1,6 @@
 <aside fxLayout="column" fxLayoutGap="0.5em" fxLayoutAlign="start" class="drawing-toolbar">
 
-  <mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none">
+  <mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none" expanded="true">
     <mat-expansion-panel-header>
       <mat-panel-title>
         Logo
@@ -9,9 +9,7 @@
     <ng-template matExpansionPanelContent>
       <div fxLayout="column" fxLayoutAlign="start" fxLayoutGap="0.5rem">
         <button mat-raised-button color="primary">Upload logo</button>
-        <ngx-file-drop dropZoneLabel="Drop logo here" (onFileDrop)="fileDropped($event)">
-
-        </ngx-file-drop>
+        <ngx-file-drop dropZoneLabel="Drop logo here" (onFileDrop)="fileDropped($event)"></ngx-file-drop>
 
         <div fxLayout="row wrap" fxLayoutGap="0.25rem" class="logo-gallery">
           <img fxFlex *ngFor="let imageSource of this.imageSources" [src]="imageSource" />
@@ -21,7 +19,7 @@
     </ng-template>
   </mat-expansion-panel>
 
-  <mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none">
+  <mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none" expanded="true">
     <mat-expansion-panel-header>
       <mat-panel-title>
         Headline
@@ -33,12 +31,37 @@
           <mat-label>Headline</mat-label>
           <textarea matInput></textarea>
         </mat-form-field>
+
+        <div fxLayout="row nowrap" fxLayoutGap=".5rem">
+          <mat-form-field  appearance="outline">
+            <mat-label>Font family</mat-label>
+            <input [formControl]="fontFamilyControl" type="text" matInput aria-label="Font family" [matAutocomplete]="auto">
+            <mat-autocomplete (optionSelected)="loadFont($event)"
+                              [displayWith]="autocompleteDisplay"
+                              autoActiveFirstOption="true" #auto="matAutocomplete">
+              <mat-option *ngFor="let font of this.filteredFonts | async" [value]="font">
+                {{ font.family }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field style="max-width: 5rem" appearance="outline">
+            <mat-label>Font size</mat-label>
+            <input [formControl]="fontSizeControl" [matAutocomplete]="sizeAuto" matInput />
+            <mat-autocomplete #sizeAuto="matAutocomplete">
+              <mat-option *ngFor="let size of this.range(80); index as i" [value]="i">
+                {{ i }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+
       </div>
 
     </ng-template>
   </mat-expansion-panel>
 
-  <mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none">
+  <mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none" expanded="true">
     <mat-expansion-panel-header>
       <mat-panel-title>
         Background

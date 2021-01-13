@@ -2,6 +2,7 @@ import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild
 
 import {KonvaService} from '@core/services/konva.service';
 import {Subscription} from 'rxjs';
+import {BannerService} from '@core/services/banner.service';
 
 @Component({
   selector: 'app-editor',
@@ -14,7 +15,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   private subscription: Subscription = new Subscription();
 
   constructor(
-    public konva: KonvaService
+    public konva: KonvaService,
+    public bannerService: BannerService,
   ) { }
 
   ngAfterViewInit(): void {
@@ -42,6 +44,9 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       width: this.stageWrapper.nativeElement.offsetWidth,
       height: this.stageWrapper.nativeElement.offsetHeight,
     });
+
+    this.konva.setBanners(this.bannerService.getComputerBannes());
+    this.konva.drawBanners();
   }
 
   ngOnDestroy(): void {
@@ -67,15 +72,5 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     // image.width = this.canvasWidth / 2;
     image.src = imageUrl;
     image.onload = () => this.konva.image({ image, scaleX: 0.3, scaleY: 0.3, draggable: true });
-  }
-
-  moveObjectInLayer(direction: 'down' | 'down-one' | 'up-one' | 'up'): void {
-    this.konva.moveObjectZIndices(direction);
-  }
-
-  dropped($event): void {
-    console.log($event);
-    this.konva.getInstance().setPointersPositions($event);
-    this.konva.button();
   }
 }

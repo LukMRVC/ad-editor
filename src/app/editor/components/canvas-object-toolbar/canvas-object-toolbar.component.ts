@@ -6,7 +6,7 @@ import {
   NgxMatColorPickerComponent,
   NgxMatColorPickerInputEvent
 } from '@angular-material-components/color-picker';
-import {GoogleFontService, WebFont} from '@shared/services/google-font.service';
+import {GoogleFontService, WebFont} from '@core/services/google-font.service';
 import {FormControl} from '@angular/forms';
 import {map, startWith} from 'rxjs/operators';
 import {MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
@@ -201,7 +201,6 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
   }
 
   private _filter(fontFamilyName: string): WebFont[] {
-    // console.log({familyName: fontFamilyName});
     if (fontFamilyName === '') {
       return this.fontList.slice(0, 50);
     } else if (typeof fontFamilyName === 'string') {
@@ -235,9 +234,7 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
   }
 
   loadFont($event: MatAutocompleteSelectedEvent): void {
-    // console.log($event);
     const optionValue = $event.option.value;
-    // console.log(optionValue);
     WebFontLoader.load({
       fontactive: (familyName, fvd) => { this.konva.updateSelected({ fontFamily: familyName }); },
       google: {

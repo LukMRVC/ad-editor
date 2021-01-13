@@ -1,80 +1,60 @@
-import {Component, ElementRef, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {KonvaService} from '@core/services/konva.service';
 import {CdkDragEnd} from '@angular/cdk/drag-drop';
 import {FileSystemFileEntry, NgxFileDropEntry} from 'ngx-file-drop';
-import {$e} from 'codelyzer/angular/styles/chars';
-import {reduce} from 'rxjs/operators';
-
-const DEFAULT_CIRCLE_CONFIG = {
-  draggable: true,
-  radius: 80,
-  x: 30,
-  y: 30,
-  fill: '#ff0000ff',
-  stroke: '#000000ff',
-};
-
-const DEFAULT_RECT_CONFIG = {
-  fill: '#ff0000ff',
-  stroke: '#000000ff',
-  width: 30,
-  height: 30,
-  x: 0,
-  y: 0,
-  draggable: true,
-};
-
-const DEFAULT_REG_POLYGON_CONFIG = {
-  x: 15,
-  y: 15,
-  stroke: '#000000ff',
-  fill: '#ff0000ff',
-  draggable: true,
-  sides: 3,
-  radius: 30,
-};
-
-const DEFAULT_TEXT_CONFIG = {
-  fontSize: 30,
-  fontFamily: 'Calibri',
-  x: 20,
-  y: 15,
-  fill: '#000000ff',
-  strokeEnabled: false,
-  text: 'Text',
-  draggable: true,
-};
+import {GoogleFontService, WebFont} from '@core/services/google-font.service';
+import {FormControl} from '@angular/forms';
+import {Observable, Subscription} from 'rxjs';
+import {MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
+import * as WebFontLoader from 'webfontloader';
+import {map, startWith} from 'rxjs/operators';
 
 @Component({
   selector: 'app-draw-toolbar',
   templateUrl: './draw-toolbar.component.html',
   styleUrls: ['./draw-toolbar.component.scss']
 })
-export class DrawToolbarComponent implements OnInit {
+export class DrawToolbarComponent implements OnInit, OnDestroy {
 
   @ViewChild('imageInput') imageInput: ElementRef;
 
   @Output() imageUploaded = new EventEmitter<{ file: File, buffer: ArrayBuffer }>();
 
+  private subscriptions: Subscription = new Subscription();
   public imageSources: string[] = [];
+  fontList: WebFont[] = [];
+  fontFamilyControl: FormControl = new FormControl();
+  fontSizeControl: FormControl = new FormControl();
+  filteredFonts: Observable<WebFont[]>;
+  fontSize = 30;
+  text = '';
 
   constructor(
-    public konva: KonvaService
+    public konva: KonvaService,
+    public googleFont: GoogleFontService,
   ) { }
 
+  autocompleteDisplay = ( (font: WebFont) => font?.family );
+
   ngOnInit(): void {
+    this.subscriptions.add(this.googleFont.getAll$('popularity').subscribe(
+      fontList => this.fontList = fontList.items,
+      error => console.log(error))
+    );
+
+    this.filteredFonts = this.fontFamilyControl.valueChanges.pipe(
+      startWith(''),
+      map( value => this._filter(value))
+    );
+    this.fontSizeControl.setValue(10);
   }
 
-  drawCircle(): void {
-    this.konva.circle(DEFAULT_CIRCLE_CONFIG);
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
-  drawRect(): void {
-    this.konva.rect(DEFAULT_RECT_CONFIG);
-  }
-
-  drawRegularPolygon(): void {
-    this.konva.regularPolygon(DEFAULT_REG_POLYGON_CONFIG);
+  range(i: number): any[] {
+    return new Array(i);
   }
 
   onFileChange($event: any): void {
@@ -91,13 +71,8 @@ export class DrawToolbarComponent implements OnInit {
     }
   }
 
-  drawText(): void {
-    this.konva.text(DEFAULT_TEXT_CONFIG);
-  }
-
   dragEnd($event: CdkDragEnd): void {
     console.log($event);
-
   }
 
   fileDropped($event: NgxFileDropEntry[]): void {
@@ -110,6 +85,14 @@ export class DrawToolbarComponent implements OnInit {
             if (reader.readyState === reader.DONE) {
               console.log('Image uploaded', reader.result);
               this.imageSources.push(reader.result as string);
+              const image = new window.Image();
+              image.src = reader.result as string;
+              this.konva.drawLogo({
+                image,
+                width: image.width,
+                height: image.height,
+                draggable: true,
+              });
               // this.imageUploaded.emit();
             }
           };
@@ -118,7 +101,28 @@ export class DrawToolbarComponent implements OnInit {
 
       }
     }
+  }
 
+  loadFont($event: MatAutocompleteSelectedEvent): void {
+    const optionValue = $event.option.value;
+    WebFontLoader.load({
+      fontactive: (familyName, fvd) => { this.konva.updateSelected({ fontFamily: familyName }); },
+      google: {
+        families: [optionValue.family]
+      }
+    });
+  }
+
+  private _filter(fontFamilyName: string): WebFont[] {
+    if (fontFamilyName === '') {
+      return this.fontList.slice(0, 50);
+    } else if (typeof fontFamilyName === 'string') {
+      const filterValue = fontFamilyName.toLowerCase();
+      return this.fontList.filter(font => font.family.toLowerCase().indexOf(filterValue) === 0);
+    } else {
+      const filterValue = (fontFamilyName as WebFont).family.toLowerCase();
+      return this.fontList.filter(font => font.family.toLowerCase().indexOf(filterValue) === 0);
+    }
   }
 }
 

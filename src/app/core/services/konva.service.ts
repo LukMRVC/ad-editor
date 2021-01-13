@@ -2,19 +2,16 @@ import {EventEmitter, Injectable} from '@angular/core';
 import Konva from 'konva';
 import { StageConfig } from 'konva/types/Stage';
 import { LayerConfig } from 'konva/types/Layer';
-import { CircleConfig } from 'konva/types/shapes/Circle';
 import { ImageConfig } from 'konva/types/shapes/Image';
 import { TransformerConfig } from 'konva/types/shapes/Transformer';
 import { BehaviorSubject } from 'rxjs';
 import {RectConfig} from 'konva/types/shapes/Rect';
 import {RegularPolygonConfig} from 'konva/types/shapes/RegularPolygon';
 import {FlatLayerData, LayerData} from '../../editor/components/stage-layers/stage-layers.component';
-import {getGuides, getLineGuideStops, getObjectSnappingEdges} from '@core/utils/KonvaGuidelines';
 import {TextConfig} from 'konva/types/shapes/Text';
-import {takeWhile, throttle, throttleTime} from 'rxjs/operators';
-import {ResizeService, Size} from '@core/services/resize.service';
-import { fromEvent } from 'rxjs';
-import {getAriaReferenceIds} from '@angular/cdk/a11y/aria-describer/aria-reference';
+import {takeWhile} from 'rxjs/operators';
+import {Banner, Point2D} from '@core/models/banner-layout';
+import {log} from 'util';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +19,6 @@ import {getAriaReferenceIds} from '@angular/cdk/a11y/aria-describer/aria-referen
 export class KonvaService {
 
   constructor(
-    public resizer: ResizeService,
   ) {}
 
   private canvas: Konva.Stage;
@@ -35,60 +31,17 @@ export class KonvaService {
 
   public layers: Konva.Layer[] = [];
   public addNewShapeToNewLayer = false;
-  public workingLayer = -1;
+  private banners: Banner[];
+  private bannerGroups: {group: Konva.Group, bg: Konva.Rect}[] = [];
+  private shouldTransformRelatives = true;
 
   private $selectedObject: BehaviorSubject<'image' | 'text' | 'shape' | 'background'> =
     new BehaviorSubject<'image' | 'text' | 'shape' | 'background'>('background');
 
   $selectedObjectType = this.$selectedObject.asObservable();
   layerTreeData: LayerData[] = [];
-
-  private static drawGuides(guides, layer): void {
-    guides.forEach((lg) => {
-      if (lg.orientation === 'H') {
-        const line = new Konva.Line({
-          points: [-6000, 0, 6000, 0],
-          stroke: 'rgb(0, 161, 255)',
-          strokeWidth: 1,
-          name: 'guide-line',
-          dash: [4, 6],
-        });
-        layer.add(line);
-        line.absolutePosition({
-          x: 0,
-          y: lg.lineGuide,
-        });
-        layer.batchDraw();
-      } else if (lg.orientation === 'V') {
-        const line = new Konva.Line({
-          points: [0, -6000, 0, 6000],
-          stroke: 'rgb(0, 161, 255)',
-          strokeWidth: 1,
-          name: 'guid-line',
-          dash: [4, 6],
-        });
-        layer.add(line);
-        line.absolutePosition({
-          x: lg.lineGuide,
-          y: 0,
-        });
-        layer.batchDraw();
-      }
-    });
-  }
-
-  private static destroyGuideLines($event): void {
-    const layer = $event.currentTarget;
-    layer.find('.guide-line').destroy();
-    layer.batchDraw();
-  }
-
   updateSelectedObjectType(nextVal: 'image' | 'text' | 'shape' | 'background'): void {
     this.$selectedObject.next(nextVal);
-  }
-
-  createInstance(conf: StageConfig): Konva.Stage {
-    return new Konva.Stage(conf);
   }
 
   private initZoom(stage: Konva.Stage, scaleBy: number): void {
@@ -121,7 +74,7 @@ export class KonvaService {
     this.canvas.on('click tap', (e: Konva.KonvaEventObject<MouseEvent>) => {
       this.onClickTap$.emit(e);
     });
-    this.canvas.scale({ x: 0.5, y: 0.5 });
+    this.canvas.scale({ x: 0.75, y: 0.75 });
 
     this.initZoom(this.canvas, 1.02);
     const bgLayer = new Konva.Layer();
@@ -134,7 +87,6 @@ export class KonvaService {
     });
     this.transformers = this.transformer();
     bgLayer.add(this.transformers);
-    this.testWorkGroup();
   }
 
   getInstance(): Konva.Stage {
@@ -166,22 +118,6 @@ export class KonvaService {
       this.redraw();
       // console.log(layer);
     });
-    tr.on('transformend', () => {
-      for (const shape of tr.nodes()) {
-        if (shape.id() === 'layer-bg') {
-          this.layers[0].width( Math.round(shape.width() * shape.scaleX()) );
-          this.layers[0].height( Math.round(shape.height() * shape.scaleY()) );
-        }
-        // adjust size to scale
-        // and set minimal size
-        shape.width(Math.max(5, shape.width() * shape.scaleX()));
-        shape.height(Math.max(5, shape.height() * shape.scaleY()));
-        // reset scale to 1
-        shape.scaleX(1);
-        shape.scaleY(1);
-        this.redraw();
-      }
-    });
     return tr;
   }
 
@@ -193,7 +129,6 @@ export class KonvaService {
     layer.add(tr);
     this.layers.push(layer);
     this.canvas.add(layer);
-    this.workingLayer++;
     this.onNewLayer$.emit(layer);
     this.layerTreeData = this.layerTreeData.concat(
       [{ name: layer.name(), id: layer.id(), iconName: 'layer-group', children: [], zIdx: () => layer.getZIndex() }]
@@ -209,10 +144,7 @@ export class KonvaService {
   }
 
   private getWorkingLayerInstance(): Konva.Layer {
-    if (this.addNewShapeToNewLayer) {
-      return this.layer();
-    }
-    return this.layers[this.workingLayer];
+    return this.layer();
   }
 
   private addShapeToLayer(shape: Konva.Shape|Konva.Label, layer: Konva.Layer): void {
@@ -245,14 +177,6 @@ export class KonvaService {
     return { ...{name, id}, ...conf };
   }
 
-  circle(conf?: CircleConfig): Konva.Circle {
-    const layer = this.getWorkingLayerInstance();
-    const shapesCount = layer.getChildren(c => c.getClassName() !== 'Transformer').length;
-    conf = this.mergeConfig(`Shape ${shapesCount + 1}`, `${layer.id()}:${shapesCount}`, conf);
-    const circle = new Konva.Circle(conf);
-    this.addShapeToLayer(circle, layer);
-    return circle;
-  }
 
   rect(conf?: RectConfig, addToInstance = true): Konva.Rect {
     if (!addToInstance) {
@@ -305,63 +229,6 @@ export class KonvaService {
     this.layers.forEach(layer => layer.batchDraw());
   }
 
-  guidelinesSnapping($event): void {
-    const layer = $event.currentTarget;
-    const guideStops = getLineGuideStops(layer.getParent(), $event.target);
-    const itemBounds = getObjectSnappingEdges($event.target);
-    const guides = getGuides(guideStops, itemBounds);
-    if (!guides.length) {
-      return;
-    }
-    KonvaService.drawGuides(guides, layer);
-    const absPos = $event.target.absolutePosition();
-    // lg for line guide
-    guides.forEach((lg) => {
-      switch (lg.snap) {
-        case 'start': {
-          switch (lg.orientation) {
-            case 'V': {
-              absPos.x = lg.lineGuide + lg.offset;
-              break;
-            }
-            case 'H': {
-              absPos.y = lg.lineGuide + lg.offset;
-              break;
-            }
-          }
-          break;
-        }
-        case 'center': {
-          switch (lg.orientation) {
-            case 'V': {
-              absPos.x = lg.lineGuide + lg.offset;
-              break;
-            }
-            case 'H': {
-              absPos.y = lg.lineGuide + lg.offset;
-              break;
-            }
-          }
-          break;
-        }
-        case 'end': {
-          switch (lg.orientation) {
-            case 'V': {
-              absPos.x = lg.lineGuide + lg.offset;
-              break;
-            }
-            case 'H': {
-              absPos.y = lg.lineGuide + lg.offset;
-              break;
-            }
-          }
-          break;
-        }
-      }
-    });
-    $event.target.absolutePosition(absPos);
-  }
-
   deleteSelected(): void {
     this.selectedNodes.forEach(n => {
       const layer = this.layers.find(l => l.id() === n.getLayer().id());
@@ -378,6 +245,7 @@ export class KonvaService {
   }
 
   redraw(layer?: Konva.Layer): void {
+    this.transformers.moveToTop();
     if (layer) {
       layer.batchDraw();
       return;
@@ -519,112 +387,167 @@ export class KonvaService {
     // this.addShapeToLayer(button, this.layers[0]);
   }
 
-  testWorkGroup(): void {
-    const lineSpacing = 20;
-    let lineStartX = lineSpacing;
-    let lineY = lineSpacing;
+  public setBanners(banners: Banner[]): void {
+    this.banners = banners;
+  }
 
+  public drawBanners(): void {
+    const spacing = 20;
+    const lineXStart = 60;
+    let posX = lineXStart;
+    let posY = spacing;
     let lineNum = 0;
     let lineHeight = 0;
-    this.resizer.computer.forEach(size => {
+    this.banners.forEach((banner, index) => {
       const group = new Konva.Group({
-        id: `group-${size.name}`,
+        id: `group-${banner.layout.name}`,
         draggable: false,
-        clipY: lineY,
-        clipX: lineStartX,
-        clipWidth: size.width,
-        clipHeight: size.height,
-        width: size.width,
-        height: size.height,
+        clipY: posY,
+        clipX: posX,
+        clipWidth: banner.layout.dimensions.width,
+        clipHeight: banner.layout.dimensions.height,
+        width: banner.layout.dimensions.width,
+        height: banner.layout.dimensions.height,
       });
 
       const bg = this.rect({
-        x: lineStartX,
-        y: lineY,
-        width: size.width,
-        height: size.height,
+        x: posX,
+        y: posY,
+        width: banner.layout.dimensions.width,
+        height: banner.layout.dimensions.height,
         fill: '#fff',
         transformable: false,
       }, false);
+      const label = this.bannerLabel({x: 0, y: posY + banner.layout.dimensions.height}, `${banner.layout.dimensions.width}x${banner.layout.dimensions.height}`);
 
-      const label = new Konva.Label({
-        y: lineY + size.height,
-        opacity: 0.75,
-      });
-
-      label.add(new Konva.Tag({
-        fill: '#fcfcfc',
-        cornerRadius: 5,
-        lineJoin: 'round',
-      }));
-
-      label.add(new Konva.Text({
-        text: `${size.width}x${size.height}`,
-        fontFamily: 'Arial',
-        fontSize: 15,
-        padding: 5,
-        fill: 'black',
-      }));
-      label.x( lineStartX + size.width - label.width() );
+      label.x( posX + banner.layout.dimensions.width - label.width() );
       group.clipHeight(group.clipHeight() + label.height());
       bg.cache();
       label.cache();
 
-      const rect = this.rect({
-        name: 'rect-test',
-        x: lineStartX,
-        y: lineY,
-        width: 90,
-        height: 50,
-        draggable: true,
-        fill: '#aa45ce',
-        transformable: false,
+      group.add(bg, label);
 
-      }, false);
+      posX += banner.layout.dimensions.width + spacing;
 
-      rect.on('dragmove', dragging => {
-        // console.log(dragging);
-        const banners = this.layers[0].getChildren(shape => shape.id().includes('group-'));
-        // X is relative to the stage, to make it relative to the group we make a difference
-        // between the target X position and group X position and take a center
-        const relativeCenterX = dragging.target.x() - group.clipX() + dragging.target.width() / 2;
-        const relativeCenterY = dragging.target.y() - group.clipY() + dragging.target.height() / 2;
-
-        // then compute the X position as percent between start and end of group container
-        const percentageInGroupX = ((relativeCenterX - dragging.target.width() / 2) / (group.width() - dragging.target.width())) * 100;
-        const percentageInGroupY = ((relativeCenterY - dragging.target.height() / 2) / (group.height() - dragging.target.height())) * 100;
-
-        banners.each((banner: Konva.Group) => {
-          const testRect = banner.getChildren(shape => shape.name() === 'rect-test').toArray()[0];
-          // now compute the center of test rectangle in other groups based on their width
-          const relativeTestRectCenterX = (percentageInGroupX / 100) * (banner.width() - testRect.width());
-          const relativeTestRectCenterY = (percentageInGroupY / 100) * (banner.height() - testRect.height());
-
-          // console.log(`${testRectXRelative} for ${banner.id()} ${banner.width()}`);
-          if (testRect !== dragging.target) {
-            testRect.x(relativeTestRectCenterX + banner.clipX());
-            testRect.y(relativeTestRectCenterY + banner.clipY());
-          }
-        });
-        this.redraw();
-
-        // console.log(children);
-      });
-
-      group.add(bg, label, rect);
-
-      lineStartX += size.width + lineSpacing;
-
-      lineHeight = Math.max(lineHeight, size.height);
+      lineHeight = Math.max(lineHeight, banner.layout.dimensions.height + label.height());
       this.layers[0].add(group);
-
-      // console.log(lineStartX);
-      // console.log(lineHeight);
-      if (lineStartX >= 1400) {
-        lineStartX = lineSpacing;
+      const nextBannerWidth = this.banners[index + 1]?.layout.dimensions.width;
+      if (posX + nextBannerWidth >= 1400) {
+        posX = lineXStart;
         lineNum++;
-        lineY += lineHeight + lineSpacing;
+        posY += lineHeight + spacing;
+        lineHeight = spacing;
       }
+      this.bannerGroups.push({ group, bg });
+    });
+
+    this.redraw();
+  }
+
+  private bannerLabel(position: Point2D, text: string): Konva.Label {
+    const label = new Konva.Label({
+      y: position.y,
+      opacity: 0.75,
+    });
+
+    label.add(new Konva.Tag({
+      fill: '#fcfcfc',
+      cornerRadius: 5,
+      lineJoin: 'round',
+    }));
+
+    label.add(new Konva.Text({
+      text,
+      fontFamily: 'Arial',
+      fontSize: 15,
+      padding: 5,
+      fill: 'black',
+    }));
+
+    return label;
+}
+
+  public drawLogo(conf: Konva.ImageConfig): void {
+    this.banners.forEach((banner, index) => {
+      if (!banner.layout.hasLogo) { return; }
+      const logoDimensions = { width: conf.width, height: conf.height };
+      const {x, y} = banner.getPixelPositionFromPercentage(banner.layout.logoPosition, logoDimensions);
+      // console.log('Got coords', {x, y});
+      const logos = this.bannerGroups[index].group.getChildren(children => children.name() === 'logo');
+      logos.each(logo => logo.destroy());
+      const offsetX = this.bannerGroups[index].group.clipX();
+      const offsetY = this.bannerGroups[index].group.clipY();
+      const { x: scaleX, y: scaleY } = banner.getScaleForLogo(logoDimensions);
+      const image = new Konva.Image({ name: 'logo', x: x + offsetX, y: y + offsetY, scaleX, scaleY,  ...conf });
+      // console.log(`For ${this.bannerGroups[index].group.id()} computed X: ${image.x()} and Y: ${image.y()}`);
+      image.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, 'logo'));
+      image.on('transformstart', (started) => image.setAttr('initialScale', image.scale()));
+      image.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, index, 'logo'));
+
+      image.cache();
+      this.bannerGroups[index].group.add(image);
+      this.bannerGroups[index].group.removeName(image);
+
+    });
+    this.transformers.moveToTop();
+    this.redraw();
+  }
+
+  public drawHeadline(conf: Konva.TextConfig): void {
+    return;
+  }
+
+  public drawBackground(conf: Konva.ImageConfig): void {
+
+  }
+
+  public drawButton(): void {
+
+  }
+
+  private moveAllRelatives(dragEvent: Konva.KonvaEventObject<Konva.Shape>, bannerGroupIndex: number, shapeName: string): void {
+    if (!this.shouldTransformRelatives) { return; }
+    let dimensions = {
+      width: dragEvent.target.width() * dragEvent.target.scaleX(),
+      height: dragEvent.target.height() * dragEvent.target.scaleY()
+    };
+    let { x: xPos, y: yPos } = dragEvent.target.getPosition();
+    xPos -= dragEvent.target.getParent().clipX();
+    yPos -= dragEvent.target.getParent().clipY();
+    const eventBanner = this.banners[bannerGroupIndex];
+    const percentages = eventBanner.getPercentageCenterPositionInBanner({x: xPos, y: yPos}, dimensions);
+    // console.log('Computed percentages', percentages);
+    this.bannerGroups.forEach((bannerGroup, index) => {
+      if (bannerGroup.group === dragEvent.target.getParent()) { return; }
+      const relatives = bannerGroup.group.getChildren(shape => shape.name() === shapeName);
+      if (relatives.length <= 0) { return; }
+      const relativeShape = relatives[0] as Konva.Shape;
+      dimensions = {
+        width: relativeShape.width() * relativeShape.scaleX(),
+        height: relativeShape.height() * relativeShape.scaleY()
+      };
+      const banner = this.banners[index];
+      const {x: actualXPos, y: actualYPos} = banner.getPixelPositionFromPercentage(percentages, dimensions);
+      const offsetX = this.bannerGroups[index].group.clipX();
+      const offsetY = this.bannerGroups[index].group.clipY();
+      relativeShape.x(actualXPos + offsetX);
+      relativeShape.y(actualYPos + offsetY);
+    });
+    this.redraw();
+  }
+
+  private transformRelatives(transformEvent: Konva.KonvaEventObject<Konva.Shape>, bannerGroupIndex: number, shapeName: string): void {
+    if (!this.shouldTransformRelatives) { return; }
+    const initialScale = transformEvent.target.getAttr('initialScale');
+    const currentScale = transformEvent.target.getAttr('scale');
+    const scaleDelta = { x: currentScale.x - initialScale.x, y: currentScale.y - initialScale.y };
+    this.bannerGroups.forEach(bannerGroup => {
+      if (bannerGroup.group === transformEvent.target.getParent()) { return; }
+      const relatives = bannerGroup.group.getChildren(shape => shape.name() === shapeName);
+      if (relatives.length <= 0) { return; }
+      const relative = relatives[0];
+      relative.scaleX( relative.scaleX() + scaleDelta.x );
+      relative.scaleY( relative.scaleY() + scaleDelta.y );
 
     });
     this.redraw();

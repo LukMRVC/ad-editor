@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { GoogleFontService } from './google-font.service';
 
-describe('GoogleFontServiceService', () => {
+describe('GoogleFontService', () => {
   let service: GoogleFontService;
 
   beforeEach(() => {

@@ -8,6 +8,8 @@ import {Observable, Subscription} from 'rxjs';
 import {MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import * as WebFontLoader from 'webfontloader';
 import {map, startWith} from 'rxjs/operators';
+import {MatButtonToggleChange} from "@angular/material/button-toggle";
+import {$} from "protractor";
 
 @Component({
   selector: 'app-draw-toolbar',
@@ -22,12 +24,16 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription = new Subscription();
   public imageSources: string[] = [];
+
+  headlineText = '';
   fontList: WebFont[] = [];
   fontFamilyControl: FormControl = new FormControl();
   fontSizeControl: FormControl = new FormControl();
   filteredFonts: Observable<WebFont[]>;
-  fontSize = 30;
   text = '';
+  fontLineHeight = 1;
+  fontLetterSpacing = 0;
+
 
   constructor(
     public konva: KonvaService,
@@ -83,16 +89,19 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
           const reader = new FileReader();
           reader.onload = (e: ProgressEvent<FileReader>) => {
             if (reader.readyState === reader.DONE) {
-              console.log('Image uploaded', reader.result);
+              // console.log('Image uploaded', reader.result);
               this.imageSources.push(reader.result as string);
               const image = new window.Image();
               image.src = reader.result as string;
-              this.konva.drawLogo({
-                image,
-                width: image.width,
-                height: image.height,
-                draggable: true,
-              });
+              image.onload = () => {
+                this.konva.drawLogo({
+                  image,
+                  width: image.width,
+                  height: image.height,
+                  draggable: true,
+                });
+              };
+
               // this.imageUploaded.emit();
             }
           };
@@ -106,7 +115,7 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
   loadFont($event: MatAutocompleteSelectedEvent): void {
     const optionValue = $event.option.value;
     WebFontLoader.load({
-      fontactive: (familyName, fvd) => { this.konva.updateSelected({ fontFamily: familyName }); },
+      fontactive: (familyName, fvd) => { this.konva.changeHeadline({ fontFamily: familyName }); },
       google: {
         families: [optionValue.family]
       }
@@ -123,6 +132,18 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
       const filterValue = (fontFamilyName as WebFont).family.toLowerCase();
       return this.fontList.filter(font => font.family.toLowerCase().indexOf(filterValue) === 0);
     }
+  }
+
+  headlineTextChanged($event: Event): void {
+    this.konva.changeHeadline({
+      text: this.headlineText,
+    });
+  }
+
+  headlineTextAlignChanged($event: MatButtonToggleChange): void {
+    this.konva.changeHeadline({
+      align: $event.value,
+    });
   }
 }
 

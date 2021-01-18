@@ -17,7 +17,8 @@ import {
   faLayerGroup,
   faArrowsAltH,
   faArrowsAltV,
-  faLongArrowAltUp, faLongArrowAltDown, faAngleDoubleUp, faAngleDoubleDown
+  faLongArrowAltUp, faLongArrowAltDown, faAngleDoubleUp, faAngleDoubleDown, faAlignCenter, faAlignLeft,
+  faAlignRight, faAlignJustify
 } from '@fortawesome/free-solid-svg-icons';
 
 @NgModule({
@@ -40,5 +41,6 @@ export class EditorModule {
   constructor(lib: FaIconLibrary) {
     lib.addIcons(faMousePointer, faFillDrip, faLayerGroup, faShapes, faArrowsAltH, faArrowsAltV);
     lib.addIcons(faLongArrowAltUp, faLongArrowAltDown, faAngleDoubleUp, faAngleDoubleDown);
+    // lib.addIcons(faAlignCenter, faAlignLeft, faAlignRight, faAlignJustify);
   }
 }

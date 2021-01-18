@@ -17,9 +17,13 @@ export class Banner {
     return {x, y};
   }
 
-  public getPixelPositionFromPercentage(percentage: Point2D, objectDimensions: Dimension2D): Point2D {
-    const x = (percentage.x / 100) * (this.layout.dimensions.width - objectDimensions.width);
-    const y = (percentage.y / 100) * (this.layout.dimensions.height - objectDimensions.height);
+  public getPixelPositionFromPercentage(
+    percentage: Point2D,
+    objectDimensions: Dimension2D,
+    scale: { scaleX: number, scaleY: number } = {scaleX: 1, scaleY: 1}
+  ): Point2D {
+    const x = (percentage.x / 100) * (this.layout.dimensions.width - (objectDimensions.width * scale.scaleX));
+    const y = (percentage.y / 100) * (this.layout.dimensions.height - (objectDimensions.height * scale.scaleY));
 
     return {x, y};
   }
@@ -36,6 +40,15 @@ export class Banner {
 
     return {x: scale, y: scale};
   }
+
+  public getFontSizeForHeadline(): number {
+    // 16px is the smallest possible value
+    if (this.layout.dimensions.width > this.layout.dimensions.height) {
+      return Math.max(Math.round(this.layout.dimensions.width / 10), 16);
+    } else {
+      return Math.max(Math.round(this.layout.dimensions.height / 10), 16);
+    }
+  }
 }
 
 
@@ -47,7 +60,7 @@ export interface BannerLayout {
   headlinePosition?: Point2D;
   backgroundPosition?: Point2D;
   buttonPosition?: Point2D;
-
+  headlineFontSize: number;
   otherElementsPosition?: Array<Point2D>;
 }
 

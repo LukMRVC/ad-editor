@@ -23,7 +23,7 @@ export class KonvaService {
 
   private canvas: Konva.Stage;
   private drawing = false;
-  private transformers: Konva.Transformer;
+  private transformers: Konva.Transformer = null;
 
   onClickTap$: EventEmitter<any> = new EventEmitter<any>();
   onNewLayer$: EventEmitter<Konva.Layer> = new EventEmitter<Konva.Layer>();
@@ -245,7 +245,9 @@ export class KonvaService {
   }
 
   redraw(layer?: Konva.Layer): void {
-    this.transformers.moveToTop();
+    if (this.transformers !== null) {
+      this.transformers.moveToTop();
+    }
     if (layer) {
       layer.batchDraw();
       return;
@@ -471,13 +473,14 @@ export class KonvaService {
     this.banners.forEach((banner, index) => {
       if (!banner.layout.hasLogo) { return; }
       const logoDimensions = { width: conf.width, height: conf.height };
-      const {x, y} = banner.getPixelPositionFromPercentage(banner.layout.logoPosition, logoDimensions);
+      const { x: scaleX, y: scaleY } = banner.getScaleForLogo(logoDimensions);
+
+      const {x, y} = banner.getPixelPositionFromPercentage(banner.layout.logoPosition, logoDimensions, {scaleX, scaleY});
       // console.log('Got coords', {x, y});
       const logos = this.bannerGroups[index].group.getChildren(children => children.name() === 'logo');
       logos.each(logo => logo.destroy());
       const offsetX = this.bannerGroups[index].group.clipX();
       const offsetY = this.bannerGroups[index].group.clipY();
-      const { x: scaleX, y: scaleY } = banner.getScaleForLogo(logoDimensions);
       const image = new Konva.Image({ name: 'logo', x: x + offsetX, y: y + offsetY, scaleX, scaleY,  ...conf });
       // console.log(`For ${this.bannerGroups[index].group.id()} computed X: ${image.x()} and Y: ${image.y()}`);
       image.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, 'logo'));
@@ -486,15 +489,39 @@ export class KonvaService {
 
       image.cache();
       this.bannerGroups[index].group.add(image);
-      this.bannerGroups[index].group.removeName(image);
-
     });
     this.transformers.moveToTop();
     this.redraw();
   }
 
-  public drawHeadline(conf: Konva.TextConfig): void {
-    return;
+  public drawHeadline(conf?: Konva.TextConfig): void {
+    this.banners.forEach( (banner, index) => {
+      const dimensions = { width: banner.layout.dimensions.width, height: null };
+      conf.width = banner.layout.dimensions.width;
+      conf.fontSize = banner.layout.headlineFontSize;
+      const {x, y} = banner.getPixelPositionFromPercentage(banner.layout.headlinePosition, dimensions);
+      // const headlines = this.bannerGroups[index].group.getChildren(children => children.name() === 'headline');
+      const offsetX = this.bannerGroups[index].group.clipX();
+      const offsetY = this.bannerGroups[index].group.clipY();
+      const scaleX = 1;
+      const scaleY = 1;
+      const text = new Konva.Text({ name: 'headline', x: x + offsetX, y: y + offsetY, scaleX, scaleY, ...conf });
+      text.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, 'headline'));
+      text.on('transformstart', (started) => text.setAttr('initialScale', text.scale()));
+      text.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, index, 'logo'));
+      this.bannerGroups[index].group.add(text);
+    });
+    this.transformers.moveToTop();
+    this.redraw();
+  }
+
+  public changeHeadline(attributes: Konva.TextConfig): void {
+    this.bannerGroups.forEach( (bannerGroup, index) => {
+      const headlineChildren = bannerGroup.group.getChildren(children => children.name() === 'headline');
+      const headline = headlineChildren[0];
+      headline.setAttrs(attributes);
+    });
+    this.redraw();
   }
 
   public drawBackground(conf: Konva.ImageConfig): void {

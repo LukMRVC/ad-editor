@@ -26,35 +26,59 @@
       </mat-panel-title>
     </mat-expansion-panel-header>
     <ng-template matExpansionPanelContent>
-      <div fxLayout="column">
+      <div fxLayout="column" fxLayoutGap="0.5rem">
         <mat-form-field fxFlex appearance="outline">
           <mat-label>Headline</mat-label>
-          <textarea matInput></textarea>
+          <textarea [(ngModel)]="headlineText" (input)="headlineTextChanged($event)" matInput></textarea>
         </mat-form-field>
+        <mat-form-field  appearance="outline">
+          <mat-label>Font family</mat-label>
+          <input [formControl]="fontFamilyControl" type="text" matInput aria-label="Font family" [matAutocomplete]="auto">
+          <!-- Font family -->
+          <mat-autocomplete (optionSelected)="loadFont($event)"
+                            [displayWith]="autocompleteDisplay"
+                            autoActiveFirstOption="true" #auto="matAutocomplete">
+            <mat-option *ngFor="let font of this.filteredFonts | async" [value]="font">
+              {{ font.family }}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+        <!-- Font alignment -->
+        <mat-button-toggle-group value="left" fxFlexAlign="center" (change)="headlineTextAlignChanged($event)" #textAlignGroup="matButtonToggleGroup">
+          <mat-button-toggle value="left" aria-label="Text align left">
+            <mat-icon>format_align_left</mat-icon>
+          </mat-button-toggle>
+          <mat-button-toggle value="center" aria-label="Text align center">
+            <mat-icon>format_align_center</mat-icon>
+          </mat-button-toggle>
+          <mat-button-toggle value="right" aria-label="Text align right">
+            <mat-icon>format_align_right</mat-icon>
+          </mat-button-toggle>
+          <mat-button-toggle value="justify" aria-label="Text align justify">
+            <mat-icon>format_align_justify</mat-icon>
+          </mat-button-toggle>
+        </mat-button-toggle-group>
 
-        <div fxLayout="row nowrap" fxLayoutGap=".5rem">
-          <mat-form-field  appearance="outline">
-            <mat-label>Font family</mat-label>
-            <input [formControl]="fontFamilyControl" type="text" matInput aria-label="Font family" [matAutocomplete]="auto">
-            <mat-autocomplete (optionSelected)="loadFont($event)"
-                              [displayWith]="autocompleteDisplay"
-                              autoActiveFirstOption="true" #auto="matAutocomplete">
-              <mat-option *ngFor="let font of this.filteredFonts | async" [value]="font">
-                {{ font.family }}
-              </mat-option>
-            </mat-autocomplete>
-          </mat-form-field>
-
-          <mat-form-field style="max-width: 5rem" appearance="outline">
-            <mat-label>Font size</mat-label>
-            <input [formControl]="fontSizeControl" [matAutocomplete]="sizeAuto" matInput />
-            <mat-autocomplete #sizeAuto="matAutocomplete">
-              <mat-option *ngFor="let size of this.range(80); index as i" [value]="i">
-                {{ i }}
-              </mat-option>
-            </mat-autocomplete>
-          </mat-form-field>
+        <div fxFlex fxLayout="column">
+          <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
+            <label>Line height</label>
+            <span>{{ fontLineHeight }}</span>
+          </div>
+          <mat-slider (change)="konva.changeHeadline({lineHeight: fontLineHeight})"
+                      [(ngModel)]="fontLineHeight" thumbLabel min="1" max="5" step="0.1" value="1"></mat-slider>
         </div>
+
+
+        <div fxFlex fxLayout="column">
+          <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
+            <label>Letter spacing</label>
+            <span>{{ fontLetterSpacing }}</span>
+          </div>
+          <mat-slider (change)="konva.changeHeadline({letterSpacing: fontLetterSpacing})"
+                      [(ngModel)]="fontLetterSpacing" thumbLabel min="-10" max="10" step="0.1" value="0"></mat-slider>
+        </div>
+
+
 
       </div>
 

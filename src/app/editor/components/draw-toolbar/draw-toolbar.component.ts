@@ -8,8 +8,8 @@ import {Observable, Subscription} from 'rxjs';
 import {MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import * as WebFontLoader from 'webfontloader';
 import {map, startWith} from 'rxjs/operators';
-import {MatButtonToggleChange} from "@angular/material/button-toggle";
-import {$} from "protractor";
+import {MatButtonToggleChange} from '@angular/material/button-toggle';
+import {Color} from '@angular-material-components/color-picker';
 
 @Component({
   selector: 'app-draw-toolbar',
@@ -26,14 +26,22 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
   public imageSources: string[] = [];
 
   headlineText = '';
+  headlineTextPadding = 10;
+  headlineTextDecoration = [];
+  headlineFontStyle = [];
   fontList: WebFont[] = [];
+  fillColor: Color = new Color(0, 0, 0, 255);
+
   fontFamilyControl: FormControl = new FormControl();
   fontSizeControl: FormControl = new FormControl();
   filteredFonts: Observable<WebFont[]>;
-  text = '';
+
   fontLineHeight = 1;
   fontLetterSpacing = 0;
+  fontScaling = 0;
 
+
+  shadow = { enabled: false, color: new Color(0, 0, 0, 255), blur: 3, offsetY: 0, offsetX: 0 };
 
   constructor(
     public konva: KonvaService,
@@ -53,6 +61,7 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
       map( value => this._filter(value))
     );
     this.fontSizeControl.setValue(10);
+    console.log(this.shadow);
   }
 
   ngOnDestroy(): void {
@@ -144,6 +153,11 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
     this.konva.changeHeadline({
       align: $event.value,
     });
+  }
+
+  decorationChanged($event: MatButtonToggleChange): void {
+    console.log($event);
+    console.log(this.headlineTextDecoration);
   }
 }
 

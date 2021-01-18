@@ -47,7 +47,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
     this.konva.setBanners(this.bannerService.getComputerBannes());
     this.konva.drawBanners();
-    this.konva.drawHeadline({ draggable: true, padding: 10, text: 'Hand picked holiday, just one click away' });
+    this.konva.drawHeadline({ draggable: true, padding: 10, /*text: 'Test text', fontStyle: 'italic bold' */});
   }
 
   ngOnDestroy(): void {

@@ -499,6 +499,10 @@ export class KonvaService {
       const dimensions = { width: banner.layout.dimensions.width, height: null };
       conf.width = banner.layout.dimensions.width;
       conf.fontSize = banner.layout.headlineFontSize;
+      conf.shadowOffsetY = 0;
+      conf.shadowColor = '#000';
+      conf.shadowBlur = 3;
+      conf.shadowEnabled = false;
       const {x, y} = banner.getPixelPositionFromPercentage(banner.layout.headlinePosition, dimensions);
       // const headlines = this.bannerGroups[index].group.getChildren(children => children.name() === 'headline');
       const offsetX = this.bannerGroups[index].group.clipX();
@@ -506,6 +510,7 @@ export class KonvaService {
       const scaleX = 1;
       const scaleY = 1;
       const text = new Konva.Text({ name: 'headline', x: x + offsetX, y: y + offsetY, scaleX, scaleY, ...conf });
+      text.setAttr('initialFontSize', conf.fontSize);
       text.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, 'headline'));
       text.on('transformstart', (started) => text.setAttr('initialScale', text.scale()));
       text.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, index, 'logo'));
@@ -517,9 +522,15 @@ export class KonvaService {
 
   public changeHeadline(attributes: Konva.TextConfig): void {
     this.bannerGroups.forEach( (bannerGroup, index) => {
+      if ('fontScaling' in attributes) {
+        attributes.fontSize = (bannerGroup.group
+          .getChildren(children => children.name() === 'headline')[0] as Konva.Text).getAttr('initialFontSize');
+        attributes.fontSize *= 1 + (attributes.fontScaling / 10);
+      }
       const headlineChildren = bannerGroup.group.getChildren(children => children.name() === 'headline');
       const headline = headlineChildren[0];
       headline.setAttrs(attributes);
+      headline.cache();
     });
     this.redraw();
   }

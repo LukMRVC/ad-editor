@@ -20,7 +20,7 @@
   </mat-expansion-panel>
 
   <mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none" expanded="true">
-    <mat-expansion-panel-header>
+    <mat-expansion-panel-header >
       <mat-panel-title>
         Headline
       </mat-panel-title>
@@ -44,20 +44,43 @@
           </mat-autocomplete>
         </mat-form-field>
         <!-- Font alignment -->
-        <mat-button-toggle-group value="left" fxFlexAlign="center" (change)="headlineTextAlignChanged($event)" #textAlignGroup="matButtonToggleGroup">
-          <mat-button-toggle value="left" aria-label="Text align left">
-            <mat-icon>format_align_left</mat-icon>
-          </mat-button-toggle>
-          <mat-button-toggle value="center" aria-label="Text align center">
-            <mat-icon>format_align_center</mat-icon>
-          </mat-button-toggle>
-          <mat-button-toggle value="right" aria-label="Text align right">
-            <mat-icon>format_align_right</mat-icon>
-          </mat-button-toggle>
-          <mat-button-toggle value="justify" aria-label="Text align justify">
-            <mat-icon>format_align_justify</mat-icon>
-          </mat-button-toggle>
-        </mat-button-toggle-group>
+          <mat-button-toggle-group value="left" fxFlexAlign="start" (change)="headlineTextAlignChanged($event)" #textAlignGroup="matButtonToggleGroup">
+            <mat-button-toggle value="left" aria-label="Text align left">
+              <mat-icon>format_align_left</mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle value="center" aria-label="Text align center">
+              <mat-icon>format_align_center</mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle value="right" aria-label="Text align right">
+              <mat-icon>format_align_right</mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle value="justify" aria-label="Text align justify">
+              <mat-icon>format_align_justify</mat-icon>
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+
+        <!-- Text decoration -->
+        <div fxLayout="row" fxFlex fxLayoutGap="0.5rem">
+          <mat-button-toggle-group multiple (change)="konva.changeHeadline({textDecoration: headlineTextDecoration.join(' ')})"
+                                   [(ngModel)]="headlineTextDecoration" >
+            <mat-button-toggle value="underline" aria-label="Text align left">
+              <mat-icon>format_underline</mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle value="line-through" aria-label="Text align center">
+              <mat-icon>strikethrough_s</mat-icon>
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+
+          <mat-button-toggle-group multiple (change)="konva.changeHeadline({fontStyle: headlineFontStyle.join(' ')})"
+                                   [(ngModel)]="headlineFontStyle" >
+            <mat-button-toggle value="bold" aria-label="Text align left">
+              <mat-icon>format_bold</mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle value="italic" aria-label="Text align center">
+              <mat-icon>format_italic</mat-icon>
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
 
         <div fxFlex fxLayout="column">
           <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
@@ -68,7 +91,6 @@
                       [(ngModel)]="fontLineHeight" thumbLabel min="1" max="5" step="0.1" value="1"></mat-slider>
         </div>
 
-
         <div fxFlex fxLayout="column">
           <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
             <label>Letter spacing</label>
@@ -78,6 +100,60 @@
                       [(ngModel)]="fontLetterSpacing" thumbLabel min="-10" max="10" step="0.1" value="0"></mat-slider>
         </div>
 
+        <div fxFlex fxLayout="column">
+          <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
+            <label>Font size</label>
+            <span>{{ fontScaling }}%</span>
+          </div>
+          <mat-slider (change)="konva.changeHeadline({fontScaling: fontScaling})"
+                      [(ngModel)]="fontScaling" thumbLabel min="-10" max="10" step="0.1" value="0"></mat-slider>
+        </div>
+
+        <mat-form-field fxFlex appearance="outline">
+          <mat-label>Color</mat-label>
+          <input [(ngModel)]="fillColor" (keydown.enter)="fillPicker.close()" (focus)="fillPicker.open()"
+                 [ngxMatColorPicker]="fillPicker"
+                 (colorChange)="konva.changeHeadline({fill: fillColor.toHex8String()})" matInput #fillColourInput>
+          <ngx-mat-color-toggle matSuffix [for]="fillPicker"></ngx-mat-color-toggle>
+          <ngx-mat-color-picker defaultColor="#000" #fillPicker touchUi="false"></ngx-mat-color-picker>
+        </mat-form-field>
+
+        <mat-slide-toggle (change)="konva.changeHeadline({shadowEnabled: shadow.enabled})"
+                          [(ngModel)]="shadow.enabled">Shadow</mat-slide-toggle>
+        <div *ngIf="shadow.enabled" fxFlex fxLayout="column">
+          <mat-form-field fxFlex appearance="outline">
+            <mat-label>Shadow color</mat-label>
+            <input [(ngModel)]="shadow.color" (keydown.enter)="shadowPicker.close()" (focus)="shadowPicker.open()"
+                   [ngxMatColorPicker]="shadowPicker"
+                   (colorChange)="konva.changeHeadline({shadowColor: shadow.color.toHexString()})" matInput #shadowPickerInput>
+            <ngx-mat-color-toggle matSuffix [for]="shadowPicker"></ngx-mat-color-toggle>
+            <ngx-mat-color-picker defaultColor="#000" #shadowPicker touchUi="false"></ngx-mat-color-picker>
+          </mat-form-field>
+          <div fxFlex fxLayout="column">
+            <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
+              <label>Shadow blur</label>
+              <span>{{ shadow.blur }}px</span>
+            </div>
+            <mat-slider (change)="konva.changeHeadline({shadowBlur: shadow.blur})"
+                        [(ngModel)]="shadow.blur" thumbLabel min="0" max="20" step="1"></mat-slider>
+          </div>
+          <div fxFlex fxLayout="column">
+            <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
+              <label>Shadow X offset</label>
+              <span>{{ shadow.offsetX }}px</span>
+            </div>
+            <mat-slider (change)="konva.changeHeadline({shadowOffsetX: shadow.offsetX})"
+                        [(ngModel)]="shadow.offsetX" thumbLabel min="0" max="40" step="1"></mat-slider>
+          </div>
+          <div fxFlex fxLayout="column">
+            <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
+              <label>Shadow Y offset</label>
+              <span>{{ shadow.offsetY }}px</span>
+            </div>
+            <mat-slider (change)="konva.changeHeadline({shadowOffsetY: shadow.offsetY})"
+                        [(ngModel)]="shadow.offsetY" thumbLabel min="0" max="40" step="1"></mat-slider>
+          </div>
+        </div>
 
 
       </div>

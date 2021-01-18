@@ -72,17 +72,26 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
     return new Array(i);
   }
 
-  onFileChange($event: any): void {
-    const inputNode = this.imageInput.nativeElement;
-    if (typeof (FileReader) !== 'undefined') {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        if (reader.readyState === reader.DONE) {
-          // console.log(reader.result);
-          this.imageUploaded.emit( { file: inputNode.files[0], buffer: reader.result as ArrayBuffer } );
-        }
-      };
-      const file = reader.readAsArrayBuffer(inputNode.files[0]);
+  readFile(file: Blob): void {
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      if (reader.readyState === reader.DONE) {
+        this.imageSources.push(reader.result as string);
+        const image = new Image();
+        image.src = reader.result as string;
+        image.onload = () => {
+          this.konva.drawLogo({ image, width: image.width, height: image.height, draggable: true });
+        };
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  onFileChange($event: Event): void {
+
+    const file = ($event.target as HTMLInputElement).files[0];
+    if (file !== null && (file.type === 'image/jpeg' || file.type === 'image/png')) {
+      this.readFile(file);
     }
   }
 
@@ -94,29 +103,7 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
     for (const droppedFile of $event) {
       if (droppedFile.fileEntry.isFile) {
         const fileEntry = droppedFile.fileEntry as FileSystemFileEntry;
-        fileEntry.file( (file: File) => {
-          const reader = new FileReader();
-          reader.onload = (e: ProgressEvent<FileReader>) => {
-            if (reader.readyState === reader.DONE) {
-              // console.log('Image uploaded', reader.result);
-              this.imageSources.push(reader.result as string);
-              const image = new window.Image();
-              image.src = reader.result as string;
-              image.onload = () => {
-                this.konva.drawLogo({
-                  image,
-                  width: image.width,
-                  height: image.height,
-                  draggable: true,
-                });
-              };
-
-              // this.imageUploaded.emit();
-            }
-          };
-          reader.readAsDataURL(file);
-        });
-
+        fileEntry.file( (file: File) => this.readFile(file));
       }
     }
   }

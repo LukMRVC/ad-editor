@@ -1,0 +1,28 @@
+<mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none" expanded="true">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Background
+    </mat-panel-title>
+  </mat-expansion-panel-header>
+  <ng-template matExpansionPanelContent>
+    <div fxLayout="column" fxLayoutAlign="start" fxLayoutGap="0.5rem">
+      <button #uploadBtn (click)="fileInput.click()" mat-raised-button color="primary">Upload background</button>
+      <input #fileInput (change)="onFileChange($event)" type="file" name="file" style="display: none;" accept="image/jpeg,image/png">
+      <ngx-file-drop dropZoneLabel="Drop background image here" (onFileDrop)="fileDropped($event)"></ngx-file-drop>
+
+      <div fxLayout="row wrap" fxLayoutGap="0.25rem" class="bg-gallery">
+        <img fxFlex *ngFor="let imageSource of this.imageSources" [src]="imageSource" />
+      </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Background fit</mat-label>
+        <mat-select [(ngModel)]="selectedBackgroundFit" (selectionChange)="konva.positionBackground($event.value); konva.redraw()">
+          <mat-option [value]="opt" *ngFor="let opt of this.imageFitOptions">
+            {{ opt }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+    </div>
+  </ng-template>
+</mat-expansion-panel>

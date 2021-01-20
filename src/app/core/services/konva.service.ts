@@ -1,17 +1,16 @@
 import {EventEmitter, Injectable} from '@angular/core';
 import Konva from 'konva';
-import { StageConfig } from 'konva/types/Stage';
-import { LayerConfig } from 'konva/types/Layer';
-import { ImageConfig } from 'konva/types/shapes/Image';
-import { TransformerConfig } from 'konva/types/shapes/Transformer';
-import { BehaviorSubject } from 'rxjs';
+import {StageConfig} from 'konva/types/Stage';
+import {LayerConfig} from 'konva/types/Layer';
+import {ImageConfig} from 'konva/types/shapes/Image';
+import {TransformerConfig} from 'konva/types/shapes/Transformer';
+import {BehaviorSubject} from 'rxjs';
 import {RectConfig} from 'konva/types/shapes/Rect';
 import {RegularPolygonConfig} from 'konva/types/shapes/RegularPolygon';
 import {FlatLayerData, LayerData} from '../../editor/components/stage-layers/stage-layers.component';
 import {TextConfig} from 'konva/types/shapes/Text';
 import {takeWhile} from 'rxjs/operators';
 import {Banner, Point2D} from '@core/models/banner-layout';
-import {log} from 'util';
 
 @Injectable({
   providedIn: 'root',
@@ -32,7 +31,7 @@ export class KonvaService {
   public layers: Konva.Layer[] = [];
   public addNewShapeToNewLayer = false;
   private banners: Banner[];
-  private bannerGroups: {group: Konva.Group, bg: Konva.Rect}[] = [];
+  private bannerGroups: {group: Konva.Group, bg: Konva.Shape}[] = [];
   private shouldTransformRelatives = true;
 
   private $selectedObject: BehaviorSubject<'image' | 'text' | 'shape' | 'background'> =
@@ -421,9 +420,8 @@ export class KonvaService {
         transformable: false,
       }, false);
       const label = this.bannerLabel({x: 0, y: posY + banner.layout.dimensions.height}, `${banner.layout.dimensions.width}x${banner.layout.dimensions.height}`);
-
+      label.y( label.y() - label.height() );
       label.x( posX + banner.layout.dimensions.width - label.width() );
-      group.clipHeight(group.clipHeight() + label.height());
       bg.cache();
       label.cache();
 
@@ -450,12 +448,14 @@ export class KonvaService {
     const label = new Konva.Label({
       y: position.y,
       opacity: 0.75,
+      transformable: false,
     });
 
     label.add(new Konva.Tag({
       fill: '#fcfcfc',
       cornerRadius: 5,
       lineJoin: 'round',
+      transformable: false,
     }));
 
     label.add(new Konva.Text({
@@ -464,6 +464,7 @@ export class KonvaService {
       fontSize: 15,
       padding: 5,
       fill: 'black',
+      transformable: false,
     }));
 
     return label;
@@ -523,12 +524,10 @@ export class KonvaService {
   public changeHeadline(attributes: Konva.TextConfig): void {
     this.bannerGroups.forEach( (bannerGroup, index) => {
       if ('fontScaling' in attributes) {
-        attributes.fontSize = (bannerGroup.group
-          .getChildren(children => children.name() === 'headline')[0] as Konva.Text).getAttr('initialFontSize');
+        attributes.fontSize = (bannerGroup.group.findOne('.headline') as Konva.Text).getAttr('initialFontSize');
         attributes.fontSize *= 1 + (attributes.fontScaling / 10);
       }
-      const headlineChildren = bannerGroup.group.getChildren(children => children.name() === 'headline');
-      const headline = headlineChildren[0];
+      const headline = bannerGroup.group.findOne('.headline');
       headline.setAttrs(attributes);
       headline.cache();
     });
@@ -536,7 +535,120 @@ export class KonvaService {
   }
 
   public drawBackground(conf: Konva.ImageConfig): void {
+    this.bannerGroups.forEach( (bannerGroup, index) => {
+      // destroy old background so we dont waste memory
+      bannerGroup.group.getChildren(children => children.name() === 'bg-image').each(c => c.destroy());
 
+      const bgImage = new Konva.Image({
+        name: 'bg-image',
+        x: bannerGroup.group.clipX(),
+        y: bannerGroup.group.clipY(),
+        width: this.banners[index].layout.dimensions.width,
+        height: this.banners[index].layout.dimensions.height,
+        ...conf,
+      });
+      bgImage.on('dragstart', dragstart => {
+        dragstart.target.setAttr('dragJustStarted', true);
+      });
+
+      bgImage.on('dragmove', dragging => {
+        bgImage.x(bannerGroup.group.clipX());
+        bgImage.y(bannerGroup.group.clipY());
+        const justStarted = dragging.target.getAttr('dragJustStarted');
+        if (justStarted) {
+          dragging.target.setAttr('dragFromX', dragging.evt.clientX);
+          dragging.target.setAttr('dragFromY', dragging.evt.clientY);
+          dragging.target.setAttr('dragJustStarted', false);
+          return;
+        }
+        const dragDeltaX = dragging.evt.clientX - dragging.target.getAttr('dragFromX');
+        const dragDeltaY = dragging.evt.clientY - dragging.target.getAttr('dragFromY');
+        dragging.target.setAttr('dragFromX', dragging.evt.clientX);
+        dragging.target.setAttr('dragFromY', dragging.evt.clientY);
+
+        this.bannerGroups.forEach(bannerGroup2 => {
+          const img = (bannerGroup2.group.findOne('.bg-image') as Konva.Image);
+          if (img.cropX() - dragDeltaX > 0 && (img.cropX() - dragDeltaX + img.cropWidth()) < img.image().width) {
+            img.cropX( img.cropX() - dragDeltaX );
+          }
+          if (img.cropY() - dragDeltaY > 0 && (img.cropY() - dragDeltaY + img.cropHeight()) < img.image().height) {
+            img.cropY( img.cropY() - dragDeltaY );
+          }
+          img.cache();
+          img.draw();
+        });
+        // bgImage.cropX( bgImage.cropX() - dragDeltaX );
+        // bgImage.cropY( bgImage.cropY() - dragDeltaY );
+        // bgImage.cache();
+        // bgImage.draw();
+      });
+
+      bannerGroup.group.add(bgImage);
+      bgImage.moveToBottom();
+      bannerGroup.bg.moveToBottom();
+    });
+    this.positionBackground('center-middle');
+    this.redraw();
+  }
+
+  public positionBackground(position: string): void {
+    this.bannerGroups.forEach((bannerGroup, index) => {
+      const bgImage = bannerGroup.group.findOne('.bg-image');
+      if (!bgImage) { return; }
+      bgImage.setAttr('lastCropUsed', position);
+      const sourceImageWidth = (bgImage as Konva.Image).image().width as number;
+      const sourceImageHeight = (bgImage as Konva.Image).image().height as number;
+      // const {width, height} = { width: (bgImage as Konva.Image).image().width, height: (bgImage as Konva.Image).image().height };
+      const aspectRatio = bgImage.width() / bgImage.height();
+      let newWidth = 0;
+      let newHeight = 0;
+      const imageRatio = sourceImageWidth / sourceImageHeight;
+      if (aspectRatio >= imageRatio) {
+        newWidth = bgImage.width();
+        newHeight = bgImage.width() / aspectRatio;
+      } else {
+        newWidth = bgImage.height() * aspectRatio;
+        newHeight = bgImage.height();
+      }
+      let x = 0;
+      let y = 0;
+      if (position === 'left-top') {
+      } else if (position === 'left-middle') {
+        y = (sourceImageHeight - newHeight) / 2;
+      } else if (position === 'left-bottom') {
+        y = sourceImageHeight - newHeight;
+      } else if (position === 'center-top') {
+        x = (sourceImageWidth - newWidth) / 2;
+      } else if (position === 'center-middle') {
+        x = (sourceImageWidth - newWidth) / 2;
+        y = (sourceImageHeight - newHeight) / 2;
+      } else if (position === 'center-bottom') {
+        x = (sourceImageWidth - newWidth) / 2;
+        y = sourceImageHeight - newHeight;
+      } else if (position === 'right-top') {
+        x = sourceImageWidth - newWidth;
+      } else if (position === 'right-middle') {
+        x = sourceImageWidth - newWidth;
+        y = (sourceImageHeight - newHeight) / 2;
+      } else if (position === 'right-bottom') {
+        x = sourceImageWidth - newWidth;
+        y = sourceImageHeight - newHeight;
+      } else if (position === 'scale') {
+        newWidth = sourceImageWidth;
+        newHeight = sourceImageHeight;
+      } else {
+        console.error(
+          new Error('Unknown clip position property - ' + position)
+        );
+      }
+      (bgImage as Konva.Image).crop({
+        x,
+        y,
+        width: newWidth,
+        height: newHeight,
+      });
+      bgImage.cache();
+    });
   }
 
   public drawButton(): void {
@@ -557,9 +669,8 @@ export class KonvaService {
     // console.log('Computed percentages', percentages);
     this.bannerGroups.forEach((bannerGroup, index) => {
       if (bannerGroup.group === dragEvent.target.getParent()) { return; }
-      const relatives = bannerGroup.group.getChildren(shape => shape.name() === shapeName);
-      if (relatives.length <= 0) { return; }
-      const relativeShape = relatives[0] as Konva.Shape;
+      const relativeShape = bannerGroup.group.findOne(`.${shapeName}`);
+      if (!relativeShape) { return; }
       dimensions = {
         width: relativeShape.width() * relativeShape.scaleX(),
         height: relativeShape.height() * relativeShape.scaleY()
@@ -581,9 +692,8 @@ export class KonvaService {
     const scaleDelta = { x: currentScale.x - initialScale.x, y: currentScale.y - initialScale.y };
     this.bannerGroups.forEach(bannerGroup => {
       if (bannerGroup.group === transformEvent.target.getParent()) { return; }
-      const relatives = bannerGroup.group.getChildren(shape => shape.name() === shapeName);
-      if (relatives.length <= 0) { return; }
-      const relative = relatives[0];
+      const relative = bannerGroup.group.findOne(`.${shapeName}`);
+      if (!relative) { return; }
       relative.scaleX( relative.scaleX() + scaleDelta.x );
       relative.scaleY( relative.scaleY() + scaleDelta.y );
 

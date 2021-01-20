@@ -1,0 +1,19 @@
+<mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Logo
+    </mat-panel-title>
+  </mat-expansion-panel-header>
+  <ng-template matExpansionPanelContent>
+    <div fxLayout="column" fxLayoutAlign="start" fxLayoutGap="0.5rem">
+      <button #uploadBtn (click)="fileInput.click()" mat-raised-button color="primary">Upload logo</button>
+      <input #fileInput (change)="onFileChange($event)" type="file" name="file" style="display: none;" accept="image/jpeg,image/png">
+      <ngx-file-drop dropZoneLabel="Drop logo here" (onFileDrop)="fileDropped($event)"></ngx-file-drop>
+
+      <div fxLayout="row wrap" fxLayoutGap="0.25rem" class="logo-gallery">
+        <img fxFlex *ngFor="let imageSource of this.imageSources" [src]="imageSource" />
+      </div>
+
+    </div>
+  </ng-template>
+</mat-expansion-panel>

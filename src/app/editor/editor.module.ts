@@ -20,6 +20,10 @@ import {
   faLongArrowAltUp, faLongArrowAltDown, faAngleDoubleUp, faAngleDoubleDown, faAlignCenter, faAlignLeft,
   faAlignRight, faAlignJustify
 } from '@fortawesome/free-solid-svg-icons';
+import { LogoComponent } from './components/logo/logo.component';
+import { HeadlineComponent } from './components/headline/headline.component';
+import { BackgroundComponent } from './components/background/background.component';
+import { ButtonComponent } from './components/button/button.component';
 
 @NgModule({
   declarations: [
@@ -27,6 +31,10 @@ import {
     DrawToolbarComponent,
     CanvasObjectToolbarComponent,
     StageLayersComponent,
+    LogoComponent,
+    HeadlineComponent,
+    BackgroundComponent,
+    ButtonComponent,
   ],
   imports: [
     CommonModule,

@@ -7,6 +7,9 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ButtonComponent implements OnInit {
 
+  cornerRadius = 0;
+  content = '';
+
   constructor() { }
 
   ngOnInit(): void {

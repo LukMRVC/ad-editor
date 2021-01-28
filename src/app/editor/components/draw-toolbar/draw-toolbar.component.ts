@@ -1,7 +1,6 @@
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {KonvaService} from '@core/services/konva.service';
 import {CdkDragEnd} from '@angular/cdk/drag-drop';
-import {WebFont} from '@core/services/google-font.service';
 
 @Component({
   selector: 'app-draw-toolbar',

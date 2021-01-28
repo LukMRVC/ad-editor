@@ -1,1 +1,44 @@
-<p>button works!</p>
+<mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Button
+    </mat-panel-title>
+  </mat-expansion-panel-header>
+  <ng-template matExpansionPanelContent>
+    <mat-tab-group dynamicHeight mat-align-tabs="start">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>text_fields</mat-icon> Text
+        </ng-template>
+
+        <div fxLayout="column" style="margin-top: .5rem" fxLayoutGap="0.5rem">
+
+          <mat-form-field appearance="outline">
+            <mat-label>Content</mat-label>
+            <input matInput [(ngModel)]="content" type="text" placeholder="Button text" />
+          </mat-form-field>
+
+          <div fxFlex fxLayout="column">
+            <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
+              <label>Corder radius</label>
+              <span>{{ cornerRadius }}</span>
+            </div>
+            <mat-slider [(ngModel)]="cornerRadius" min="0" step="1" max="100" thumbLabel></mat-slider>
+          </div>
+
+        </div>
+
+
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>palette</mat-icon> Style
+        </ng-template>
+
+
+      </mat-tab>
+
+    </mat-tab-group>
+
+  </ng-template>
+</mat-expansion-panel>

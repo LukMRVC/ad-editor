@@ -22,7 +22,7 @@ export class BannerService {
         {y: 5, x: 90},
       headlinePosition: {y: 25, x: 1},
       headlineFontSize: 40,
-      buttonPosition: {y: 80, x: 90},
+      buttonPosition: {y: 80, x: 70},
     },
     {
       name: 'large-rectangle',
@@ -31,7 +31,7 @@ export class BannerService {
       logoPosition: {y: 5, x: 90},
       headlinePosition: {y: 25, x: 1},
       headlineFontSize: 32,
-      buttonPosition: {y: 80, x: 90},
+      buttonPosition: {y: 80, x: 70},
     },
     {
       name: 'rectangle',
@@ -40,7 +40,7 @@ export class BannerService {
       logoPosition: {y: 5, x: 90},
       headlinePosition: {y: 25, x: 1},
       headlineFontSize: 28,
-      buttonPosition: {y: 80, x: 90},
+      buttonPosition: {y: 80, x: 70},
     },
     {
       name: 'small-square',
@@ -49,7 +49,7 @@ export class BannerService {
       // logoPosition: {y: 5, x: 90},
       headlinePosition: {y: 5, x: 1},
       headlineFontSize: 24,
-      buttonPosition: {y: 80, x: 90},
+      buttonPosition: {y: 80, x: 70},
     },
     {
       name: 'square',
@@ -58,7 +58,7 @@ export class BannerService {
       logoPosition: {y: 5, x: 90},
       headlinePosition: {y: 25, x: 1},
       headlineFontSize: 24,
-      buttonPosition: {y: 80, x: 90},
+      buttonPosition: {y: 80, x: 70},
     },
     {
       name: 'wide-skyscraper',
@@ -67,7 +67,7 @@ export class BannerService {
       logoPosition: {y: 5, x: 90},
       headlinePosition: {y: 25, x: 1},
       headlineFontSize: 24,
-      buttonPosition: {y: 80, x: 90},
+      buttonPosition: {y: 80, x: 70},
     },
     {
       name: 'half-page-ad',
@@ -76,7 +76,7 @@ export class BannerService {
       logoPosition: {y: 5, x: 90},
       headlinePosition: {y: 25, x: 1},
       headlineFontSize: 32,
-      buttonPosition: {y: 80, x: 90},
+      buttonPosition: {y: 80, x: 70},
     },
     {
       name: 'banner',
@@ -85,7 +85,7 @@ export class BannerService {
       // logoPosition: {y: 5, x: 90},
       headlinePosition: {y: 5, x: 1},
       headlineFontSize: 18,
-      buttonPosition: {y: 80, x: 90},
+      buttonPosition: {y: 50, x: 70},
     },
     {
       name: 'leaderboard',
@@ -94,7 +94,7 @@ export class BannerService {
       // logoPosition: {y: 90, x: 90},
       headlinePosition: {y: 5, x: 1},
       headlineFontSize: 28,
-      buttonPosition: {y: 80, x: 90},
+      buttonPosition: {y: 60, x: 70},
     },
     {
       name: 'large-leaderboard',
@@ -103,7 +103,7 @@ export class BannerService {
       // logoPosition: {y: 5, x: 90},
       headlinePosition: {y: 5, x: 1},
       headlineFontSize: 28,
-      buttonPosition: {y: 80, x: 90},
+      buttonPosition: {y: 60, x: 70},
     },
   ];
 

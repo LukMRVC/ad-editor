@@ -24,6 +24,7 @@ import { LogoComponent } from './components/logo/logo.component';
 import { HeadlineComponent } from './components/headline/headline.component';
 import { BackgroundComponent } from './components/background/background.component';
 import { ButtonComponent } from './components/button/button.component';
+import { FontChooserComponent } from './components/font-chooser/font-chooser.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import { ButtonComponent } from './components/button/button.component';
     HeadlineComponent,
     BackgroundComponent,
     ButtonComponent,
+    FontChooserComponent,
   ],
   imports: [
     CommonModule,

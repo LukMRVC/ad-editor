@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {environment} from '@env/environment';
+import {shareReplay} from 'rxjs/operators';
 
 
 @Injectable({
@@ -23,7 +24,7 @@ export class GoogleFontService {
         key: this.apiKey,
         sort: sort ?? 'alpha',
       }
-    });
+    }).pipe(shareReplay({ bufferSize: 1, refCount: true }));
   }
 }
 

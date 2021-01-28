@@ -358,21 +358,23 @@ export class KonvaService {
     this.canvas.container().classList.remove('drawing');
   }
 
-  button(): Konva.Label {
+  button(conf: Konva.ShapeConfig): Konva.Label {
+    // labels are groups that contain a text ang tag shape,
     const button = new Konva.Label({
-      x: 400,
-      y: 500,
-      opacity: 0.75,
-      draggable: false,
+      x: conf.x,
+      y: conf.y,
+      opacity: 1,
+      draggable: true,
     });
 
     button.add(new Konva.Tag({
-      fill: 'black',
+      fill: 'red',
       lineJoin: 'round',
-      shadowColor: 'black',
-      shadowBlur: 10,
-      shadowOffset: { x: 10, y: 10 },
-      shadowOpacity: 0.5
+      cornerRadius: 15,
+      // shadowColor: 'black',
+      // shadowBlur: 10,
+      // shadowOffset: { x: 10, y: 10 },
+      // shadowOpacity: 0.5
     }));
 
     button.add(new Konva.Text({
@@ -380,7 +382,10 @@ export class KonvaService {
       fontFamily: 'Calibri',
       fontSize: 18,
       padding: 5,
-      fill: 'white'
+      align: 'center',
+      verticalAlign: 'middle',
+      fill: 'white',
+      transformable: false,
     }));
 
     return button;
@@ -652,7 +657,16 @@ export class KonvaService {
   }
 
   public drawButton(): void {
-
+    this.banners.forEach( (banner, index) => {
+      const dimensions = { width: banner.layout.dimensions.width / 3, height: banner.layout.dimensions.height / 5 };
+      const {x, y} = banner.getPixelPositionFromPercentage(banner.layout.buttonPosition, dimensions);
+      const offsetX = this.bannerGroups[index].group.clipX();
+      const offsetY = this.bannerGroups[index].group.clipY();
+      const button = this.button({ x: x + offsetX, y: y + offsetY });
+      this.bannerGroups[index].group.add(button);
+    });
+    this.transformers.moveToTop();
+    this.redraw();
   }
 
   private moveAllRelatives(dragEvent: Konva.KonvaEventObject<Konva.Shape>, bannerGroupIndex: number, shapeName: string): void {

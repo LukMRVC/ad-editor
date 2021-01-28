@@ -10,18 +10,7 @@
         <mat-label>Headline</mat-label>
         <textarea [(ngModel)]="headlineText" (input)="konva.changeHeadline({text: headlineText})" matInput></textarea>
       </mat-form-field>
-      <mat-form-field  appearance="outline">
-        <mat-label>Font family</mat-label>
-        <input [formControl]="fontFamilyControl" type="text" matInput aria-label="Font family" [matAutocomplete]="auto">
-        <!-- Font family -->
-        <mat-autocomplete (optionSelected)="loadFont($event)"
-                          [displayWith]="autocompleteDisplay"
-                          autoActiveFirstOption="true" #auto="matAutocomplete">
-          <mat-option *ngFor="let font of this.filteredFonts | async" [value]="font">
-            {{ font.family }}
-          </mat-option>
-        </mat-autocomplete>
-      </mat-form-field>
+      <app-font-chooser (fontFamilyLoaded)="konva.changeHeadline({ fontFamily: $event })"></app-font-chooser>
       <!-- Font alignment -->
       <mat-button-toggle-group value="left" fxFlexAlign="start" (change)="konva.changeHeadline({align: $event.value})"
                                #textAlignGroup="matButtonToggleGroup">

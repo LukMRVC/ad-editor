@@ -12,8 +12,6 @@ export class HeadlineComponent implements OnInit {
 
   headlineText = '';
   headlineTextPadding = 10;
-  headlineTextDecoration = [];
-  headlineFontStyle = [];
   fillColor: Color = new Color(0, 0, 0, 255);
 
   fontSizeControl: FormControl = new FormControl();

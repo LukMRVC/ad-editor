@@ -18,12 +18,29 @@
             <input matInput [(ngModel)]="content" type="text" placeholder="Button text" />
           </mat-form-field>
 
+          <app-font-chooser (fontFamilyLoaded)="konva.changeButton({ fontFamily: $event })"></app-font-chooser>
+
+          <mat-form-field fxFlex appearance="outline">
+            <mat-label>Text color</mat-label>
+            <input [(ngModel)]="fontFillColor" (keydown.enter)="fontFillPicker.close()" (focus)="fontFillPicker.open()"
+                   [ngxMatColorPicker]="fontFillPicker"
+                   (colorChange)="konva.changeButton({fill: fontFillColor.toHex8String()})" matInput #fillColourInput>
+            <ngx-mat-color-toggle matSuffix [for]="fontFillPicker"></ngx-mat-color-toggle>
+            <ngx-mat-color-picker defaultColor="#000" #fontFillPicker touchUi="false"></ngx-mat-color-picker>
+          </mat-form-field>
+
+
+          <app-text-h-alignment></app-text-h-alignment>
+          <app-text-v-alignment></app-text-v-alignment>
+          <app-text-decoration></app-text-decoration>
+
+
           <div fxFlex fxLayout="column">
             <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-              <label>Corder radius</label>
-              <span>{{ cornerRadius }}</span>
+              <label>Font size</label>
+              <span>{{ fontSize }}</span>
             </div>
-            <mat-slider [(ngModel)]="cornerRadius" min="0" step="1" max="100" thumbLabel></mat-slider>
+            <mat-slider [(ngModel)]="fontSize" min="0" step="1" max="100" thumbLabel></mat-slider>
           </div>
 
         </div>
@@ -34,7 +51,15 @@
         <ng-template mat-tab-label>
           <mat-icon>palette</mat-icon> Style
         </ng-template>
-
+        <div fxLayout="column" fxLayoutGap="0.5rem">
+          <div fxFlex fxLayout="column">
+            <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
+              <label>Corder radius</label>
+              <span>{{ cornerRadius }}</span>
+            </div>
+            <mat-slider [(ngModel)]="cornerRadius" min="0" step="1" max="100" thumbLabel></mat-slider>
+          </div>
+        </div>
 
       </mat-tab>
 

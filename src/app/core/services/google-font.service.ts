@@ -14,17 +14,21 @@ export class GoogleFontService {
   apiKey = environment.fontApiKey;
   baseUrl = 'https://www.googleapis.com/webfonts/v1/webfonts';
 
+  fontData$: Observable<WebFontList>;
+
   constructor(
     public httpClient: HttpClient
-  ) { }
-
-  getAll$(sort: null|'alpha'|'date'|'popularity'|'style'|'trending' = null): Observable<WebFontList> {
-    return this.httpClient.get<WebFontList>(`${this.baseUrl}`, {
+  ) {
+    this.fontData$ = this.httpClient.get<WebFontList>(`${this.baseUrl}`, {
       params: {
         key: this.apiKey,
-        sort: sort ?? 'alpha',
+        sort: 'popularity',
       }
     }).pipe(shareReplay({ bufferSize: 1, refCount: true }));
+  }
+
+  getAll$(): Observable<WebFontList> {
+    return this.fontData$;
   }
 }
 

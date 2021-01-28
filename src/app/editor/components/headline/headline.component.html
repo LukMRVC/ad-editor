@@ -11,45 +11,11 @@
         <textarea [(ngModel)]="headlineText" (input)="konva.changeHeadline({text: headlineText})" matInput></textarea>
       </mat-form-field>
       <app-font-chooser (fontFamilyLoaded)="konva.changeHeadline({ fontFamily: $event })"></app-font-chooser>
-      <!-- Font alignment -->
-      <mat-button-toggle-group value="left" fxFlexAlign="start" (change)="konva.changeHeadline({align: $event.value})"
-                               #textAlignGroup="matButtonToggleGroup">
-        <mat-button-toggle value="left" aria-label="Text align left">
-          <mat-icon>format_align_left</mat-icon>
-        </mat-button-toggle>
-        <mat-button-toggle value="center" aria-label="Text align center">
-          <mat-icon>format_align_center</mat-icon>
-        </mat-button-toggle>
-        <mat-button-toggle value="right" aria-label="Text align right">
-          <mat-icon>format_align_right</mat-icon>
-        </mat-button-toggle>
-        <mat-button-toggle value="justify" aria-label="Text align justify">
-          <mat-icon>format_align_justify</mat-icon>
-        </mat-button-toggle>
-      </mat-button-toggle-group>
 
-      <!-- Text decoration -->
-      <div fxLayout="row" fxFlex fxLayoutGap="0.5rem">
-        <mat-button-toggle-group multiple (change)="konva.changeHeadline({textDecoration: headlineTextDecoration.join(' ')})"
-                                 [(ngModel)]="headlineTextDecoration" >
-          <mat-button-toggle value="underline" aria-label="Text align left">
-            <mat-icon>format_underline</mat-icon>
-          </mat-button-toggle>
-          <mat-button-toggle value="line-through" aria-label="Text align center">
-            <mat-icon>strikethrough_s</mat-icon>
-          </mat-button-toggle>
-        </mat-button-toggle-group>
+      <app-text-h-alignment (alignmentChanged)="konva.changeHeadline({align: $event})"></app-text-h-alignment>
 
-        <mat-button-toggle-group multiple (change)="konva.changeHeadline({fontStyle: headlineFontStyle.join(' ')})"
-                                 [(ngModel)]="headlineFontStyle" >
-          <mat-button-toggle value="bold" aria-label="Text align left">
-            <mat-icon>format_bold</mat-icon>
-          </mat-button-toggle>
-          <mat-button-toggle value="italic" aria-label="Text align center">
-            <mat-icon>format_italic</mat-icon>
-          </mat-button-toggle>
-        </mat-button-toggle-group>
-      </div>
+      <app-text-decoration (decorationChanged)="konva.changeHeadline($event)"></app-text-decoration>
+
 
       <div fxFlex fxLayout="column">
         <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">

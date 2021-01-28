@@ -669,6 +669,10 @@ export class KonvaService {
     this.redraw();
   }
 
+  public changeButton(config: Konva.ShapeConfig|Konva.TextConfig): void {
+
+  }
+
   private moveAllRelatives(dragEvent: Konva.KonvaEventObject<Konva.Shape>, bannerGroupIndex: number, shapeName: string): void {
     if (!this.shouldTransformRelatives) { return; }
     let dimensions = {

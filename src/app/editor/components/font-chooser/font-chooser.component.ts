@@ -2,7 +2,7 @@ import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core'
 import {GoogleFontService, WebFont} from '@core/services/google-font.service';
 import {FormControl} from '@angular/forms';
 import {Observable, Subscription} from 'rxjs';
-import {map, shareReplay, startWith} from 'rxjs/operators';
+import {map, startWith} from 'rxjs/operators';
 import {MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import * as WebFontLoader from 'webfontloader';
 
@@ -30,7 +30,7 @@ export class FontChooserComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
-    this.subscriptions.add(this.googleFont.getAll$('popularity').subscribe(
+    this.subscriptions.add(this.googleFont.getAll$().subscribe(
       fontList => this.fontList = fontList.items,
       error => console.log(error))
     );

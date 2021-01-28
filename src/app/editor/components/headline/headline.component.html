@@ -53,42 +53,8 @@
         <ngx-mat-color-picker defaultColor="#000" #fillPicker touchUi="false"></ngx-mat-color-picker>
       </mat-form-field>
 
-      <mat-slide-toggle (change)="konva.changeHeadline({shadowEnabled: shadow.enabled})"
-                        [(ngModel)]="shadow.enabled">Shadow</mat-slide-toggle>
-      <div *ngIf="shadow.enabled" fxFlex fxLayout="column">
-        <mat-form-field fxFlex appearance="outline">
-          <mat-label>Shadow color</mat-label>
-          <input [(ngModel)]="shadow.color" (keydown.enter)="shadowPicker.close()" (focus)="shadowPicker.open()"
-                 [ngxMatColorPicker]="shadowPicker"
-                 (colorChange)="konva.changeHeadline({shadowColor: shadow.color.toHexString()})" matInput #shadowPickerInput>
-          <ngx-mat-color-toggle matSuffix [for]="shadowPicker"></ngx-mat-color-toggle>
-          <ngx-mat-color-picker defaultColor="#000" #shadowPicker touchUi="false"></ngx-mat-color-picker>
-        </mat-form-field>
-        <div fxFlex fxLayout="column">
-          <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-            <label>Shadow blur</label>
-            <span>{{ shadow.blur }}px</span>
-          </div>
-          <mat-slider (change)="konva.changeHeadline({shadowBlur: shadow.blur})"
-                      [(ngModel)]="shadow.blur" thumbLabel min="0" max="20" step="1"></mat-slider>
-        </div>
-        <div fxFlex fxLayout="column">
-          <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-            <label>Shadow X offset</label>
-            <span>{{ shadow.offsetX }}px</span>
-          </div>
-          <mat-slider (change)="konva.changeHeadline({shadowOffsetX: shadow.offsetX})"
-                      [(ngModel)]="shadow.offsetX" thumbLabel min="0" max="40" step="1"></mat-slider>
-        </div>
-        <div fxFlex fxLayout="column">
-          <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-            <label>Shadow Y offset</label>
-            <span>{{ shadow.offsetY }}px</span>
-          </div>
-          <mat-slider (change)="konva.changeHeadline({shadowOffsetY: shadow.offsetY})"
-                      [(ngModel)]="shadow.offsetY" thumbLabel min="0" max="40" step="1"></mat-slider>
-        </div>
-      </div>
+      <!-- Shadow controls -->
+      <app-shadow shadowFor="headline" (shadowChange)="konva.changeHeadline($event)"></app-shadow>
 
 
     </div>

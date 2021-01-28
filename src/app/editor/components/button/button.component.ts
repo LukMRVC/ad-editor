@@ -14,11 +14,9 @@ export class ButtonComponent implements OnInit {
   fontSize = 0;
 
   fontFillColor: Color = new Color(0, 0, 0, 255);
-  fontShadowColor: Color = new Color(0, 0, 0, 255);
 
   buttonFillColor: Color = new Color(255, 255, 255, 255);
-  buttonShadowColor: Color = new Color(0, 0, 0, 255);
-
+  padding = 5;
 
   constructor(
     public konva: KonvaService,

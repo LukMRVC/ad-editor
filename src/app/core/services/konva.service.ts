@@ -361,6 +361,7 @@ export class KonvaService {
   button(conf: Konva.ShapeConfig): Konva.Label {
     // labels are groups that contain a text ang tag shape,
     const button = new Konva.Label({
+      name: 'button',
       x: conf.x,
       y: conf.y,
       opacity: 1,
@@ -368,19 +369,21 @@ export class KonvaService {
     });
 
     button.add(new Konva.Tag({
+      name: 'button-tag',
       fill: 'red',
       lineJoin: 'round',
-      cornerRadius: 15,
-      // shadowColor: 'black',
-      // shadowBlur: 10,
-      // shadowOffset: { x: 10, y: 10 },
-      // shadowOpacity: 0.5
+      cornerRadius: 0,
+      shadowEnabled: false,
+      shadowBlur: 5,
+      shadowColor: '#000',
     }));
 
     button.add(new Konva.Text({
+      name: 'button-text',
       text: 'Button 1',
       fontFamily: 'Calibri',
       fontSize: 18,
+      initialFontSize: 18,
       padding: 5,
       align: 'center',
       verticalAlign: 'middle',
@@ -663,14 +666,33 @@ export class KonvaService {
       const offsetX = this.bannerGroups[index].group.clipX();
       const offsetY = this.bannerGroups[index].group.clipY();
       const button = this.button({ x: x + offsetX, y: y + offsetY });
+      button.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, 'button'));
+
       this.bannerGroups[index].group.add(button);
     });
     this.transformers.moveToTop();
     this.redraw();
   }
 
-  public changeButton(config: Konva.ShapeConfig|Konva.TextConfig): void {
+  public changeButton(changeOf: 'style'|'text', config: Konva.TagConfig|Konva.TextConfig): void {
+    if (changeOf === 'style') {
+      this.bannerGroups.forEach( (bannerGroup, index) => {
+        const btn = bannerGroup.group.findOne('.button');
+        const tag = bannerGroup.group.findOne('.button-tag');
+        tag.setAttrs(config);
+      });
+    } else {
+      this.bannerGroups.forEach( (bannerGroup, index) => {
+        const text = bannerGroup.group.findOne('.button-text');
+        if ('fontScaling' in config) {
+          config.fontSize = text.getAttr('initialFontSize');
+          config.fontSize *= 1 + (config.fontScaling / 10);
+        }
+        text.setAttrs(config);
+      });
 
+    }
+    this.redraw();
   }
 
   private moveAllRelatives(dragEvent: Konva.KonvaEventObject<Konva.Shape>, bannerGroupIndex: number, shapeName: string): void {

@@ -1,5 +1,3 @@
-import {max} from 'rxjs/operators';
-
 export class Banner {
 
   constructor(layout: BannerLayout) {
@@ -9,11 +7,14 @@ export class Banner {
   layout: BannerLayout;
 
   public getPercentageCenterPositionInBanner(position: Point2D, objectDimensions: Dimension2D): Point2D {
-    const centerX = position.x + objectDimensions.width / 2;
-    const centerY = position.y + objectDimensions.height / 2;
 
-    const x = ((centerX - objectDimensions.width / 2) / (this.layout.dimensions.width - objectDimensions.width)) * 100;
-    const y = ((centerY - objectDimensions.height / 2) / (this.layout.dimensions.height - objectDimensions.height)) * 100;
+    // TODO: fix this with height as well
+    const widthDelta = this.layout.dimensions.width - objectDimensions.width === 0
+      ? this.layout.dimensions.width : this.layout.dimensions.width - objectDimensions.width;
+
+
+    const x = (position.x / widthDelta) * 100;
+    const y = (position.y / (this.layout.dimensions.height - objectDimensions.height)) * 100;
     return {x, y};
   }
 
@@ -22,7 +23,13 @@ export class Banner {
     objectDimensions: Dimension2D,
     scale: { scaleX: number, scaleY: number } = {scaleX: 1, scaleY: 1}
   ): Point2D {
-    const x = (percentage.x / 100) * (this.layout.dimensions.width - (objectDimensions.width * scale.scaleX));
+
+    let widthDelta = (this.layout.dimensions.width - (objectDimensions.width * scale.scaleX));
+    if (!widthDelta) {
+      widthDelta = this.layout.dimensions.width;
+    }
+
+    const x = (percentage.x / 100) * widthDelta;
     const y = (percentage.y / 100) * (this.layout.dimensions.height - (objectDimensions.height * scale.scaleY));
 
     return {x, y};

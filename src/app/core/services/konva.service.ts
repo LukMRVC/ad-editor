@@ -7,18 +7,20 @@ import {TransformerConfig} from 'konva/types/shapes/Transformer';
 import {BehaviorSubject} from 'rxjs';
 import {RectConfig} from 'konva/types/shapes/Rect';
 import {RegularPolygonConfig} from 'konva/types/shapes/RegularPolygon';
-import {FlatLayerData, LayerData} from '../../editor/components/stage-layers/stage-layers.component';
+import {LayerData} from '../../editor/components/stage-layers/stage-layers.component';
 import {TextConfig} from 'konva/types/shapes/Text';
 import {takeWhile} from 'rxjs/operators';
 import {Banner, Point2D} from '@core/models/banner-layout';
+import {FilterChangedEvent} from '../../editor/components/image-filter.component';
 
 @Injectable({
   providedIn: 'root',
 })
 export class KonvaService {
 
-  constructor(
-  ) {}
+  constructor() {
+    console.log(`Creating ${KonvaService.name} instance`);
+  }
 
   private canvas: Konva.Stage;
   private drawing = false;
@@ -273,40 +275,6 @@ export class KonvaService {
     this.layerTreeData = [...this.layerTreeData];
   }
 
-
-  // TODO: Dodelat presouvani mezi vrstavama
-  moveObjectInStage(previous: FlatLayerData, current: FlatLayerData): void {
-    const prevId = previous.id;
-    const curId = current.id;
-    if (prevId !== curId) {
-      const isLayer = prevId.indexOf(':') === -1;
-      if (isLayer && curId.indexOf(':') === -1) { // valid move of layer to another layer
-
-      } else if (!isLayer && curId.indexOf(':') !== -1) { // valid move of shape
-        const prevLayerId = prevId.substring(0, prevId.indexOf(':'));
-        const currentLayerId = curId.substring(0, curId.indexOf(':'));
-        if (prevLayerId === currentLayerId) { // just a move in layer
-          console.log(`moving ${prevId} to ${curId}`);
-          const layer = this.layers.find(l => l.id() === currentLayerId);
-          const previousChild = layer.getChildren(n => n.id() === prevId);
-          const currentChild = layer.getChildren(n => n.id() === curId);
-          console.log('Previous:', previousChild[0].getZIndex(), previousChild[0].name());
-          console.log('Current:', currentChild[0].getZIndex(), currentChild[0].name());
-          const direction = 0;
-          // const direction = previousChild[0].getZIndex() > currentChild[0].getZIndex() ? 1 : -1;
-          previousChild[0].zIndex(direction - currentChild[0].zIndex());
-          currentChild[0].zIndex( direction + previousChild[0].zIndex());
-
-        } else { // move to another layer
-
-        }
-
-      }
-      this.layerTreeData = [...this.layerTreeData];
-    }
-    this.redraw();
-  }
-
   exportAsImage(mime: 'image/jpeg' | 'image/png'): void {
     const layer = this.canvas.getLayers()[2];
     const dataUrl = layer.toDataURL({
@@ -318,44 +286,6 @@ export class KonvaService {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
-
-  newLayerGroup(): void {
-    this.prepareDraw();
-    this.onClickTap$.pipe(takeWhile( evt => evt.target !== this.canvas && this.drawing, true)).subscribe(evt => {
-      this.endDraw();
-      const position = this.canvas.getPointerPosition();
-      const layerGroup = new Konva.Group({
-        x: position.x,
-        y: position.y,
-        width: 300,
-        height: 300,
-        clipWidth: 300,
-        clipHeight: 300,
-        clipX: -1,
-        clipY: -1,
-        draggable: true,
-      });
-      const bg = new Konva.Rect({ id: 'group-1-bg', width: 300, height: 300, draggable: false, x: 0, y: 0, fill: '#fff' });
-      layerGroup.add(bg);
-      layerGroup.moveToBottom();
-      this.layers[0].add(layerGroup);
-      this.redraw();
-      console.log(this.canvas.getPointerPosition());
-      this.canvas.container().classList.remove('drawing');
-      console.log('Still taking event');
-    });
-
-  }
-
-  prepareDraw(): void {
-    this.drawing = true;
-    this.canvas.container().classList.add('drawing');
-  }
-
-  private endDraw(): void {
-    this.drawing = false;
-    this.canvas.container().classList.remove('drawing');
   }
 
   button(conf: Konva.ShapeConfig): Konva.Label {
@@ -398,6 +328,59 @@ export class KonvaService {
 
   public setBanners(banners: Banner[]): void {
     this.banners = banners;
+  }
+
+  public applyImageFilter(shapeName: string, filters: FilterChangedEvent): void {
+    console.log(Konva.Filters[filters.filterName]);
+    console.log('Applying filter to ', shapeName, filters);
+
+    const shouldRemoveFilter = (contains, value, minValue = 0): boolean => {
+      if (typeof value === 'boolean') {
+        return contains && !value;
+      } else if (typeof value === 'number') {
+        return contains && value === minValue;
+      }
+      return contains;
+    };
+
+    const shouldAddFilter = (contains, value, minValue = 0): boolean => {
+      if (typeof value === 'boolean') {
+        return !contains && value;
+      } else if (typeof value === 'number') {
+        return !contains && value !== minValue;
+      }
+      return !contains;
+    };
+
+    let propName = '';
+    let propValue = null;
+
+    // tslint:disable-next-line:forin
+    for (const key in filters.filterProperty ) {
+      propName = key;
+      propValue = filters.filterProperty[key];
+    }
+    if (propValue === null) {
+      propValue = filters.filterValues;
+    }
+
+    this.bannerGroups.forEach( (bannerGroup, index) => {
+      const shape = bannerGroup.group.findOne(`.${shapeName}`);
+      if (!shape) { return; }
+      const activeFilters = shape.filters() ?? [];
+      const containsFilter = activeFilters.includes( Konva.Filters[filters.filterName] );
+
+      if (shouldRemoveFilter(containsFilter, propValue, filters.minValue)) {
+        shape.filters( activeFilters.filter(f => f !== Konva.Filters[filters.filterName] ));
+      } else if (shouldAddFilter(containsFilter, propValue, filters.minValue)) {
+        shape.filters( activeFilters.concat([Konva.Filters[filters.filterName]]) );
+      }
+
+      shape.setAttr(propName, propValue);
+
+
+    });
+    this.redraw();
   }
 
   public drawBanners(): void {
@@ -542,6 +525,7 @@ export class KonvaService {
     this.redraw();
   }
 
+  // TODO: add zoom effect on background
   public drawBackground(conf: Konva.ImageConfig): void {
     this.bannerGroups.forEach( (bannerGroup, index) => {
       // destroy old background so we dont waste memory
@@ -705,8 +689,10 @@ export class KonvaService {
     xPos -= dragEvent.target.getParent().clipX();
     yPos -= dragEvent.target.getParent().clipY();
     const eventBanner = this.banners[bannerGroupIndex];
+    // console.log('Dimensions', dimensions);
+    // console.log('X and Y', { xPos, yPos });
     const percentages = eventBanner.getPercentageCenterPositionInBanner({x: xPos, y: yPos}, dimensions);
-    // console.log('Computed percentages', percentages);
+    console.log('Computed percentages', percentages);
     this.bannerGroups.forEach((bannerGroup, index) => {
       if (bannerGroup.group === dragEvent.target.getParent()) { return; }
       const relativeShape = bannerGroup.group.findOne(`.${shapeName}`);
@@ -719,6 +705,7 @@ export class KonvaService {
       const {x: actualXPos, y: actualYPos} = banner.getPixelPositionFromPercentage(percentages, dimensions);
       const offsetX = this.bannerGroups[index].group.clipX();
       const offsetY = this.bannerGroups[index].group.clipY();
+      // console.table({ index, x: actualXPos + offsetX, y: actualYPos + offsetY });
       relativeShape.x(actualXPos + offsetX);
       relativeShape.y(actualYPos + offsetY);
     });

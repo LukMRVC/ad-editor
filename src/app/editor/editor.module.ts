@@ -29,6 +29,7 @@ import { TextHAlignmentComponent } from './components/text-h-alignment.component
 import { TextVAlignmentComponent } from './components/text-v-alignment.component';
 import { TextDecorationComponent } from './components/text-decoration.component';
 import { ShadowComponent } from './components/shadow.component';
+import { ImageFilterComponent } from './components/image-filter.component';
 
 @NgModule({
   declarations: [
@@ -45,6 +46,7 @@ import { ShadowComponent } from './components/shadow.component';
     TextVAlignmentComponent,
     TextDecorationComponent,
     ShadowComponent,
+    ImageFilterComponent,
   ],
   imports: [
     CommonModule,

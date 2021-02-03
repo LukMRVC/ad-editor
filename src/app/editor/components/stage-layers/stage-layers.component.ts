@@ -115,10 +115,10 @@ export class StageLayersComponent {
   // first template arg is container data, second is item data
   onDrop($event: CdkDragDrop<FlatLayerData, FlatLayerData>): void {
     const log = console.log;
-    this.konva.moveObjectInStage(
-      this.treeControl.dataNodes[$event.previousIndex],
-      this.treeControl.dataNodes[$event.currentIndex]
-    );
+    // this.konva.moveObjectInStage(
+    //   this.treeControl.dataNodes[$event.previousIndex],
+    //   this.treeControl.dataNodes[$event.currentIndex]
+    // );
 
   }
 

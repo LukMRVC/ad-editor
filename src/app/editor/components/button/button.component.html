@@ -64,10 +64,10 @@
           <mat-icon>palette</mat-icon> Style
         </ng-template>
         <!-- Style tab content -->
-        <div fxLayout="column" style="margin-bottom: .25rem" fxLayoutGap="0.5rem">
+        <div fxLayout="column"  fxLayoutGap="0.5rem">
 
           <!-- Button fill color -->
-          <mat-form-field fxFlex appearance="outline">
+          <mat-form-field fxFlex style="margin-top: .25rem" appearance="outline">
             <mat-label>Button color</mat-label>
             <input [(ngModel)]="buttonFillColor" (keydown.enter)="buttonFillPicker.close()" (focus)="buttonFillPicker.open()"
                    [ngxMatColorPicker]="buttonFillPicker"

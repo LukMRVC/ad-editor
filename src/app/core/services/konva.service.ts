@@ -48,9 +48,11 @@ export class KonvaService {
   private initZoom(stage: Konva.Stage, scaleBy: number): void {
     stage.on('wheel', ev => {
       let scaling = scaleBy;
+
       if (ev.evt.ctrlKey) {
         scaling += 0.06;
       }
+
       ev.evt.preventDefault();
       const oldScale = stage.scaleX();
       const pointer = stage.getPointerPosition();
@@ -525,7 +527,6 @@ export class KonvaService {
     this.redraw();
   }
 
-  // TODO: add zoom effect on background
   public drawBackground(conf: Konva.ImageConfig): void {
     this.bannerGroups.forEach( (bannerGroup, index) => {
       // destroy old background so we dont waste memory
@@ -539,6 +540,7 @@ export class KonvaService {
         height: this.banners[index].layout.dimensions.height,
         ...conf,
       });
+
       bgImage.on('dragstart', dragstart => {
         dragstart.target.setAttr('dragJustStarted', true);
       });
@@ -569,10 +571,6 @@ export class KonvaService {
           img.cache();
           img.draw();
         });
-        // bgImage.cropX( bgImage.cropX() - dragDeltaX );
-        // bgImage.cropY( bgImage.cropY() - dragDeltaY );
-        // bgImage.cache();
-        // bgImage.draw();
       });
 
       bannerGroup.group.add(bgImage);
@@ -587,6 +585,7 @@ export class KonvaService {
     this.bannerGroups.forEach((bannerGroup, index) => {
       const bgImage = bannerGroup.group.findOne('.bg-image');
       if (!bgImage) { return; }
+
       bgImage.setAttr('lastCropUsed', position);
       const sourceImageWidth = (bgImage as Konva.Image).image().width as number;
       const sourceImageHeight = (bgImage as Konva.Image).image().height as number;
@@ -641,6 +640,15 @@ export class KonvaService {
       });
       bgImage.cache();
     });
+  }
+
+  public zoomBackground(scale: number): void {
+    this.bannerGroups.forEach((bannerGroup, index) => {
+      const bgImage = bannerGroup.group.findOne('.bg-image');
+      if (!bgImage) { return; }
+      bgImage.scale({ x: scale, y: scale });
+    });
+    this.redraw();
   }
 
   public drawButton(): void {

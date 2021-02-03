@@ -23,6 +23,15 @@
         </mat-select>
       </mat-form-field>
 
+      <div fxFlex fxLayout="column">
+        <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
+          <label>Zoom effect</label>
+          <span>{{ zoom }}</span>
+        </div>
+        <mat-slider [(ngModel)]="zoom" thumbLabel min="1" max="2" step="0.1"
+                    (valueChange)="konva.zoomBackground($event)"></mat-slider>
+      </div>
+
     </div>
   </ng-template>
 </mat-expansion-panel>

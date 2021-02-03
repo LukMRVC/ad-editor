@@ -24,6 +24,7 @@ export class BackgroundComponent implements OnInit {
   ];
 
   public selectedBackgroundFit = 'center-top';
+  zoom: number = 1;
 
   constructor(
     public konva: KonvaService,

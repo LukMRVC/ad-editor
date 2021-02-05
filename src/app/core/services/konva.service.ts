@@ -4,12 +4,8 @@ import {StageConfig} from 'konva/types/Stage';
 import {LayerConfig} from 'konva/types/Layer';
 import {ImageConfig} from 'konva/types/shapes/Image';
 import {TransformerConfig} from 'konva/types/shapes/Transformer';
-import {BehaviorSubject} from 'rxjs';
 import {RectConfig} from 'konva/types/shapes/Rect';
-import {RegularPolygonConfig} from 'konva/types/shapes/RegularPolygon';
-import {LayerData} from '../../editor/components/stage-layers/stage-layers.component';
 import {TextConfig} from 'konva/types/shapes/Text';
-import {takeWhile} from 'rxjs/operators';
 import {Banner, Point2D} from '@core/models/banner-layout';
 import {FilterChangedEvent} from '../../editor/components/image-filter.component';
 
@@ -31,19 +27,12 @@ export class KonvaService {
   selectedNodes: Konva.Shape[] = [];
 
   public layers: Konva.Layer[] = [];
-  public addNewShapeToNewLayer = false;
   private banners: Banner[];
   private bannerGroups: {group: Konva.Group, bg: Konva.Shape}[] = [];
   private shouldTransformRelatives = true;
 
-  private $selectedObject: BehaviorSubject<'image' | 'text' | 'shape' | 'background'> =
-    new BehaviorSubject<'image' | 'text' | 'shape' | 'background'>('background');
+  additionalShapes = new Map<string, Konva.Shape>();
 
-  $selectedObjectType = this.$selectedObject.asObservable();
-  layerTreeData: LayerData[] = [];
-  updateSelectedObjectType(nextVal: 'image' | 'text' | 'shape' | 'background'): void {
-    this.$selectedObject.next(nextVal);
-  }
 
   private initZoom(stage: Konva.Stage, scaleBy: number): void {
     stage.on('wheel', ev => {
@@ -85,9 +74,6 @@ export class KonvaService {
     this.canvas.add(bgLayer);
     this.layers.push(bgLayer);
     this.canvas.draw();
-    this.canvas.on('dragend', end => {
-      console.log('Drag end');
-    });
     this.transformers = this.transformer();
     bgLayer.add(this.transformers);
   }
@@ -133,17 +119,10 @@ export class KonvaService {
     this.layers.push(layer);
     this.canvas.add(layer);
     this.onNewLayer$.emit(layer);
-    this.layerTreeData = this.layerTreeData.concat(
-      [{ name: layer.name(), id: layer.id(), iconName: 'layer-group', children: [], zIdx: () => layer.getZIndex() }]
-    );
+
     // layer.on('dragmove', this.guidelinesSnapping);
     // layer.on('dragend', KonvaService.destroyGuideLines);
     return layer;
-  }
-
-  getLayerTransformer(layer: Konva.Layer): Konva.Transformer {
-    const transformers = layer.getChildren(c => c.getClassName() === 'Transformer');
-    return transformers[0] as Konva.Transformer;
   }
 
   private getWorkingLayerInstance(): Konva.Layer {
@@ -151,7 +130,7 @@ export class KonvaService {
   }
 
   private addShapeToLayer(shape: Konva.Shape|Konva.Label, layer: Konva.Layer): void {
-    const indexOfLayer = this.layerTreeData.findIndex(l => l.id === layer.id());
+    // const indexOfLayer = this.layerTreeData.findIndex(l => l.id === layer.id());
     // this.layerTreeData[indexOfLayer].children.push({
     //   name: shape.name(),
     //   id: shape.id(),
@@ -170,7 +149,6 @@ export class KonvaService {
       layer.batchDraw();
     });
     // this is here because as a part of workaround between MatTreeModule
-    this.layerTreeData = [...this.layerTreeData];
     layer.add(shape);
     this.transformers.moveToTop();
     this.redraw();
@@ -191,15 +169,6 @@ export class KonvaService {
     const rect = new Konva.Rect(conf);
     this.addShapeToLayer(rect, layer);
     return rect;
-  }
-
-  regularPolygon(conf?: RegularPolygonConfig): Konva.RegularPolygon {
-    const layer = this.getWorkingLayerInstance();
-    const shapesCount = layer.getChildren(c => c.getClassName() !== 'Transformer').length;
-    conf = this.mergeConfig(`Shape ${shapesCount + 1}`, `${layer.id()}:${shapesCount}`, conf);
-    const regPolygon = new Konva.RegularPolygon(conf);
-    this.addShapeToLayer(regPolygon, layer);
-    return regPolygon;
   }
 
   image(conf?: ImageConfig): Konva.Image {
@@ -232,21 +201,6 @@ export class KonvaService {
     this.layers.forEach(layer => layer.batchDraw());
   }
 
-  deleteSelected(): void {
-    this.selectedNodes.forEach(n => {
-      const layer = this.layers.find(l => l.id() === n.getLayer().id());
-      if (!layer) { return; }
-      const tr = this.getLayerTransformer(layer);
-      tr.nodes([]);
-      const indexOfLayer = this.layerTreeData.findIndex(l => l.id === layer.id());
-      this.layerTreeData[indexOfLayer].children
-        .splice(this.layerTreeData[indexOfLayer].children.findIndex(node => node.id === n.id()), 1);
-      n.destroy();
-      layer.batchDraw();
-    });
-    this.layerTreeData = [...this.layerTreeData];
-  }
-
   redraw(layer?: Konva.Layer): void {
     if (this.transformers !== null) {
       this.transformers.moveToTop();
@@ -274,7 +228,6 @@ export class KonvaService {
         break;
     }
     this.redraw();
-    this.layerTreeData = [...this.layerTreeData];
   }
 
   exportAsImage(mime: 'image/jpeg' | 'image/png'): void {
@@ -366,7 +319,7 @@ export class KonvaService {
       propValue = filters.filterValues;
     }
 
-    this.bannerGroups.forEach( (bannerGroup, index) => {
+    this.bannerGroups.forEach( (bannerGroup) => {
       const shape = bannerGroup.group.findOne(`.${shapeName}`);
       if (!shape) { return; }
       const activeFilters = shape.filters() ?? [];
@@ -478,8 +431,8 @@ export class KonvaService {
       const image = new Konva.Image({ name: 'logo', x: x + offsetX, y: y + offsetY, scaleX, scaleY,  ...conf });
       // console.log(`For ${this.bannerGroups[index].group.id()} computed X: ${image.x()} and Y: ${image.y()}`);
       image.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, 'logo'));
-      image.on('transformstart', (started) => image.setAttr('initialScale', image.scale()));
-      image.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, index, 'logo'));
+      image.on('transformstart', () => image.setAttr('initialScale', image.scale()));
+      image.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, 'logo'));
 
       image.cache();
       this.bannerGroups[index].group.add(image);
@@ -506,8 +459,8 @@ export class KonvaService {
       const text = new Konva.Text({ name: 'headline', x: x + offsetX, y: y + offsetY, scaleX, scaleY, ...conf });
       text.setAttr('initialFontSize', conf.fontSize);
       text.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, 'headline'));
-      text.on('transformstart', (started) => text.setAttr('initialScale', text.scale()));
-      text.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, index, 'logo'));
+      text.on('transformstart', () => text.setAttr('initialScale', text.scale()));
+      text.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, 'logo'));
       this.bannerGroups[index].group.add(text);
     });
     this.transformers.moveToTop();
@@ -515,7 +468,7 @@ export class KonvaService {
   }
 
   public changeHeadline(attributes: Konva.TextConfig): void {
-    this.bannerGroups.forEach( (bannerGroup, index) => {
+    this.bannerGroups.forEach( (bannerGroup) => {
       if ('fontScaling' in attributes) {
         attributes.fontSize = (bannerGroup.group.findOne('.headline') as Konva.Text).getAttr('initialFontSize');
         attributes.fontSize *= 1 + (attributes.fontScaling / 10);
@@ -582,7 +535,7 @@ export class KonvaService {
   }
 
   public positionBackground(position: string): void {
-    this.bannerGroups.forEach((bannerGroup, index) => {
+    this.bannerGroups.forEach((bannerGroup) => {
       const bgImage = bannerGroup.group.findOne('.bg-image');
       if (!bgImage) { return; }
 
@@ -591,15 +544,12 @@ export class KonvaService {
       const sourceImageHeight = (bgImage as Konva.Image).image().height as number;
       // const {width, height} = { width: (bgImage as Konva.Image).image().width, height: (bgImage as Konva.Image).image().height };
       const aspectRatio = bgImage.width() / bgImage.height();
-      let newWidth = 0;
-      let newHeight = 0;
+      let newWidth = bgImage.height() * aspectRatio;
+      let newHeight = bgImage.height();
       const imageRatio = sourceImageWidth / sourceImageHeight;
       if (aspectRatio >= imageRatio) {
         newWidth = bgImage.width();
         newHeight = bgImage.width() / aspectRatio;
-      } else {
-        newWidth = bgImage.height() * aspectRatio;
-        newHeight = bgImage.height();
       }
       let x = 0;
       let y = 0;
@@ -643,7 +593,7 @@ export class KonvaService {
   }
 
   public zoomBackground(scale: number): void {
-    this.bannerGroups.forEach((bannerGroup, index) => {
+    this.bannerGroups.forEach((bannerGroup) => {
       const bgImage = bannerGroup.group.findOne('.bg-image');
       if (!bgImage) { return; }
       bgImage.scale({ x: scale, y: scale });
@@ -668,13 +618,12 @@ export class KonvaService {
 
   public changeButton(changeOf: 'style'|'text', config: Konva.TagConfig|Konva.TextConfig): void {
     if (changeOf === 'style') {
-      this.bannerGroups.forEach( (bannerGroup, index) => {
-        const btn = bannerGroup.group.findOne('.button');
+      this.bannerGroups.forEach( (bannerGroup) => {
         const tag = bannerGroup.group.findOne('.button-tag');
         tag.setAttrs(config);
       });
     } else {
-      this.bannerGroups.forEach( (bannerGroup, index) => {
+      this.bannerGroups.forEach( (bannerGroup) => {
         const text = bannerGroup.group.findOne('.button-text');
         if ('fontScaling' in config) {
           config.fontSize = text.getAttr('initialFontSize');
@@ -720,7 +669,7 @@ export class KonvaService {
     this.redraw();
   }
 
-  private transformRelatives(transformEvent: Konva.KonvaEventObject<Konva.Shape>, bannerGroupIndex: number, shapeName: string): void {
+  private transformRelatives(transformEvent: Konva.KonvaEventObject<Konva.Shape>, shapeName: string): void {
     if (!this.shouldTransformRelatives) { return; }
     const initialScale = transformEvent.target.getAttr('initialScale');
     const currentScale = transformEvent.target.getAttr('scale');

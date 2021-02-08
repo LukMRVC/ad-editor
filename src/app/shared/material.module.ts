@@ -34,6 +34,7 @@ import {
 import {MatRippleModule} from '@angular/material/core';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {DragDropModule} from '@angular/cdk/drag-drop';
+import {MatGridListModule} from '@angular/material/grid-list';
 
 
 const CUSTOM_MAT_COLOR_FORMATS: MatColorFormats = {
@@ -74,6 +75,7 @@ const CUSTOM_MAT_COLOR_FORMATS: MatColorFormats = {
     MatRippleModule,
     MatExpansionModule,
     DragDropModule,
+    MatGridListModule,
   ],
   providers: [
     { provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: { duration: 2500 } },
@@ -109,6 +111,7 @@ const CUSTOM_MAT_COLOR_FORMATS: MatColorFormats = {
     MatRippleModule,
     MatExpansionModule,
     DragDropModule,
+    MatGridListModule,
   ]
 })
 export class MaterialModule { }

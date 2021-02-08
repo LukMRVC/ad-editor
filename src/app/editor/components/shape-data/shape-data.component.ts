@@ -18,6 +18,7 @@ export class ShapeDataComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.selectedSet = this.dataService.datasets.keys().next().value;
   }
 
   changeValue(datasetKey: string, shapeInfo: ShapeInformation, $event: Event): void {
@@ -36,6 +37,9 @@ export class ShapeDataComponent implements OnInit {
   }
 
   async openGallery(): Promise<void> {
-    this.dialog.open(ImageGalleryDialogComponent, { width: '70%' });
+    const dlg = this.dialog.open(ImageGalleryDialogComponent, { width: '70%' });
+    const img = await dlg.afterClosed().toPromise();
+
+    console.log(img);
   }
 }

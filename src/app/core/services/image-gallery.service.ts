@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {fromEvent, Observable} from 'rxjs';
+import { Observable} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +26,9 @@ export class ImageGalleryService {
         this.images.push({
           id: this.genImageId(),
           src: reader.result as string,
+          name: file.name,
+          type: file.type,
+          size: file.size,
         });
         subscriber.complete();
       };
@@ -49,9 +52,16 @@ export class ImageGalleryService {
   public getImages(): UploadedImage[] {
     return this.images;
   }
+
+  removeImage(id: string): void {
+    this.images.splice(this.images.findIndex(img => img.id === id), 1);
+  }
 }
 
 export interface UploadedImage {
   id: string;
   src: string;
+  name: string;
+  type?: string;
+  size?: number;
 }

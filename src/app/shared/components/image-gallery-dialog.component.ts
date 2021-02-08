@@ -18,7 +18,6 @@ import {MatDialogRef} from '@angular/material/dialog';
       border: 1px solid #e0e0e0;
     }
 
-
     `
   ]
 })

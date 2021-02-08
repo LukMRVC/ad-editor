@@ -8,11 +8,22 @@ export class ImageGalleryService {
 
   private images: UploadedImage[] = [];
 
-  constructor() { }
+  constructor() {
+    if (sessionStorage.getItem('cachedImages') !== null) {
+      this.images = JSON.parse(sessionStorage.getItem('cachedImages'));
+    }
+  }
 
   public uploadImage(file: File): Observable<number> {
 
     return new Observable<number>(subscriber => {
+      const isAlreadyUploaded = this.images.findIndex(img => img.name === file.name) !== -1;
+      if (isAlreadyUploaded) {
+        subscriber.next(100);
+        subscriber.complete();
+        return;
+      }
+
       const reader = new FileReader();
 
       reader.onprogress = (progress: ProgressEvent<FileReader>) => {
@@ -31,6 +42,8 @@ export class ImageGalleryService {
           size: file.size,
         });
         subscriber.complete();
+
+        sessionStorage.setItem('cachedImages', JSON.stringify(this.images));
       };
       reader.readAsDataURL(file);
     });
@@ -55,6 +68,7 @@ export class ImageGalleryService {
 
   removeImage(id: string): void {
     this.images.splice(this.images.findIndex(img => img.id === id), 1);
+    sessionStorage.setItem('cachedImages', JSON.stringify(this.images));
   }
 }
 

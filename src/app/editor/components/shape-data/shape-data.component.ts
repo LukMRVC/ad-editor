@@ -3,6 +3,7 @@ import {BannerDataService, ShapeInformation} from '@core/services/banner-data.se
 import Konva from 'konva';
 import {MatDialog} from '@angular/material/dialog';
 import {ImageGalleryDialogComponent} from '@shared/components/image-gallery-dialog.component';
+import {UploadedImage} from '@core/services/image-gallery.service';
 
 @Component({
   selector: 'app-shape-data',
@@ -38,7 +39,7 @@ export class ShapeDataComponent implements OnInit {
 
   async openGallery(): Promise<void> {
     const dlg = this.dialog.open(ImageGalleryDialogComponent, { width: '70%' });
-    const img = await dlg.afterClosed().toPromise();
+    const img: UploadedImage|string = await dlg.afterClosed().toPromise();
 
     console.log(img);
   }

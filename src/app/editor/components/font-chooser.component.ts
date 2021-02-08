@@ -9,8 +9,21 @@ import * as WebFontLoader from 'webfontloader';
 
 @Component({
   selector: 'app-font-chooser',
-  templateUrl: './font-chooser.component.html',
-  styleUrls: ['./font-chooser.component.scss']
+  template: `
+    <mat-form-field appearance="outline">
+      <mat-label>Font family</mat-label>
+      <input [formControl]="fontFamilyControl" type="text" matInput aria-label="Font family" [matAutocomplete]="auto">
+      <!-- Font family -->
+      <mat-autocomplete (optionSelected)="loadFont($event)"
+                        [displayWith]="autocompleteDisplay"
+                        autoActiveFirstOption="true" #auto="matAutocomplete">
+        <mat-option *ngFor="let font of this.filteredFonts | async" [value]="font">
+          {{ font.family }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+  `,
 })
 export class FontChooserComponent implements OnInit, OnDestroy {
 

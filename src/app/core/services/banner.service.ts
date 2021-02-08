@@ -147,7 +147,7 @@ export class BannerService {
     },
   ];
 
-  public getComputerBannes(): Banner[] {
+  public getComputerBanners(): Banner[] {
     return [...this.computer].map(layout => new Banner(layout));
   }
 

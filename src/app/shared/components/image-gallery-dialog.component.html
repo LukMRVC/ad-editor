@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>Image gallery</h2>
+
+<mat-dialog-content style="padding: 1rem;" fxLayout="column" fxLayoutGap=".5rem">
+  <div fxLayout="row wrap" fxLayoutGap=".5rem" class="gallery">
+    <h1 *ngIf="imageService.getImages().length <= 0">The gallery seems to be empty.</h1>
+  </div>
+
+  <button fxFlex="25" (click)="fileInput.click()" mat-raised-button color="accent">Upload</button>
+  <input style="display: none;" #fileInput type="file" multiple accept="image/jpeg,image/png">
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-dialog-close mat-raised-button>Close</button>
+</mat-dialog-actions>

@@ -21,14 +21,16 @@
 <!--  </div>-->
 
   <section id="editor" fxFlex="grow" fxLayout="row nowrap" class="editor">
-    <app-draw-toolbar (imageUploaded)="imageUploaded($event)"
-                      ngClass.lt-sm="draw-toolbar-mobile" fxFlexOrder="1" fxFlexAlign.lt-sm="end"></app-draw-toolbar>
 
-    <div fxLayout="row nowrap" #stageWrapper
+    <app-shape-data fxFlexOrder="1"></app-shape-data>
 
-         fxLayoutAlign="center start" fxFlex class="canvas-wrapper" fxFlexOrder="2">
+
+    <div fxLayout="row nowrap" #stageWrapper fxLayoutAlign="center start" fxFlex class="canvas-wrapper" fxFlexOrder="2">
       <div id="stage" (dragover)="$event.preventDefault()" class="canvas-stage" ></div>
     </div>
+
+    <app-draw-toolbar (imageUploaded)="imageUploaded($event)"
+                      ngClass.lt-sm="draw-toolbar-mobile" fxFlexOrder="3" fxFlexAlign.lt-sm="end"></app-draw-toolbar>
 
 <!--    <aside class="canvas-object-toolbar" fxLayout="column" fxLayoutGap="1em" fxFlexOrder="3">-->
 <!--      <app-canvas-object-toolbar></app-canvas-object-toolbar>-->

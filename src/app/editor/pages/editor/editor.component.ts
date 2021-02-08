@@ -7,7 +7,7 @@ import {BannerService} from '@core/services/banner.service';
 @Component({
   selector: 'app-editor',
   templateUrl: './editor.component.html',
-  styleUrls: ['./editor.component.scss']
+  styleUrls: ['./editor.component.scss'],
 })
 export class EditorComponent implements AfterViewInit, OnDestroy {
 
@@ -45,13 +45,14 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       height: this.stageWrapper.nativeElement.offsetHeight,
     });
 
-    this.konva.setBanners(this.bannerService.getComputerBannes());
+    this.konva.setBanners(this.bannerService.getComputerBanners());
     this.konva.drawBanners();
     this.konva.drawHeadline({ draggable: true, padding: 10, /*text: 'Test text', fontStyle: 'italic bold' */});
     this.konva.drawButton();
   }
 
   ngOnDestroy(): void {
+    console.log(`Destroying editor component`);
     this.subscription.unsubscribe();
   }
 
@@ -63,7 +64,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('document:keydown.delete')
   onDeletePressed(): void {
-    this.konva.deleteSelected();
+    // this.konva.deleteSelected();
   }
 
   imageUploaded($imageData: { file: File, buffer: ArrayBuffer }): void {

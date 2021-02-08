@@ -1,0 +1,33 @@
+<div class="shape-aside" fxFlex fxLayout="column" fxLayoutGap=".5rem">
+  <mat-accordion>
+    <mat-expansion-panel [expanded]="selectedSet === dataset.key"  *ngFor="let dataset of dataService.datasets | keyvalue "
+                         class="mat-elevation-z0 expansion-panel radius-none" (opened)="selectedSet = dataset.key">
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ dataset.key }}</mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div fxLayout="column" fxLayoutGap=".5rem">
+        <div *ngFor="let shapeInfo of dataset.value">
+          <mat-form-field fxFlex appearance="outline" *ngIf="shapeInfo.isText">
+            <mat-label>{{ shapeInfo.userShapeName }}</mat-label>
+            <textarea (change)="changeValue(dataset.key, shapeInfo, $event)" matInput [placeholder]="shapeInfo.userShapeName + ' text'" ></textarea>
+          </mat-form-field>
+
+          <button (click)="openGallery()" fxFlex *ngIf="shapeInfo.isImage" #uploadBtn mat-raised-button color="primary">
+            {{ shapeInfo.userShapeName }}
+          </button>
+
+          <mat-form-field fxFlex appearance="outline" *ngIf="shapeInfo.isButton">
+            <mat-label>{{ shapeInfo.userShapeName + ' content' }}</mat-label>
+            <input (change)="changeValue(dataset.key, shapeInfo, $event)" matInput [placeholder]="shapeInfo.userShapeName + ' content'" />
+          </mat-form-field>
+        </div>
+      </div>
+
+    </mat-expansion-panel>
+  </mat-accordion>
+
+  <div style="padding: .5rem">
+    <button (click)="dataService.addDataset()" mat-raised-button color="accent" fxFlex>Add dataset</button>
+  </div>
+</div>

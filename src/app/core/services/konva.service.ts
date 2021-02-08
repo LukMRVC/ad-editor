@@ -8,15 +8,26 @@ import {RectConfig} from 'konva/types/shapes/Rect';
 import {TextConfig} from 'konva/types/shapes/Text';
 import {Banner, Point2D} from '@core/models/banner-layout';
 import {FilterChangedEvent} from '../../editor/components/image-filter.component';
+import {BannerDataService} from '@core/services/banner-data.service';
+
+// TODO: Make an object source service
+// TODO: On tab click just switch object source and redraw the canvas with different source
+// TODO: Add buttons to add an image or text source, which will be named
+// TODO: Named objects will have properties like on which banners they should appear and the user
+// TODO: will simply edit on banner how it is positioned, then just upload image and text sources
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class KonvaService {
 
-  constructor() {
+  constructor(
+    public dataService: BannerDataService,
+  ) {
     console.log(`Creating ${KonvaService.name} instance`);
   }
+
 
   private canvas: Konva.Stage;
   private drawing = false;
@@ -32,7 +43,6 @@ export class KonvaService {
   private shouldTransformRelatives = true;
 
   additionalShapes = new Map<string, Konva.Shape>();
-
 
   private initZoom(stage: Konva.Stage, scaleBy: number): void {
     stage.on('wheel', ev => {
@@ -515,6 +525,7 @@ export class KonvaService {
 
         this.bannerGroups.forEach(bannerGroup2 => {
           const img = (bannerGroup2.group.findOne('.bg-image') as Konva.Image);
+          img.clearCache();
           if (img.cropX() - dragDeltaX > 0 && (img.cropX() - dragDeltaX + img.cropWidth()) < img.image().width) {
             img.cropX( img.cropX() - dragDeltaX );
           }

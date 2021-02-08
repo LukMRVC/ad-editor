@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {FileSystemFileEntry, NgxFileDropEntry} from 'ngx-file-drop';
 import {KonvaService} from '@core/services/konva.service';
+import {ImageGalleryService} from '@core/services/image-gallery.service';
 
 @Component({
   selector: 'app-logo',
@@ -13,6 +14,7 @@ export class LogoComponent implements OnInit {
 
   constructor(
     public konva: KonvaService,
+    public imageService: ImageGalleryService,
   ) { }
 
   ngOnInit(): void {
@@ -28,7 +30,6 @@ export class LogoComponent implements OnInit {
   }
 
   onFileChange($event: Event): void {
-
     const file = ($event.target as HTMLInputElement).files[0];
     if (file !== null && (file.type === 'image/jpeg' || file.type === 'image/png')) {
       this.readFile(file);

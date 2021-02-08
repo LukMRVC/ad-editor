@@ -24,12 +24,13 @@ import { LogoComponent } from './components/logo/logo.component';
 import { HeadlineComponent } from './components/headline/headline.component';
 import { BackgroundComponent } from './components/background/background.component';
 import { ButtonComponent } from './components/button/button.component';
-import { FontChooserComponent } from './components/font-chooser/font-chooser.component';
+import { FontChooserComponent } from './components/font-chooser.component';
 import { TextHAlignmentComponent } from './components/text-h-alignment.component';
 import { TextVAlignmentComponent } from './components/text-v-alignment.component';
 import { TextDecorationComponent } from './components/text-decoration.component';
 import { ShadowComponent } from './components/shadow.component';
 import { ImageFilterComponent } from './components/image-filter.component';
+import { ShapeDataComponent } from './components/shape-data/shape-data.component';
 
 @NgModule({
   declarations: [
@@ -47,15 +48,15 @@ import { ImageFilterComponent } from './components/image-filter.component';
     TextDecorationComponent,
     ShadowComponent,
     ImageFilterComponent,
+    ShapeDataComponent,
   ],
   imports: [
     CommonModule,
     SharedModule,
     EditorRoutingModule,
-    FlexLayoutModule,
-    MaterialModule,
     FontAwesomeModule,
   ],
+
 })
 export class EditorModule {
   constructor(lib: FaIconLibrary) {

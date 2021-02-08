@@ -53,7 +53,7 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
     public konva: KonvaService,
     public googleFont: GoogleFontService,
   ) {
-    this.subscription.add(this.konva.$selectedObjectType.subscribe(objectType => this.canvasObjectType = objectType));
+    // this.subscription.add(this.konva.$selectedObjectType.subscribe(objectType => this.canvasObjectType = objectType));
     this.subscription.add(this.googleFont.getAll$().subscribe(
       fontList => this.fontList = fontList.items,
       error => console.log(error))

@@ -10,9 +10,7 @@ import {Banner, Point2D} from '@core/models/banner-layout';
 import {FilterChangedEvent} from '../../editor/components/image-filter.component';
 import {BannerDataService} from '@core/services/banner-data.service';
 
-// TODO: Make an object source service
 // TODO: On tab click just switch object source and redraw the canvas with different source
-// TODO: Add buttons to add an image or text source, which will be named
 // TODO: Named objects will have properties like on which banners they should appear and the user
 // TODO: will simply edit on banner how it is positioned, then just upload image and text sources
 
@@ -27,7 +25,6 @@ export class KonvaService {
   ) {
     console.log(`Creating ${KonvaService.name} instance`);
   }
-
 
   private canvas: Konva.Stage;
   private drawing = false;

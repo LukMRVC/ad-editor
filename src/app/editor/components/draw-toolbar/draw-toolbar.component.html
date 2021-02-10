@@ -22,8 +22,7 @@
         <app-text-style [shapeName]="shapeInfo.userShapeName.slugify()"></app-text-style>
       </ng-container>
       <ng-template #imageContainer>
-        <app-image-filter></app-image-filter>
-
+        <app-image-filter (filterChanged)="konva.applyImageFilter(shapeInfo.userShapeName.slugify(), $event)"></app-image-filter>
       </ng-template>
     </ng-template>
 

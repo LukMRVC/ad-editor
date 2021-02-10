@@ -34,6 +34,9 @@
     <mat-icon>insert_photo</mat-icon>
   </button>
   <input (change)="upload($event)" style="display: none;" #fileInput type="file" multiple accept="image/jpeg,image/png">
+  <ngx-file-drop dropZoneLabel="Drop images here" (onFileDrop)="fileDropped($event)"></ngx-file-drop>
+
+
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

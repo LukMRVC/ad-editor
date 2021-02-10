@@ -17,8 +17,8 @@ export class ImageGalleryService {
   public uploadImage(file: File): Observable<number> {
 
     return new Observable<number>(subscriber => {
-      const isAlreadyUploaded = this.images.findIndex(img => img.name === file.name) !== -1;
-      if (isAlreadyUploaded) {
+
+      if (this.hasImage(file)) {
         subscriber.next(100);
         subscriber.complete();
         return;
@@ -69,6 +69,10 @@ export class ImageGalleryService {
   removeImage(id: string): void {
     this.images.splice(this.images.findIndex(img => img.id === id), 1);
     localStorage.setItem('cachedImages', JSON.stringify(this.images));
+  }
+
+  hasImage(file: File): boolean {
+    return this.images.findIndex(img => img.name === file.name) !== -1;
   }
 }
 

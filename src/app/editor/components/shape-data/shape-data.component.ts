@@ -23,7 +23,7 @@ export class ShapeDataComponent implements OnInit {
   }
 
   changeValue(datasetKey: string, shapeInfo: ShapeInformation, $event: Event): void {
-    console.log($event);
+    // console.log($event);
     if (shapeInfo.isText) {
       const datasetShapeInfos = this.dataService.datasets.get(datasetKey);
       datasetShapeInfos.map( datasetShapeInfo => {

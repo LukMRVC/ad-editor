@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { EditorComponent } from './pages/editor/editor.component';
 import { DrawToolbarComponent } from './components/draw-toolbar/draw-toolbar.component';
 import {SharedModule} from '@shared/shared.module';
-import {FlexLayoutModule} from '@angular/flex-layout';
-import {MaterialModule} from '@shared/material.module';
 import {EditorRoutingModule} from './editor-routing.module';
 import {FaIconLibrary, FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import { CanvasObjectToolbarComponent } from './components/canvas-object-toolbar/canvas-object-toolbar.component';
@@ -24,13 +22,15 @@ import { LogoComponent } from './components/logo/logo.component';
 import { HeadlineComponent } from './components/headline/headline.component';
 import { BackgroundComponent } from './components/background/background.component';
 import { ButtonComponent } from './components/button/button.component';
-import { FontChooserComponent } from './components/font-chooser.component';
-import { TextHAlignmentComponent } from './components/text-h-alignment.component';
-import { TextVAlignmentComponent } from './components/text-v-alignment.component';
-import { TextDecorationComponent } from './components/text-decoration.component';
+import { FontChooserComponent } from './components/styling/text/font-chooser.component';
+import { TextHAlignmentComponent } from './components/styling/text/text-h-alignment.component';
+import { TextVAlignmentComponent } from './components/styling/text/text-v-alignment.component';
+import { TextDecorationComponent } from './components/styling/text/text-decoration.component';
 import { ShadowComponent } from './components/shadow.component';
 import { ImageFilterComponent } from './components/image-filter.component';
 import { ShapeDataComponent } from './components/shape-data/shape-data.component';
+import { ShapeNameDialogComponent } from './components/shape-name-dialog.component';
+import { TextStyleComponent } from './components/styling/text/text-style.component';
 
 @NgModule({
   declarations: [
@@ -49,6 +49,8 @@ import { ShapeDataComponent } from './components/shape-data/shape-data.component
     ShadowComponent,
     ImageFilterComponent,
     ShapeDataComponent,
+    ShapeNameDialogComponent,
+    TextStyleComponent,
   ],
   imports: [
     CommonModule,
@@ -62,6 +64,5 @@ export class EditorModule {
   constructor(lib: FaIconLibrary) {
     lib.addIcons(faMousePointer, faFillDrip, faLayerGroup, faShapes, faArrowsAltH, faArrowsAltV);
     lib.addIcons(faLongArrowAltUp, faLongArrowAltDown, faAngleDoubleUp, faAngleDoubleDown);
-    // lib.addIcons(faAlignCenter, faAlignLeft, faAlignRight, faAlignJustify);
   }
 }

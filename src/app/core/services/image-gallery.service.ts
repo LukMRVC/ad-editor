@@ -9,8 +9,8 @@ export class ImageGalleryService {
   private images: UploadedImage[] = [];
 
   constructor() {
-    if (sessionStorage.getItem('cachedImages') !== null) {
-      this.images = JSON.parse(sessionStorage.getItem('cachedImages'));
+    if (localStorage.getItem('cachedImages') !== null) {
+      this.images = JSON.parse(localStorage.getItem('cachedImages'));
     }
   }
 
@@ -43,7 +43,7 @@ export class ImageGalleryService {
         });
         subscriber.complete();
 
-        sessionStorage.setItem('cachedImages', JSON.stringify(this.images));
+        localStorage.setItem('cachedImages', JSON.stringify(this.images));
       };
       reader.readAsDataURL(file);
     });
@@ -68,7 +68,7 @@ export class ImageGalleryService {
 
   removeImage(id: string): void {
     this.images.splice(this.images.findIndex(img => img.id === id), 1);
-    sessionStorage.setItem('cachedImages', JSON.stringify(this.images));
+    localStorage.setItem('cachedImages', JSON.stringify(this.images));
   }
 }
 

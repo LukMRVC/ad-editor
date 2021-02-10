@@ -1,6 +1,9 @@
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {KonvaService} from '@core/services/konva.service';
 import {CdkDragEnd} from '@angular/cdk/drag-drop';
+import {MatDialog} from '@angular/material/dialog';
+import {ShapeNameDialogComponent} from '../shape-name-dialog.component';
+import {BannerDataService} from '@core/services/banner-data.service';
 
 @Component({
   selector: 'app-draw-toolbar',
@@ -11,19 +14,33 @@ export class DrawToolbarComponent implements OnInit {
 
   @Output() imageUploaded = new EventEmitter<{ file: File, buffer: ArrayBuffer }>();
 
-
   constructor(
     public konva: KonvaService,
+    public dialog: MatDialog,
+    public dataService: BannerDataService,
   ) { }
 
-  ngOnInit(): void {
-  }
-
+  ngOnInit(): void {}
 
   dragEnd($event: CdkDragEnd): void {
     console.log($event);
   }
 
+  async addText(): Promise<void> {
+    const dlg = this.dialog.open(ShapeNameDialogComponent);
+    const userShapeName = await dlg.afterClosed().toPromise();
+    if (userShapeName) {
+      this.dataService.addToDataset(userShapeName, 'text');
+    }
+  }
+
+  async addImage(): Promise<void> {
+    const dlg = this.dialog.open(ShapeNameDialogComponent);
+    const userShapeName = await dlg.afterClosed().toPromise();
+    if (userShapeName) {
+      this.dataService.addToDataset(userShapeName, 'image');
+    }
+  }
 }
 
 

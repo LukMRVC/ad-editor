@@ -30,8 +30,7 @@ export class ImageGalleryDialogComponent implements OnInit {
     public imageService: ImageGalleryService,
   ) { }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   upload($event: Event): void {
     const files = ($event.target as HTMLInputElement).files;

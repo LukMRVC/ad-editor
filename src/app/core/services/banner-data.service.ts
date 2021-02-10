@@ -6,6 +6,8 @@ import Konva from 'konva';
 })
 export class BannerDataService {
 
+  userShapes: ShapeInformation[] = [];
+
   datasets = new Map<string, ShapeInformation[]>();
   private datasetCounter = 0;
   private activeDataset: string;
@@ -60,6 +62,18 @@ export class BannerDataService {
   public getActiveDataset(): ShapeInformation[] {
     return this.datasets.get(this.activeDataset);
   }
+
+  public addToDataset(userShapeName: string, shapeType: 'text'|'image'): void {
+    for (const [, setShapes] of this.datasets.entries()) {
+      this.userShapes.push({
+        userShapeName,
+        isText: shapeType === 'text',
+        isImage: shapeType === 'image',
+      });
+      setShapes.push(this.userShapes[this.userShapes.length - 1]);
+    }
+  }
+
 }
 
 export interface ShapeInformation {

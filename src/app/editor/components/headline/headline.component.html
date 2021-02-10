@@ -8,56 +8,15 @@
     </mat-panel-description>
   </mat-expansion-panel-header>
   <ng-template matExpansionPanelContent>
+
     <div fxLayout="column" fxLayoutGap="0.5rem">
-      <mat-form-field fxFlex appearance="outline">
-        <mat-label>Headline</mat-label>
-        <textarea [(ngModel)]="headlineText" (input)="konva.changeHeadline({text: headlineText})" matInput></textarea>
-      </mat-form-field>
-      <app-font-chooser (fontFamilyLoaded)="konva.changeHeadline({ fontFamily: $event })"></app-font-chooser>
 
-      <app-text-h-alignment (alignmentChanged)="konva.changeHeadline({align: $event})"></app-text-h-alignment>
+<!--      <mat-form-field fxFlex appearance="outline">-->
+<!--        <mat-label>Headline</mat-label>-->
+<!--        <textarea [(ngModel)]="headlineText" (input)="konva.changeHeadline({text: headlineText})" matInput></textarea>-->
+<!--      </mat-form-field>-->
 
-      <app-text-decoration (decorationChanged)="konva.changeHeadline($event)"></app-text-decoration>
-
-
-      <div fxFlex fxLayout="column">
-        <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-          <label>Line height</label>
-          <span>{{ fontLineHeight }}</span>
-        </div>
-        <mat-slider (change)="konva.changeHeadline({lineHeight: fontLineHeight})"
-                    [(ngModel)]="fontLineHeight" thumbLabel min="1" max="5" step="0.1" value="1"></mat-slider>
-      </div>
-
-      <div fxFlex fxLayout="column">
-        <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-          <label>Letter spacing</label>
-          <span>{{ fontLetterSpacing }}</span>
-        </div>
-        <mat-slider (change)="konva.changeHeadline({letterSpacing: fontLetterSpacing})"
-                    [(ngModel)]="fontLetterSpacing" thumbLabel min="-10" max="10" step="0.1" value="0"></mat-slider>
-      </div>
-
-      <div fxFlex fxLayout="column">
-        <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-          <label>Font size</label>
-          <span>{{ fontScaling }}%</span>
-        </div>
-        <mat-slider (change)="konva.changeHeadline({fontScaling: fontScaling})"
-                    [(ngModel)]="fontScaling" thumbLabel min="-10" max="10" step="0.1" value="0"></mat-slider>
-      </div>
-
-      <mat-form-field fxFlex appearance="outline">
-        <mat-label>Color</mat-label>
-        <input [(ngModel)]="fillColor" (keydown.enter)="fillPicker.close()" (focus)="fillPicker.open()"
-               [ngxMatColorPicker]="fillPicker"
-               (colorChange)="konva.changeHeadline({fill: fillColor.toHex8String()})" matInput #fillColourInput>
-        <ngx-mat-color-toggle matSuffix [for]="fillPicker"></ngx-mat-color-toggle>
-        <ngx-mat-color-picker defaultColor="#000" #fillPicker touchUi="false"></ngx-mat-color-picker>
-      </mat-form-field>
-
-      <!-- Shadow controls -->
-      <app-shadow shadowFor="headline" (shadowChange)="konva.changeHeadline($event)"></app-shadow>
+     <app-text-style shapeName="headline"></app-text-style>
 
 
     </div>

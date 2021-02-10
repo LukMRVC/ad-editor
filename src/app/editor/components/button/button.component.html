@@ -19,12 +19,6 @@
         <!-- Tab text content -->
         <div fxLayout="column" style="margin-top: .5rem" fxLayoutGap="0.5rem">
 
-          <!-- Text content -->
-          <mat-form-field appearance="outline">
-            <mat-label>Content</mat-label>
-            <input (input)="konva.changeButton('text', {text: content})" matInput [(ngModel)]="content" type="text" placeholder="Button text" />
-          </mat-form-field>
-
           <!-- Text font chooser -->
           <app-font-chooser (fontFamilyLoaded)="konva.changeButton('text', { fontFamily: $event })"></app-font-chooser>
 

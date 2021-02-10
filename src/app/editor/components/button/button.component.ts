@@ -10,7 +10,6 @@ import {Color} from '@angular-material-components/color-picker';
 export class ButtonComponent implements OnInit {
 
   cornerRadius = 0;
-  content = '';
   fontSize = 0;
 
   fontFillColor: Color = new Color(0, 0, 0, 255);

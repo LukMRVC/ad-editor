@@ -49,9 +49,7 @@ export class BannerDataService {
         userShapeName: 'Button',
         isButton: true,
         shapeConfig: {
-          labelConfig: {},
-          tagConfig: {},
-          textConfig: {},
+          textConfig: {}
         },
       }
     ];
@@ -122,6 +120,9 @@ export class BannerDataService {
         shapeInformation.shapeConfig = { image };
         this.informationUpdated$.next(shapeInformation.userShapeName);
       };
+    } else if (shapeInformation.isButton) {
+      shapeInformation.shapeConfig.text = nextValue;
+      this.informationUpdated$.next(shapeInformation.userShapeName);
     }
     // console.log(this.datasets);
   }

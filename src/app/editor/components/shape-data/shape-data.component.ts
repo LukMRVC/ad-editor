@@ -28,10 +28,13 @@ export class ShapeDataComponent implements OnInit {
 
   }
 
-  async openGallery(): Promise<void> {
+  async openGallery(datasetKey: string, shapeInfo: ShapeInformation): Promise<void> {
     const dlg = this.dialog.open(ImageGalleryDialogComponent, { width: '70%' });
     const img: UploadedImage|string = await dlg.afterClosed().toPromise();
-    console.log(img);
+    if (img) {
+      this.dataService.changeValue(datasetKey, shapeInfo, (img as UploadedImage).src);
+    }
+    // console.log(imgSrc);
   }
 
   changeDataset(key: string): void {

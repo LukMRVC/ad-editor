@@ -29,7 +29,9 @@ export class BannerDataService {
       {
         userShapeName: 'Logo',
         isImage: true,
-        shapeConfig: {},
+        shapeConfig: {
+          draggable: true,
+        },
       },
       {
         userShapeName: 'Headline',
@@ -113,6 +115,13 @@ export class BannerDataService {
     if (shapeInformation.isText) {
       shapeInformation.shapeConfig = { text: nextValue };
       this.informationUpdated$.next(shapeInformation.userShapeName);
+    } else if (shapeInformation.isImage) {
+      const image = new Image();
+      image.src = nextValue;
+      image.onload = () => {
+        shapeInformation.shapeConfig = { image };
+        this.informationUpdated$.next(shapeInformation.userShapeName);
+      };
     }
     // console.log(this.datasets);
   }

@@ -13,6 +13,7 @@ import {BannerDataService, ShapeInformation} from '@core/services/banner-data.se
 // TODO: On tab click just switch object source and redraw the canvas with different source
 // TODO: Named objects will have properties like on which banners they should appear and the user
 // TODO: will simply edit on banner how it is positioned, then just upload image and text sources
+// TODO: bind changes to draw toolbar values to reflect actual data
 
 
 @Injectable({
@@ -53,7 +54,7 @@ export class KonvaService {
       if (updatedShape.isText) {
         this.updateText(updatedShapeName.slugify(), updatedShape.shapeConfig);
       } else if (updatedShape.isImage) {
-        // TODO: change image
+        this.drawImage(updatedShapeName.slugify(), updatedShape.shapeConfig as ImageConfig);
       }
 
     });
@@ -441,26 +442,43 @@ export class KonvaService {
 }
 
   public drawLogo(conf: Konva.ImageConfig): void {
-    this.banners.forEach((banner, index) => {
-      if (!banner.layout.hasLogo) { return; }
-      const logoDimensions = { width: conf.width, height: conf.height };
-      const { x: scaleX, y: scaleY } = banner.getScaleForLogo(logoDimensions);
+    this.drawImage('logo', conf);
+  }
 
-      const {x, y} = banner.getPixelPositionFromPercentage(banner.layout.logoPosition, logoDimensions, {scaleX, scaleY});
-      // console.log('Got coords', {x, y});
-      const logos = this.bannerGroups[index].group.getChildren(children => children.name() === 'logo');
-      logos.each(logo => logo.destroy());
-      const offsetX = this.bannerGroups[index].group.clipX();
-      const offsetY = this.bannerGroups[index].group.clipY();
-      const image = new Konva.Image({ name: 'logo', x: x + offsetX, y: y + offsetY, scaleX, scaleY,  ...conf });
-      // console.log(`For ${this.bannerGroups[index].group.id()} computed X: ${image.x()} and Y: ${image.y()}`);
-      image.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, 'logo'));
-      image.on('transformstart', () => image.setAttr('initialScale', image.scale()));
-      image.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, 'logo'));
+  public drawImage(slugifiedShapeName: string, conf: Konva.ImageConfig = {image: null}): void {
+    const shape = this.shapes.find(s => s.userShapeName.slugify() === slugifiedShapeName);
+    if (!shape.bannerShapeConfig) {
+      shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
+    }
+    // console.log(shape);
+    for (const [index, banner] of this.banners.entries()) {
+      let konvaImage = null;
 
-      image.cache();
-      this.bannerGroups[index].group.add(image);
-    });
+      if (shape.bannerShapeConfig.has(index) && (shape.bannerShapeConfig.get(index) as Konva.ImageConfig).image === conf.image) {
+        if (shape.bannerShapeConfig.get(index).removed) { continue; }
+        konvaImage = new Konva.Image(shape.bannerShapeConfig.get(index) as Konva.ImageConfig);
+      } else {
+        const logoDimensions = { width: conf.image.width as number, height: conf.image.height as number };
+        const { x: scaleX, y: scaleY } = banner.getScaleForLogo(logoDimensions);
+        const logos = this.bannerGroups[index].group.getChildren(children => children.name() === slugifiedShapeName);
+        logos.each(logo => logo.destroy());
+        const {x, y} = banner.getPixelPositionFromPercentage({ x: 0, y : 0 }, logoDimensions, {scaleX, scaleY});
+        // console.log('Got coords', {x, y});
+
+        const offsetX = this.bannerGroups[index].group.clipX();
+        const offsetY = this.bannerGroups[index].group.clipY();
+        konvaImage = new Konva.Image({ name: slugifiedShapeName, x: x + offsetX, y: y + offsetY, scaleX, scaleY,  ...conf });
+        konvaImage.draggable(true);
+        // console.log(`For ${this.bannerGroups[index].group.id()} computed X: ${image.x()} and Y: ${image.y()}`);
+
+        shape.bannerShapeConfig.set(index, konvaImage.getAttrs());
+      }
+      konvaImage.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, slugifiedShapeName));
+      konvaImage.on('transformstart', () => konvaImage.setAttr('initialScale', konvaImage.scale()));
+      konvaImage.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, slugifiedShapeName));
+      konvaImage.cache();
+      this.bannerGroups[index].group.add(konvaImage);
+    }
     this.transformers.moveToTop();
     this.redraw();
   }
@@ -472,16 +490,11 @@ export class KonvaService {
     if (!shape.bannerShapeConfig) {
       shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
     }
-    console.log(shape);
+    // console.log(shape);
     this.banners.forEach( (banner, index) => {
-
       let text = null;
       // Draw shape from saved config
       if (shape.bannerShapeConfig.has(index)) {
-        if (index === 0) {
-          console.log('Config for shape 0', shape.bannerShapeConfig.get(index));
-        }
-
         text = new Konva.Text(shape.bannerShapeConfig.get(index));
       } else {
         const dimensions = { width: banner.layout.dimensions.width, height: null };
@@ -717,7 +730,7 @@ export class KonvaService {
     if (!shapeData.bannerShapeConfig) {
       shapeData.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
     }
-    // console.log(`Settings value values for ${bannerGroupIndex}`, dragEvent.target.getAttrs());
+    console.log(`Settings value values for ${bannerGroupIndex}`, dragEvent.target.getAttrs());
     shapeData.bannerShapeConfig.set(bannerGroupIndex, dragEvent.target.getAttrs());
 
     if (!this.shouldTransformRelatives) { return; }
@@ -768,8 +781,8 @@ export class KonvaService {
 
       if (shape.isText) {
         this.drawText(shape.userShapeName.slugify(), { ...shape.shapeConfig });
-      } else if (shape.isImage) {
-        // this.draw
+      } else if (shape.isImage && shape.shapeConfig.image) {
+        this.drawImage(shape.userShapeName.slugify(), shape.shapeConfig as Konva.ImageConfig);
       } else if (shape.isButton) {
       //
       }

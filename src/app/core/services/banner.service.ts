@@ -148,10 +148,10 @@ export class BannerService {
   ];
 
   public getComputerBanners(): Banner[] {
-    return [...this.computer].map(layout => new Banner(layout));
+    return [...this.computer].map((layout, index) => new Banner(layout, index));
   }
 
   get mobileBanners(): Banner[] {
-    return [...this.mobile].map(layout => new Banner(layout));
+    return [...this.mobile].map((layout, index) => new Banner(layout, index));
   }
 }

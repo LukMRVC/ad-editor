@@ -7,16 +7,16 @@ import {KonvaService} from '@core/services/konva.service';
   selector: 'app-text-style',
   template: `
     <div fxLayout="column" fxLayoutGap="0.5rem">
-      <app-font-chooser (fontFamilyLoaded)="konva.changeHeadline({ fontFamily: $event })"></app-font-chooser>
-      <app-text-h-alignment (alignmentChanged)="konva.changeHeadline({align: $event})"></app-text-h-alignment>
-      <app-text-v-alignment (alignmentChanged)="konva.changeHeadline({verticalAlign: $event})"></app-text-v-alignment>
-      <app-text-decoration (decorationChanged)="konva.changeHeadline($event)"></app-text-decoration>
+      <app-font-chooser (fontFamilyLoaded)="konva.updateText(shapeName.slugify(), { fontFamily: $event })"></app-font-chooser>
+      <app-text-h-alignment (alignmentChanged)="konva.updateText(shapeName.slugify(), {align: $event})"></app-text-h-alignment>
+      <app-text-v-alignment (alignmentChanged)="konva.updateText(shapeName.slugify(), {verticalAlign: $event})"></app-text-v-alignment>
+      <app-text-decoration (decorationChanged)="konva.updateText(shapeName.slugify(), $event)"></app-text-decoration>
       <div fxFlex fxLayout="column">
         <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
           <label>Line height</label>
           <span>{{ fontLineHeight }}</span>
         </div>
-        <mat-slider (change)="konva.changeHeadline({lineHeight: fontLineHeight})"
+        <mat-slider (change)="konva.updateText(this.shapeName.slugify(), {lineHeight: fontLineHeight})"
                     [(ngModel)]="fontLineHeight" thumbLabel min="1" max="5" step="0.1" value="1"></mat-slider>
       </div>
 
@@ -25,7 +25,7 @@ import {KonvaService} from '@core/services/konva.service';
           <label>Letter spacing</label>
           <span>{{ fontLetterSpacing }}</span>
         </div>
-        <mat-slider (change)="konva.changeHeadline({letterSpacing: fontLetterSpacing})"
+        <mat-slider (change)="konva.updateText(this.shapeName.slugify(), {letterSpacing: fontLetterSpacing})"
                     [(ngModel)]="fontLetterSpacing" thumbLabel min="-10" max="10" step="0.1" value="0"></mat-slider>
       </div>
 
@@ -34,7 +34,7 @@ import {KonvaService} from '@core/services/konva.service';
           <label>Font size</label>
           <span>{{ fontScaling }}%</span>
         </div>
-        <mat-slider (change)="konva.changeHeadline({fontScaling: fontScaling})"
+        <mat-slider (change)="konva.updateText(this.shapeName.slugify(), {fontScaling: fontScaling})"
                     [(ngModel)]="fontScaling" thumbLabel min="-10" max="10" step="0.1" value="0"></mat-slider>
       </div>
 
@@ -42,13 +42,13 @@ import {KonvaService} from '@core/services/konva.service';
         <mat-label>Color</mat-label>
         <input [(ngModel)]="fillColor" (keydown.enter)="fillPicker.close()" (focus)="fillPicker.open()"
                [ngxMatColorPicker]="fillPicker"
-               (colorChange)="konva.changeHeadline({fill: fillColor.toHex8String()})" matInput #fillColourInput>
+               (colorChange)="konva.updateText(this.shapeName.slugify(), {fill: fillColor.toHex8String()})" matInput #fillColourInput>
         <ngx-mat-color-toggle matSuffix [for]="fillPicker"></ngx-mat-color-toggle>
         <ngx-mat-color-picker defaultColor="#000" #fillPicker touchUi="false"></ngx-mat-color-picker>
       </mat-form-field>
 
       <!-- Shadow controls -->
-      <app-shadow shadowFor="headline" (shadowChange)="konva.changeHeadline($event)"></app-shadow>
+      <app-shadow [shadowFor]="shapeName.slugify()" (shadowChange)="konva.updateText(this.shapeName.slugify(), $event)"></app-shadow>
     </div>
 
   `,

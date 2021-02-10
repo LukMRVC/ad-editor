@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import Konva from 'konva';
+import {BehaviorSubject, Subject} from 'rxjs';
+import {Banner} from '@core/models/banner-layout';
 
 @Injectable({
   providedIn: 'root'
@@ -7,10 +9,14 @@ import Konva from 'konva';
 export class BannerDataService {
 
   userShapes: ShapeInformation[] = [];
+  public datasetChanged$ = new Subject<string>();
+  public informationUpdated$ = new Subject<string>();
+  public banners$ = new BehaviorSubject<Banner[]>([]);
 
   datasets = new Map<string, ShapeInformation[]>();
   private datasetCounter = 0;
   private activeDataset: string;
+  private banners: Banner[] = [];
 
   constructor() {
     this.datasets.set(`Dataset #${++this.datasetCounter}`, this.createDataset());
@@ -19,61 +25,89 @@ export class BannerDataService {
   }
 
   private createDataset(): ShapeInformation[] {
-    let dataset: ShapeInformation[];
-    if (this.datasets.size <= 0) {
-      dataset = [
-        {
-          userShapeName: 'Logo',
-          isImage: true,
-          shapeConfig: {},
+    const dataset: ShapeInformation[] = [
+      {
+        userShapeName: 'Logo',
+        isImage: true,
+        shapeConfig: {},
+      },
+      {
+        userShapeName: 'Headline',
+        isText: true,
+        shapeConfig: {
+          text: '',
         },
-        {
-          userShapeName: 'Headline',
-          isText: true,
-          shapeConfig: {},
+      },
+      {
+        userShapeName: 'Background',
+        isImage: true,
+        shapeConfig: {},
+      },
+      {
+        userShapeName: 'Button',
+        isButton: true,
+        shapeConfig: {
+          labelConfig: {},
+          tagConfig: {},
+          textConfig: {},
         },
-        {
-          userShapeName: 'Background',
-          isImage: true,
-          shapeConfig: {},
-        },
-        {
-          userShapeName: 'Button',
-          isButton: true,
-          shapeConfig: {},
-        }
-      ];
-    } else {
-      dataset = [... [...this.datasets.values()].pop() ];
-    }
-
-    return dataset;
+      }
+    ];
+    return dataset.concat( [...this.userShapes] );
   }
 
   public addDataset(): void {
-    console.log(this.createDataset());
     this.datasets.set(`Dataset #${++this.datasetCounter}`, this.createDataset());
   }
 
   public setActiveDataset(setName: string): void {
-    this.activeDataset = setName;
+    if (this.activeDataset !== setName) {
+      this.activeDataset = setName;
+      this.datasetChanged$.next(setName);
+    }
   }
 
   public getActiveDataset(): ShapeInformation[] {
     return this.datasets.get(this.activeDataset);
   }
 
-  public addToDataset(userShapeName: string, shapeType: 'text'|'image'): void {
-    for (const [, setShapes] of this.datasets.entries()) {
-      this.userShapes.push({
-        userShapeName,
-        isText: shapeType === 'text',
-        isImage: shapeType === 'image',
-      });
-      setShapes.push(this.userShapes[this.userShapes.length - 1]);
+  public addToDataset(userShapeName: string, shapeType: 'text'|'image', toAll: boolean = true): void {
+    const shapeToAdd: ShapeInformation = {
+      userShapeName,
+      isText: shapeType === 'text',
+      isImage: shapeType === 'image',
+      shapeConfig: {},
+    };
+    if (shapeToAdd.isText) {
+      shapeToAdd.shapeConfig.text = userShapeName;
     }
+
+    if (toAll) {
+      for (const dataset of this.datasets.values()) {
+        dataset.push(shapeToAdd);
+      }
+    } else {
+      this.datasets.get(this.activeDataset).push(shapeToAdd);
+    }
+
+    this.informationUpdated$.next(shapeToAdd.userShapeName);
   }
 
+  public changeValue(datasetKey: string, shapeInfo: ShapeInformation, nextValue: any): void {
+    const dataset = this.datasets.get(datasetKey);
+    const shapeInformation = dataset.find(shape => shape.userShapeName === shapeInfo.userShapeName);
+    if (!shapeInformation) { return; }
+    if (shapeInformation.isText) {
+      shapeInformation.shapeConfig = { text: nextValue };
+      this.informationUpdated$.next(shapeInformation.userShapeName);
+    }
+    console.log(this.datasets);
+  }
+
+  public setBanners(banners: Banner[]): void {
+    this.banners = banners;
+    this.banners$.next(this.banners);
+  }
 }
 
 export interface ShapeInformation {

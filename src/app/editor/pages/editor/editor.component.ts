@@ -3,6 +3,7 @@ import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild
 import {KonvaService} from '@core/services/konva.service';
 import {Subscription} from 'rxjs';
 import {BannerService} from '@core/services/banner.service';
+import {BannerDataService} from '@core/services/banner-data.service';
 
 @Component({
   selector: 'app-editor',
@@ -17,6 +18,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   constructor(
     public konva: KonvaService,
     public bannerService: BannerService,
+    public dataService: BannerDataService,
   ) { }
 
   ngAfterViewInit(): void {
@@ -45,10 +47,9 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       height: this.stageWrapper.nativeElement.offsetHeight,
     });
 
-    this.konva.setBanners(this.bannerService.getComputerBanners());
-    this.konva.drawBanners();
-    this.konva.drawHeadline({ draggable: true, padding: 10, /*text: 'Test text', fontStyle: 'italic bold' */});
-    this.konva.drawButton();
+    this.dataService.setBanners(this.bannerService.getComputerBanners());
+    // this.konva.drawHeadline({ draggable: true, padding: 10, /*text: 'Test text', fontStyle: 'italic bold' */});
+    // this.konva.drawButton();
   }
 
   ngOnDestroy(): void {
@@ -67,13 +68,4 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     // this.konva.deleteSelected();
   }
 
-  imageUploaded($imageData: { file: File, buffer: ArrayBuffer }): void {
-    const blob = new Blob( [$imageData.buffer], { type: $imageData.file.type });
-    const urlCreate = window.URL || window.webkitURL;
-    const imageUrl = urlCreate.createObjectURL(blob);
-    const image = new window.Image();
-    // image.width = this.canvasWidth / 2;
-    image.src = imageUrl;
-    image.onload = () => this.konva.image({ image, scaleX: 0.3, scaleY: 0.3, draggable: true });
-  }
 }

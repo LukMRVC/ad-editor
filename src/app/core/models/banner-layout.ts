@@ -1,7 +1,10 @@
 export class Banner {
 
-  constructor(layout: BannerLayout) {
+  id: number;
+
+  constructor(layout: BannerLayout, bid: number) {
     this.layout = layout;
+    this.id = bid;
   }
 
   layout: BannerLayout;

@@ -1,4 +1,4 @@
-import {Component, EventEmitter, OnInit, Output} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {KonvaService} from '@core/services/konva.service';
 import {CdkDragEnd} from '@angular/cdk/drag-drop';
 import {MatDialog} from '@angular/material/dialog';
@@ -11,8 +11,6 @@ import {BannerDataService} from '@core/services/banner-data.service';
   styleUrls: ['./draw-toolbar.component.scss']
 })
 export class DrawToolbarComponent implements OnInit {
-
-  @Output() imageUploaded = new EventEmitter<{ file: File, buffer: ArrayBuffer }>();
 
   constructor(
     public konva: KonvaService,

@@ -10,7 +10,8 @@
         <div *ngFor="let shapeInfo of dataset.value">
           <mat-form-field fxFlex appearance="outline" *ngIf="shapeInfo.isText">
             <mat-label>{{ shapeInfo.userShapeName }}</mat-label>
-            <textarea (input)="changeValue(dataset.key, shapeInfo, $event)" [value]="shapeInfo.shapeConfig.text" matInput [placeholder]="shapeInfo.userShapeName + ' text'" ></textarea>
+            <textarea (input)="changeValue(dataset.key, shapeInfo, $event)" [value]="shapeInfo.shapeConfig.text"
+                      matInput [placeholder]="shapeInfo.userShapeName + ' text'" ></textarea>
           </mat-form-field>
 
           <button (click)="openGallery()" fxFlex *ngIf="shapeInfo.isImage" #uploadBtn mat-raised-button color="primary">

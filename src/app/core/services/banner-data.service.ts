@@ -72,25 +72,38 @@ export class BannerDataService {
   }
 
   public addToDataset(userShapeName: string, shapeType: 'text'|'image', toAll: boolean = true): void {
-    const shapeToAdd: ShapeInformation = {
+    this.userShapes.push({
       userShapeName,
       isText: shapeType === 'text',
       isImage: shapeType === 'image',
-      shapeConfig: {},
-    };
-    if (shapeToAdd.isText) {
-      shapeToAdd.shapeConfig.text = userShapeName;
-    }
+      shapeConfig: {
+        text: shapeType === 'text' ? userShapeName : '',
+      },
+    });
 
     if (toAll) {
       for (const dataset of this.datasets.values()) {
-        dataset.push(shapeToAdd);
+        dataset.push({
+          userShapeName,
+          isText: shapeType === 'text',
+          isImage: shapeType === 'image',
+          shapeConfig: {
+            text: shapeType === 'text' ? userShapeName : '',
+          },
+        });
       }
     } else {
-      this.datasets.get(this.activeDataset).push(shapeToAdd);
+      this.datasets.get(this.activeDataset).push({
+        userShapeName,
+        isText: shapeType === 'text',
+        isImage: shapeType === 'image',
+        shapeConfig: {
+          text: shapeType === 'text' ? userShapeName : '',
+        },
+      });
     }
 
-    this.informationUpdated$.next(shapeToAdd.userShapeName);
+    this.informationUpdated$.next(userShapeName);
   }
 
   public changeValue(datasetKey: string, shapeInfo: ShapeInformation, nextValue: any): void {
@@ -101,7 +114,7 @@ export class BannerDataService {
       shapeInformation.shapeConfig = { text: nextValue };
       this.informationUpdated$.next(shapeInformation.userShapeName);
     }
-    console.log(this.datasets);
+    // console.log(this.datasets);
   }
 
   public setBanners(banners: Banner[]): void {
@@ -116,4 +129,5 @@ export interface ShapeInformation {
   isImage?: boolean;
   isButton?: boolean;
   shapeConfig?: Konva.ShapeConfig;
+  bannerShapeConfig?: Map<number, Konva.ShapeConfig>;
 }

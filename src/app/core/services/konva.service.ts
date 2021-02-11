@@ -146,6 +146,14 @@ export class KonvaService {
         nodes = [];
       }
 
+      const hasText = nodes.some(node => node.getClassName().toLowerCase() === 'text');
+      if (hasText) {
+        tr.enabledAnchors(['middle-left', 'middle-right']);
+      } else {
+        // all anchors
+        tr.enabledAnchors(['top-left', 'top-center', 'top-right', 'middle-right', 'middle-left', 'bottom-left', 'bottom-center', 'bottom-right']);
+      }
+
       tr.nodes(nodes);
       this.redraw();
       // console.log(layer);
@@ -526,8 +534,20 @@ export class KonvaService {
       }
 
       text.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, slugifiedShapeName));
-      text.on('transformstart', () => text.setAttr('initialScale', text.scale()));
-      text.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, index, slugifiedShapeName));
+      text.on('transform', () => {
+        for (const relativeBannerGroup of this.bannerGroups) {
+          const relativeText = relativeBannerGroup.group.findOne(`.${slugifiedShapeName}`);
+          relativeText.setAttrs({
+            // the Text width should never be bigger than its parent group so we do Math.min
+            width: Math.min(Math.max( text.width() * text.scaleX(), 50), relativeBannerGroup.group.width()),
+            scaleX: 1,
+          });
+          relativeText.cache();
+        }
+
+      });
+      // text.on('transformstart', () => text.setAttr('initialScale', text.scale()));
+      // text.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, index, slugifiedShapeName));
       this.bannerGroups[index].group.add(text);
     });
     this.transformers.moveToTop();
@@ -538,7 +558,7 @@ export class KonvaService {
     const shape = this.shapes.find(s => s.userShapeName.slugify() === slugifiedShapeName);
     // console.log(shape);
     // console.log(this.shapes);
-    console.log('Updating text');
+    // console.log('Updating text');
     for (const [index, bannerGroup] of this.bannerGroups.entries()) {
       if ('fontScaling' in attributes) {
         attributes.fontSize = (bannerGroup.group.findOne(`.${slugifiedShapeName}`) as Konva.Text).getAttr('initialFontSize');
@@ -762,7 +782,7 @@ export class KonvaService {
   }
 
   private moveAllRelatives(dragEvent: Konva.KonvaEventObject<Konva.Shape>, bannerGroupIndex: number, shapeName: string): void {
-    console.log('Moving relatives');
+    // console.log('Moving relatives');
     const percentages = this.getBannerPercentagesFromEvent(dragEvent, bannerGroupIndex);
     // console.log('Computed percentages', percentages);
     const shapeData = this.shapes.find(s => s.userShapeName.slugify() === shapeName);
@@ -804,9 +824,7 @@ export class KonvaService {
     if (transformEvent.target.isCached()) {
       transformEvent.target.cache();
     }
-
     const percentages = this.getBannerPercentagesFromEvent(transformEvent, bannerGroupIndex);
-
 
     for (const [index, bannerGroup] of this.bannerGroups.entries()) {
       if (bannerGroup.group === transformEvent.target.getParent()) { continue; }

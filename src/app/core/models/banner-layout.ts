@@ -40,12 +40,14 @@ export class Banner {
 
   public getScaleForLogo(logoDimensions: Dimension2D): Point2D {
     let scale = 1;
-    const maxWidth = this.layout.dimensions.width / 4;
-    const maxHeight = this.layout.dimensions.height / 4;
+    const maxWidth = this.layout.dimensions.width / 3;
+
     if (logoDimensions.width > maxWidth) {
       scale = maxWidth / logoDimensions.width;
-    } else if (logoDimensions.height > maxHeight) {
-      scale = maxHeight / logoDimensions.height;
+    }
+
+    if ( (logoDimensions.width * scale) > this.layout.dimensions.height) {
+      scale = this.layout.dimensions.height / logoDimensions.height;
     }
 
     return {x: scale, y: scale};

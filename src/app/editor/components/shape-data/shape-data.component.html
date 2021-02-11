@@ -1,4 +1,10 @@
-<div class="shape-aside" fxFlex fxLayout="column" fxLayoutGap=".5rem">
+<div appHideable="left" [hide]="isHidden" class="shape-aside" fxFlex fxLayout="column" fxLayoutGap=".5rem">
+
+  <button (click)="isHidden = !isHidden" mat-mini-fab  class="show-btn">
+    <mat-icon *ngIf="!isHidden">chevron_left</mat-icon>
+    <mat-icon *ngIf="isHidden">chevron_right</mat-icon>
+  </button>
+
   <mat-accordion>
     <mat-expansion-panel [expanded]="selectedSet === dataset.key"  *ngFor="let dataset of dataService.datasets | keyvalue "
                          class="mat-elevation-z0 expansion-panel radius-none" (opened)="changeDataset(dataset.key)">

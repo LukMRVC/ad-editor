@@ -8,11 +8,13 @@ import { ImageGalleryDialogComponent } from './components/image-gallery-dialog.c
 import {MaterialModule} from '@shared/material.module';
 import {FlexLayoutModule} from '@angular/flex-layout';
 import {HttpClientModule} from '@angular/common/http';
+import { HideableDirective } from './directives/hideable.directive';
 
 
 @NgModule({
   declarations: [
-    ImageGalleryDialogComponent
+    ImageGalleryDialogComponent,
+    HideableDirective
   ],
   imports: [
     CommonModule,
@@ -25,16 +27,17 @@ import {HttpClientModule} from '@angular/common/http';
     FlexLayoutModule,
     HttpClientModule,
   ],
-  exports: [
-    ReactiveFormsModule,
-    FormsModule,
-    PopoverModule,
-    DragDropModule,
-    NgxFileDropModule,
-    MaterialModule,
-    FlexLayoutModule,
-    HttpClientModule,
-  ],
+    exports: [
+        ReactiveFormsModule,
+        FormsModule,
+        PopoverModule,
+        DragDropModule,
+        NgxFileDropModule,
+        MaterialModule,
+        FlexLayoutModule,
+        HttpClientModule,
+        HideableDirective,
+    ],
   entryComponents: [
     ImageGalleryDialogComponent,
   ]

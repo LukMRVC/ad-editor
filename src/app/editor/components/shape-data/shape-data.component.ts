@@ -12,6 +12,7 @@ import {UploadedImage} from '@core/services/image-gallery.service';
 export class ShapeDataComponent implements OnInit {
 
   selectedSet: string;
+  isHidden: boolean = false;
 
   constructor(
     public dataService: BannerDataService,

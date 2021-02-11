@@ -23,6 +23,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     // console.log(this.stageWrapper);
+
     this.konva.init({
       container: 'stage',
       draggable: true,

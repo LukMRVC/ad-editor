@@ -2,11 +2,9 @@ import {EventEmitter, Injectable} from '@angular/core';
 import Konva from 'konva';
 import {StageConfig} from 'konva/types/Stage';
 import {LayerConfig} from 'konva/types/Layer';
-import {ImageConfig} from 'konva/types/shapes/Image';
 import {TransformerConfig} from 'konva/types/shapes/Transformer';
 import {RectConfig} from 'konva/types/shapes/Rect';
-import {TextConfig} from 'konva/types/shapes/Text';
-import {Banner, Dimension2D, Point2D} from '@core/models/banner-layout';
+import {Banner, Point2D} from '@core/models/banner-layout';
 import {FilterChangedEvent} from '../../editor/components/image-filter.component';
 import {BannerDataService, ShapeInformation} from '@core/services/banner-data.service';
 
@@ -586,6 +584,7 @@ export class KonvaService {
   }
 
   public drawBackground(conf: Konva.ImageConfig): void {
+    console.log('Drawing background');
     this.bannerGroups.forEach( (bannerGroup, index) => {
       // destroy old background so we dont waste memory
       bannerGroup.group.getChildren(children => children.name() === 'bg-image').each(c => c.destroy());
@@ -597,6 +596,7 @@ export class KonvaService {
         height: this.banners[index].layout.dimensions.height,
         ...conf,
         draggable: true,
+        transformable: false,
       });
 
       bgImage.on('dragstart', dragstart => {

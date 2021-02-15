@@ -6,7 +6,7 @@ declare global {
   }
 }
 
-String.prototype.slugify = function(separator = ''): string {
+String.prototype.slugify = function(separator = '-'): string {
   return this
     .toString()
     .normalize('NFD')

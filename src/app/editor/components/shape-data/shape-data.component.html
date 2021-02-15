@@ -37,7 +37,11 @@
     </mat-expansion-panel>
   </mat-accordion>
 
-  <div style="padding: .5rem">
+  <div style="padding: .5rem" fxLayout="column" fxLayoutGap=".5rem">
     <button (click)="dataService.addDataset()" mat-flat-button color="accent" fxFlex>Add dataset</button>
+    <button (click)="datasetUpload.click()" mat-flat-button color="accent" fxFlex>Upload dataset</button>
+
+    <input type="file" (change)="dataService.uploadDatasets($event)" style="display: none" #datasetUpload name="file" class="hidden" accept="text/csv">
   </div>
+
 </div>

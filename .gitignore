@@ -55,3 +55,4 @@ Thumbs.db
 /src/environments/environment.prod.ts
 *.css
 *.css.map
+/resources/

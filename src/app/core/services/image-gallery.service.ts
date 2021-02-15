@@ -74,6 +74,14 @@ export class ImageGalleryService {
   hasImage(file: File): boolean {
     return this.images.findIndex(img => img.name === file.name) !== -1;
   }
+
+  public getImageInstanceByName(imgName: string): HTMLImageElement {
+    const img = new Image();
+    // console.log(`Finding ${imgName} in `, this.images);
+    const imgData = this.images.find(i => i.name === imgName);
+    img.src = imgData.src;
+    return img;
+  }
 }
 
 export interface UploadedImage {

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import Konva from 'konva';
 import {BehaviorSubject, Subject} from 'rxjs';
 import {Banner} from '@core/models/banner-layout';
+import {ImageGalleryService} from '@core/services/image-gallery.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +19,9 @@ export class BannerDataService {
   private activeDataset: string;
   private banners: Banner[] = [];
 
-  constructor() {
+  constructor(
+    private imageService: ImageGalleryService,
+  ) {
     this.datasets.set(`Dataset #${++this.datasetCounter}`, this.createDataset());
     this.activeDataset = `Dataset #${this.datasetCounter}`;
     // console.log(`Creating ${BannerDataService.name} instance!`);
@@ -136,6 +139,57 @@ export class BannerDataService {
   public setBanners(banners: Banner[]): void {
     this.banners = banners;
     this.banners$.next(this.banners);
+  }
+
+  public uploadDatasets($event: Event): void {
+    console.log(this.userShapes);
+    const file = ($event.target as HTMLInputElement).files[0];
+    if (file && file.type === 'text/csv') {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const lines = result.split(/\r?\n/);
+        const header = [];
+        let columns = this.userShapes.map(s => s.userShapeName.slugify());
+        columns = columns.concat(['headline', 'background', 'logo', 'button']);
+        for (const column of lines[0].split(';')) {
+          if (column === '') {
+            continue;
+          } else if (!columns.includes(column)) {
+            throw new Error(`Unknown header \'${column}\' found in dataset!`);
+          }
+          header.push(column);
+        }
+        console.log(header);
+        const dataLines = lines.slice(1);
+        for (const line of dataLines) {
+          const dataset = this.createDataset();
+          const values = line.split(';');
+          // console.log(values);
+          for (let i = 0; i < header.length; ++i) {
+            const shapeInfo = dataset.find(s => s.userShapeName.slugify() === header[i]);
+            console.assert(shapeInfo !== undefined);
+            // TODO: fix this when assigning text to user defined text
+            if (shapeInfo.isText) {
+              // console.log({shapeInfo, index: i, value: values[i]});
+              shapeInfo.shapeConfig.text = values[i];
+              // shapeInfo.shapeConfig.text = values[i];
+              console.log(shapeInfo.shapeConfig, values[i]);
+              console.log(shapeInfo.shapeConfig.text, values[i]);
+            } else if (shapeInfo.isImage) {
+              shapeInfo.shapeConfig = { image: this.imageService.getImageInstanceByName( values[i]) };
+              // Get image form image gallery service
+            } else if (shapeInfo.isButton) {
+              shapeInfo.shapeConfig.textConfig.text = values[i];
+            }
+          }
+          this.datasets.set(`Dataset #${++this.datasetCounter}`, dataset);
+        }
+
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
   }
 }
 

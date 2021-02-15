@@ -3,6 +3,8 @@ import {BannerDataService, ShapeInformation} from '@core/services/banner-data.se
 import {MatDialog} from '@angular/material/dialog';
 import {ImageGalleryDialogComponent} from '@shared/components/image-gallery-dialog.component';
 import {UploadedImage} from '@core/services/image-gallery.service';
+import {ShapeDisplayDialogComponent} from '@shared/components/shape-display-dialog.component';
+import {KonvaService} from '@core/services/konva.service';
 
 @Component({
   selector: 'app-shape-data',
@@ -12,11 +14,12 @@ import {UploadedImage} from '@core/services/image-gallery.service';
 export class ShapeDataComponent implements OnInit {
 
   selectedSet: string;
-  isHidden: boolean = false;
+  isHidden = false;
 
   constructor(
     public dataService: BannerDataService,
     public dialog: MatDialog,
+    public konva: KonvaService,
   ) { }
 
   ngOnInit(): void {
@@ -41,5 +44,12 @@ export class ShapeDataComponent implements OnInit {
   changeDataset(key: string): void {
     this.selectedSet = key;
     this.dataService.setActiveDataset(key);
+  }
+
+  async displayOptions(dataset: ShapeInformation[]): Promise<void> {
+    const dlg = this.dialog.open(ShapeDisplayDialogComponent, { maxWidth: '70%', minWidth: '50%', data: dataset });
+    const result = await dlg.afterClosed().toPromise();
+    console.log(result);
+    this.konva.redrawShapes();
   }
 }

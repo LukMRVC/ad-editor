@@ -9,12 +9,18 @@ import {MaterialModule} from '@shared/material.module';
 import {FlexLayoutModule} from '@angular/flex-layout';
 import {HttpClientModule} from '@angular/common/http';
 import { HideableDirective } from './directives/hideable.directive';
+import { ShapeDisplayDialogComponent } from './components/shape-display-dialog.component';
+import { SlugifyPipe } from './pipes/slugify.pipe';
+import { UnslugifyPipe } from './pipes/unslugify.pipe';
 
 
 @NgModule({
   declarations: [
     ImageGalleryDialogComponent,
-    HideableDirective
+    HideableDirective,
+    ShapeDisplayDialogComponent,
+    SlugifyPipe,
+    UnslugifyPipe
   ],
   imports: [
     CommonModule,

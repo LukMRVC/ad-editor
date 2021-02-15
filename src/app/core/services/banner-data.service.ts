@@ -21,7 +21,7 @@ export class BannerDataService {
   constructor() {
     this.datasets.set(`Dataset #${++this.datasetCounter}`, this.createDataset());
     this.activeDataset = `Dataset #${this.datasetCounter}`;
-    console.log(`Creating ${BannerDataService.name} instance!`);
+    // console.log(`Creating ${BannerDataService.name} instance!`);
   }
 
   private createDataset(): ShapeInformation[] {
@@ -53,6 +53,7 @@ export class BannerDataService {
         },
       }
     ];
+
     return dataset.concat( [...this.userShapes] );
   }
 
@@ -81,6 +82,7 @@ export class BannerDataService {
       },
     });
 
+
     if (toAll) {
       for (const dataset of this.datasets.values()) {
         dataset.push({
@@ -101,8 +103,8 @@ export class BannerDataService {
           text: shapeType === 'text' ? userShapeName : '',
         },
       });
-    }
 
+    }
     this.informationUpdated$.next(userShapeName);
   }
 
@@ -125,6 +127,10 @@ export class BannerDataService {
       this.informationUpdated$.next(shapeInformation.userShapeName);
     }
     // console.log(this.datasets);
+  }
+
+  public getActiveBanners(): Banner[] {
+    return this.banners;
   }
 
   public setBanners(banners: Banner[]): void {

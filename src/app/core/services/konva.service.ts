@@ -31,11 +31,7 @@ export class KonvaService {
     this.dataService.datasetChanged$.subscribe(newDatasetName => {
       // console.log(this.dataService.getActiveDataset());
       this.shapes = this.dataService.getActiveDataset();
-      for (const bannerGroup of this.bannerGroups) {
-        bannerGroup.group
-          .getChildren( node => node.name() !== 'group-bg' && node.name() !== 'banner-label' )
-          .each(c => c.destroy());
-      }
+
       // console.log('Changed shapes', this.shapes);
       this.redrawShapes();
     });
@@ -77,7 +73,7 @@ export class KonvaService {
   public layers: Konva.Layer[] = [];
   private banners: Banner[];
   private bannerGroups: {group: Konva.Group, bg: Konva.Shape}[] = [];
-  private shouldTransformRelatives = true;
+  public shouldTransformRelatives = true;
 
   private initZoom(stage: Konva.Stage, scaleBy: number): void {
     stage.on('wheel', ev => {
@@ -476,7 +472,7 @@ export class KonvaService {
       let konvaImage = null;
 
       if (shape.bannerShapeConfig.has(index) && (shape.bannerShapeConfig.get(index) as Konva.ImageConfig).image === conf.image) {
-        if (shape.bannerShapeConfig.get(index).removed) { continue; }
+        if (!shape.bannerShapeConfig.get(index).shouldDraw) { continue; }
         konvaImage = new Konva.Image(shape.bannerShapeConfig.get(index) as Konva.ImageConfig);
       } else {
         const logoDimensions = { width: conf.image.width as number, height: conf.image.height as number };
@@ -491,7 +487,7 @@ export class KonvaService {
         konvaImage = new Konva.Image({ name: slugifiedShapeName, x: x + offsetX, y: y + offsetY, scaleX, scaleY,  ...conf });
         konvaImage.draggable(true);
         // console.log(`For ${this.bannerGroups[index].group.id()} computed X: ${image.x()} and Y: ${image.y()}`);
-
+        konvaImage.setAttr('shouldDraw', true);
         shape.bannerShapeConfig.set(index, konvaImage.getAttrs());
       }
       konvaImage.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, slugifiedShapeName));
@@ -512,10 +508,11 @@ export class KonvaService {
       shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
     }
     // console.log(shape);
-    this.banners.forEach( (banner, index) => {
+    for (const [index, banner] of this.banners.entries()) {
       let text = null;
       // Draw shape from saved config
       if (shape.bannerShapeConfig.has(index)) {
+        if (!shape.bannerShapeConfig.get(index).shouldDraw) { continue; }
         text = new Konva.Text(shape.bannerShapeConfig.get(index));
       } else {
         const dimensions = { width: banner.layout.dimensions.width, height: null };
@@ -530,6 +527,7 @@ export class KonvaService {
         const scaleY = 1;
         text = new Konva.Text({ name: slugifiedShapeName, x: x + offsetX, y: y + offsetY, scaleX, scaleY, ...conf });
         text.setAttr('initialFontSize', conf.fontSize);
+        text.setAttr('shouldDraw', true);
         shape.bannerShapeConfig.set(index, text.getAttrs());
       }
 
@@ -544,12 +542,11 @@ export class KonvaService {
           });
           relativeText.cache();
         }
-
       });
       // text.on('transformstart', () => text.setAttr('initialScale', text.scale()));
       // text.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, index, slugifiedShapeName));
       this.bannerGroups[index].group.add(text);
-    });
+    }
     this.transformers.moveToTop();
     this.redraw();
   }
@@ -572,6 +569,7 @@ export class KonvaService {
         textShape.setAttrs(attributes);
         textShape.cache();
       }
+      textShape.setAttr('shouldDraw', true);
       shape.bannerShapeConfig.set(index, textShape.getAttrs());
     }
     this.redraw();
@@ -714,12 +712,13 @@ export class KonvaService {
     if (!shape.bannerShapeConfig) {
       shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
     }
-    this.banners.forEach( (banner, index) => {
+    for (const [index, banner] of this.banners.entries()) {
       let button = null;
 
       if (shape.bannerShapeConfig.has(index)) {
         const savedData = shape.bannerShapeConfig.get(index);
-        console.log('Recovering button from', savedData);
+        if (!savedData.shouldDraw) { continue; }
+        // console.log('Recovering button from', savedData);
         button = this.button( savedData.labelConfig, savedData.tagConfig, savedData.textConfig );
       } else {
         const dimensions = { width: banner.layout.dimensions.width / 3, height: banner.layout.dimensions.height / 5 };
@@ -729,14 +728,13 @@ export class KonvaService {
         button = this.button({ x: x + offsetX, y: y + offsetY, ...labelConfig }, tagConfig, textConfig);
         const tag = button.findOne('.button-tag');
         const text = button.findOne('.button-text');
-        shape.bannerShapeConfig.set(index, { labelConfig: button.getAttrs(), tagConfig: tag.getAttrs(), textConfig: text.getAttrs() });
+        shape.bannerShapeConfig.set(index, { shouldDraw: true, labelConfig: button.getAttrs(),
+          tagConfig: tag.getAttrs(), textConfig: text.getAttrs() });
       }
 
-
       button.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, 'button'));
-
       this.bannerGroups[index].group.add(button);
-    });
+    }
     this.transformers.moveToTop();
     this.redraw();
   }
@@ -868,7 +866,13 @@ export class KonvaService {
     return eventBanner.getPercentageCenterPositionInBanner({x: xPos, y: yPos}, dimensions);
   }
 
-  private redrawShapes(): void {
+  public redrawShapes(): void {
+    for (const bannerGroup of this.bannerGroups) {
+      bannerGroup.group
+        .getChildren( node => node.name() !== 'group-bg' && node.name() !== 'banner-label' )
+        .each(c => c.destroy());
+    }
+
     for (const shape of this.shapes) {
       if ( Object.keys(shape.shapeConfig).length === 0) {
         continue;
@@ -882,7 +886,7 @@ export class KonvaService {
         } else {
           this.drawImage(shape.userShapeName.slugify(), shape.shapeConfig as Konva.ImageConfig);
         }
-      } else if (shape.isButton) {
+      } else if (shape.isButton && shape.bannerShapeConfig) {
         this.drawButton({}, {}, shape.shapeConfig);
       }
 

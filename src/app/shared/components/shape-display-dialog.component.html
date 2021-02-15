@@ -1,0 +1,33 @@
+<h2 mat-dialog-title>Display options for dataset</h2>
+
+
+<mat-dialog-content style="padding: 1rem;" fxLayout="column" fxLayoutGap=".5rem">
+
+<mat-accordion [@.disabled]="disableAnimations">
+  <mat-expansion-panel *ngFor="let shapeInfo of this.datasetData">
+    <mat-expansion-panel-header>
+      <mat-panel-title> {{ shapeInfo.userShapeName }}</mat-panel-title>
+      <mat-panel-description>
+        <mat-checkbox color="primary" (click)="$event.stopImmediatePropagation()"
+                      (change)="toggleAllDrawingOnBanner(shapeInfo, $event.checked);"
+                      [indeterminate]="someSizes(shapeInfo)"
+                      [checked]="allSizes(shapeInfo)">
+          Display on all banners
+        </mat-checkbox>
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+    <div fxLayout="column" fxLayoutGap=".25rem">
+      <mat-checkbox *ngFor="let banner of this.bannerSizes; index as i"
+                    [checked]="isDrawnOnBanner(shapeInfo, i)"
+                    (change)="toggleDrawingOnBanner(shapeInfo, i, $event.checked)" >
+        {{ banner.layout.name | unslugify | titlecase }}: {{ banner.layout.dimensions.width}}&times;{{ banner.layout.dimensions.height }}
+      </mat-checkbox>
+    </div>
+
+  </mat-expansion-panel>
+</mat-accordion>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-dialog-close mat-raised-button>Close</button>
+</mat-dialog-actions>

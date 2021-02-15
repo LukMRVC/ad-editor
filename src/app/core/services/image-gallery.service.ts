@@ -77,9 +77,8 @@ export class ImageGalleryService {
 
   public getImageInstanceByName(imgName: string): HTMLImageElement {
     const img = new Image();
-    // console.log(`Finding ${imgName} in `, this.images);
     const imgData = this.images.find(i => i.name === imgName);
-    img.src = imgData.src;
+    img.src = imgData?.src;
     return img;
   }
 }

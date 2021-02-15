@@ -57,7 +57,7 @@ export class BannerDataService {
       }
     ];
 
-    return dataset.concat( [...this.userShapes] );
+    return dataset.concat( JSON.parse(JSON.stringify(this.userShapes)) );
   }
 
   public addDataset(): void {
@@ -142,7 +142,6 @@ export class BannerDataService {
   }
 
   public uploadDatasets($event: Event): void {
-    console.log(this.userShapes);
     const file = ($event.target as HTMLInputElement).files[0];
     if (file && file.type === 'text/csv') {
       const reader = new FileReader();
@@ -160,22 +159,18 @@ export class BannerDataService {
           }
           header.push(column);
         }
-        console.log(header);
         const dataLines = lines.slice(1);
         for (const line of dataLines) {
+          if (!line) {
+            continue;
+          }
           const dataset = this.createDataset();
           const values = line.split(';');
-          // console.log(values);
           for (let i = 0; i < header.length; ++i) {
             const shapeInfo = dataset.find(s => s.userShapeName.slugify() === header[i]);
             console.assert(shapeInfo !== undefined);
-            // TODO: fix this when assigning text to user defined text
             if (shapeInfo.isText) {
-              // console.log({shapeInfo, index: i, value: values[i]});
               shapeInfo.shapeConfig.text = values[i];
-              // shapeInfo.shapeConfig.text = values[i];
-              console.log(shapeInfo.shapeConfig, values[i]);
-              console.log(shapeInfo.shapeConfig.text, values[i]);
             } else if (shapeInfo.isImage) {
               shapeInfo.shapeConfig = { image: this.imageService.getImageInstanceByName( values[i]) };
               // Get image form image gallery service

@@ -92,7 +92,7 @@
                         [(ngModel)]="cornerRadius" min="0" step="1" max="30" thumbLabel></mat-slider>
           </div>
           <!-- /Corner radius -->
-          <app-stroke></app-stroke>
+          <app-stroke strokeFor="Button" (strokeChange)="konva.changeButton('style', $event)"></app-stroke>
 
           <app-shadow shadowFor="Button" (shadowChange)="konva.changeButton('style', $event)"></app-shadow>
 

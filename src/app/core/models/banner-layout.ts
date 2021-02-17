@@ -10,14 +10,14 @@ export class Banner {
   layout: BannerLayout;
 
   public getPercentageCenterPositionInBanner(position: Point2D, objectDimensions: Dimension2D): Point2D {
-
-    // TODO: fix this with height as well
-    const widthDelta = this.layout.dimensions.width - objectDimensions.width === 0
+    const widthDelta = this.layout.dimensions.width - objectDimensions.width <= 0
       ? this.layout.dimensions.width : this.layout.dimensions.width - objectDimensions.width;
 
+    const heightDelta = this.layout.dimensions.height - objectDimensions.height <= 0
+     ? this.layout.dimensions.height : this.layout.dimensions.height - objectDimensions.height;
 
     const x = (position.x / widthDelta) * 100;
-    const y = (position.y / (this.layout.dimensions.height - objectDimensions.height)) * 100;
+    const y = (position.y / heightDelta) * 100;
     return {x, y};
   }
 
@@ -28,12 +28,17 @@ export class Banner {
   ): Point2D {
 
     let widthDelta = (this.layout.dimensions.width - (objectDimensions.width * scale.scaleX));
-    if (!widthDelta) {
+    if (widthDelta <= 0) {
       widthDelta = this.layout.dimensions.width;
     }
 
+    let heightDelta = (this.layout.dimensions.height - (objectDimensions.height * scale.scaleY));
+    if (heightDelta <= 0) {
+      heightDelta = this.layout.dimensions.height;
+    }
+
     const x = (percentage.x / 100) * widthDelta;
-    const y = (percentage.y / 100) * (this.layout.dimensions.height - (objectDimensions.height * scale.scaleY));
+    const y = (percentage.y / 100) * heightDelta;
 
     return {x, y};
   }

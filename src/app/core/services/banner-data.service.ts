@@ -145,7 +145,7 @@ export class BannerDataService {
     const file = ($event.target as HTMLInputElement).files[0];
     if (file && file.type === 'text/csv') {
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = async () => {
         const result = reader.result as string;
         const lines = result.split(/\r?\n/);
         const header = [];
@@ -160,6 +160,9 @@ export class BannerDataService {
           header.push(column);
         }
         const dataLines = lines.slice(1);
+        const templateDataset = this.datasets.values().next().value as ShapeInformation[];
+        // console.log(templateDataset);
+
         for (const line of dataLines) {
           if (!line) {
             continue;
@@ -172,11 +175,27 @@ export class BannerDataService {
             if (shapeInfo.isText) {
               shapeInfo.shapeConfig.text = values[i];
             } else if (shapeInfo.isImage) {
-              shapeInfo.shapeConfig = { image: this.imageService.getImageInstanceByName( values[i]) };
+              try {
+                const image = await this.imageService.getImageInstanceByName( values[i]);
+                shapeInfo.shapeConfig = { image };
+              } catch (e) {
+                console.error(`Error while iterating over line ${line}`, e);
+                continue;
+              }
               // Get image form image gallery service
             } else if (shapeInfo.isButton) {
               shapeInfo.shapeConfig.textConfig.text = values[i];
             }
+            const templateShape = templateDataset.find(s => s.userShapeName === shapeInfo.userShapeName);
+            console.assert(templateShape !== undefined);
+            if (templateShape.bannerShapeConfig) {
+              console.log(templateShape);
+              // es6 deep copy
+              const copy = JSON.parse(JSON.stringify(templateShape.bannerShapeConfig));
+              console.log(copy);
+              shapeInfo.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(templateShape.bannerShapeConfig);
+            }
+
           }
           this.datasets.set(`Dataset #${++this.datasetCounter}`, dataset);
         }

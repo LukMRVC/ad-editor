@@ -555,6 +555,7 @@ export class KonvaService {
     // console.log(this.shapes);
     // console.log('Updating text');
     for (const [index, bannerGroup] of this.bannerGroups.entries()) {
+
       if ('fontScaling' in attributes) {
         attributes.fontSize = (bannerGroup.group.findOne(`.${slugifiedShapeName}`) as Konva.Text).getAttr('initialFontSize');
         attributes.fontSize *= 1 + (attributes.fontScaling / 10);
@@ -584,7 +585,7 @@ export class KonvaService {
   }
 
   public drawBackground(conf: Konva.ImageConfig): void {
-    console.log('Drawing background');
+    // console.log('Drawing background');
     this.bannerGroups.forEach( (bannerGroup, index) => {
       // destroy old background so we dont waste memory
       bannerGroup.group.getChildren(children => children.name() === 'bg-image').each(c => c.destroy());
@@ -754,7 +755,7 @@ export class KonvaService {
         tag.setAttrs(config);
         const btnSavedCfg = shape.bannerShapeConfig.get(index);
         btnSavedCfg.tagConfig = tag.getAttrs();
-        console.log(shape.bannerShapeConfig.get(index));
+        // console.log(shape.bannerShapeConfig.get(index));
       }
 
     } else {
@@ -771,8 +772,8 @@ export class KonvaService {
         text.setAttrs(config);
         const btnSavedCfg = shape.bannerShapeConfig.get(index);
         btnSavedCfg.textConfig = text.getAttrs();
-        console.log(text.getAttrs());
-        console.log(shape.bannerShapeConfig.get(index));
+        // console.log(text.getAttrs());
+        // console.log(shape.bannerShapeConfig.get(index));
       }
     }
 

@@ -8,11 +8,6 @@ import {Banner, Point2D} from '@core/models/banner-layout';
 import {FilterChangedEvent} from '../../editor/components/image-filter.component';
 import {BannerDataService, ShapeInformation} from '@core/services/banner-data.service';
 
-// TODO: On tab click just switch object source and redraw the canvas with different source
-// TODO: Named objects will have properties like on which banners they should appear and the user
-// TODO: will simply edit on banner how it is positioned, then just upload image and text sources
-// TODO: bind changes to draw toolbar values to reflect actual data
-
 
 @Injectable({
   providedIn: 'root',
@@ -29,6 +24,7 @@ export class KonvaService {
     this.dataService.datasetChanged$.subscribe(() => {
       // console.log(this.dataService.getActiveDataset());
       this.shapes = this.dataService.getActiveDataset();
+      this.transformers.nodes([]);
 
       // console.log('Changed shapes', this.shapes);
       this.redrawShapes();
@@ -72,6 +68,36 @@ export class KonvaService {
   private banners: Banner[];
   private bannerGroups: {group: Konva.Group, bg: Konva.Shape}[] = [];
   public shouldTransformRelatives = true;
+
+  static mergeConfig(name: string, id: string, conf: object): any {
+    return { ...{name, id}, ...conf };
+  }
+
+  static bannerLabel(position: Point2D, text: string): Konva.Label {
+    const label = new Konva.Label({
+      y: position.y,
+      opacity: 0.75,
+      transformable: false,
+    });
+
+    label.add(new Konva.Tag({
+      fill: '#fcfcfc',
+      cornerRadius: 5,
+      lineJoin: 'round',
+      transformable: false,
+    }));
+
+    label.add(new Konva.Text({
+      text,
+      fontFamily: 'Arial',
+      fontSize: 15,
+      padding: 5,
+      fill: 'black',
+      transformable: false,
+    }));
+
+    return label;
+}
 
   private initZoom(stage: Konva.Stage, scaleBy: number): void {
     stage.on('wheel', ev => {
@@ -199,10 +225,6 @@ export class KonvaService {
     this.redraw();
   }
 
-  private static mergeConfig(name: string, id: string, conf: object): any {
-    return { ...{name, id}, ...conf };
-  }
-
 
   rect(conf?: RectConfig, addToInstance = true): Konva.Rect {
     if (!addToInstance) {
@@ -310,8 +332,8 @@ export class KonvaService {
   }
 
   public applyImageFilter(shapeName: string, filters: FilterChangedEvent): void {
-    console.log(Konva.Filters[filters.filterName]);
-    console.log('Applying filter to ', shapeName, filters);
+    // console.log(Konva.Filters[filters.filterName]);
+    // console.log('Applying filter to ', shapeName, filters);
 
     const shouldRemoveFilter = (contains, value, minValue = 0): boolean => {
       if (typeof value === 'boolean') {
@@ -343,9 +365,21 @@ export class KonvaService {
       propValue = filters.filterValues;
     }
 
-    this.bannerGroups.forEach( (bannerGroup) => {
+    const imagesToFilter = this.shouldTransformRelatives
+      ? [] : this.transformers.nodes().filter(s => s.name() === shapeName);
+
+
+    for (const bannerGroup of this.bannerGroups) {
       const shape = bannerGroup.group.findOne(`.${shapeName}`);
-      if (!shape) { return; }
+      if (!shape) { continue; }
+      // skip if this image is not selected
+      if (imagesToFilter.length) {
+        if (!imagesToFilter.includes(shape)) {
+          continue;
+        }
+      }
+
+
       const activeFilters = shape.filters() ?? [];
       const containsFilter = activeFilters.includes( Konva.Filters[filters.filterName] );
 
@@ -356,9 +390,7 @@ export class KonvaService {
       }
 
       shape.setAttr(propName, propValue);
-
-
-    });
+    }
     this.redraw();
   }
 
@@ -430,32 +462,6 @@ export class KonvaService {
 
   }
 
-  private static bannerLabel(position: Point2D, text: string): Konva.Label {
-    const label = new Konva.Label({
-      y: position.y,
-      opacity: 0.75,
-      transformable: false,
-    });
-
-    label.add(new Konva.Tag({
-      fill: '#fcfcfc',
-      cornerRadius: 5,
-      lineJoin: 'round',
-      transformable: false,
-    }));
-
-    label.add(new Konva.Text({
-      text,
-      fontFamily: 'Arial',
-      fontSize: 15,
-      padding: 5,
-      fill: 'black',
-      transformable: false,
-    }));
-
-    return label;
-}
-
   public drawLogo(conf: Konva.ImageConfig): void {
     this.drawImage('logo', conf);
   }
@@ -468,17 +474,22 @@ export class KonvaService {
     // console.log(shape);
     for (const [index, banner] of this.banners.entries()) {
       let konvaImage = null;
-
-      if (shape.bannerShapeConfig.has(index) && (shape.bannerShapeConfig.get(index) as Konva.ImageConfig).image === conf.image) {
+      if (shape.bannerShapeConfig.has(index) &&  (shape.bannerShapeConfig.get(index) as Konva.ImageConfig).image === conf.image) {
         if (!shape.bannerShapeConfig.get(index).shouldDraw) { continue; }
+
         konvaImage = new Konva.Image(shape.bannerShapeConfig.get(index) as Konva.ImageConfig);
       } else {
         const logoDimensions = { width: conf.image.width as number, height: conf.image.height as number };
         const { x: scaleX, y: scaleY } = banner.getScaleForLogo(logoDimensions);
         const logos = this.bannerGroups[index].group.getChildren(children => children.name() === slugifiedShapeName);
         logos.each(logo => logo.destroy());
-        const {x, y} = banner.getPixelPositionFromPercentage({ x: 0, y : 0 }, logoDimensions, {scaleX, scaleY});
-        // console.log('Got coords', {x, y});
+        const percentages = { x: 0, y: 0 };
+        if (shape.bannerShapeConfig.has(index) && shape.bannerShapeConfig.get(index).percentagePositions) {
+          percentages.x = shape.bannerShapeConfig.get(index).percentagePositions.x;
+          percentages.y = shape.bannerShapeConfig.get(index).percentagePositions.y;
+        }
+        const {x, y} = banner.getPixelPositionFromPercentage(percentages, logoDimensions, {scaleX, scaleY});
+
 
         const offsetX = this.bannerGroups[index].group.clipX();
         const offsetY = this.bannerGroups[index].group.clipY();
@@ -486,8 +497,8 @@ export class KonvaService {
         konvaImage.draggable(true);
         // console.log(`For ${this.bannerGroups[index].group.id()} computed X: ${image.x()} and Y: ${image.y()}`);
         konvaImage.setAttr('shouldDraw', true);
-        shape.bannerShapeConfig.set(index, konvaImage.getAttrs());
       }
+      shape.bannerShapeConfig.set(index, konvaImage.getAttrs());
       konvaImage.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, slugifiedShapeName));
       konvaImage.on('transformstart', () => konvaImage.setAttr('initialScale', konvaImage.scale()));
       konvaImage.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, index, slugifiedShapeName));
@@ -511,7 +522,7 @@ export class KonvaService {
       // Draw shape from saved config
       if (shape.bannerShapeConfig.has(index)) {
         if (!shape.bannerShapeConfig.get(index).shouldDraw) { continue; }
-        text = new Konva.Text(shape.bannerShapeConfig.get(index));
+        text = new Konva.Text({ ...shape.bannerShapeConfig.get(index), ...shape.shapeConfig});
       } else {
         const dimensions = { width: banner.layout.dimensions.width, height: null };
         conf.width =  banner.layout.dimensions.width;
@@ -554,13 +565,22 @@ export class KonvaService {
     // console.log(shape);
     // console.log(this.shapes);
     // console.log('Updating text');
+    const textsToUpdate = this.shouldTransformRelatives
+      ? [] : this.transformers.nodes().filter(s => s.name() === slugifiedShapeName);
+
     for (const [index, bannerGroup] of this.bannerGroups.entries()) {
+      const textShape = bannerGroup.group.findOne(`.${slugifiedShapeName}`);
+      if (textsToUpdate.length) {
+        if (!textsToUpdate.includes(textShape)) {
+          continue;
+        }
+      }
+
 
       if ('fontScaling' in attributes) {
         attributes.fontSize = (bannerGroup.group.findOne(`.${slugifiedShapeName}`) as Konva.Text).getAttr('initialFontSize');
         attributes.fontSize *= 1 + (attributes.fontScaling / 10);
       }
-      const textShape = bannerGroup.group.findOne(`.${slugifiedShapeName}`);
       if (!textShape) {
         this.drawText(slugifiedShapeName, {...attributes});
         break;
@@ -818,6 +838,7 @@ export class KonvaService {
     if (!shapeData.bannerShapeConfig) {
       shapeData.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
     }
+    dragEvent.target.setAttr('percentagePositions', percentages);
 
     if (shapeData.userShapeName.slugify() === 'button') {
       // save button data
@@ -832,6 +853,7 @@ export class KonvaService {
       if (bannerGroup.group === dragEvent.target.getParent()) { continue; }
       const relativeShape = bannerGroup.group.findOne(`.${shapeName}`);
       if (!relativeShape) { return; }
+      relativeShape.setAttr('percentagePositions', percentages);
       const pos = this.getPixelPositionsWithinBanner(index, percentages, relativeShape);
       relativeShape.x(pos.x);
       relativeShape.y(pos.y);

@@ -191,8 +191,6 @@ export class BannerDataService {
             if (templateShape.bannerShapeConfig) {
               console.log(templateShape);
               // es6 deep copy
-              const copy = JSON.parse(JSON.stringify(templateShape.bannerShapeConfig));
-              console.log(copy);
               shapeInfo.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(templateShape.bannerShapeConfig);
             }
 

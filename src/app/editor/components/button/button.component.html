@@ -44,8 +44,8 @@
               <label>Font size</label>
               <span>{{ fontSize }}</span>
             </div>
-            <mat-slider (change)="konva.changeButton('text', { fontScaling: $event.value })"
-                        min="0" step="1" max="100" thumbLabel></mat-slider>
+            <mat-slider value="0" (change)="konva.changeButton('text', { fontScaling: $event.value })"
+                        min="-10" step="0.2" max="20" thumbLabel></mat-slider>
           </div>
 
           <app-shadow shadowFor="Text" (shadowChange)="konva.changeButton('text', $event)"></app-shadow>
@@ -53,6 +53,7 @@
         </div>
       </mat-tab>
       <!-- /Tab text content-->
+
       <!-- Tab style content -->
       <mat-tab>
         <!-- Tab style label -->
@@ -91,6 +92,7 @@
                         [(ngModel)]="cornerRadius" min="0" step="1" max="30" thumbLabel></mat-slider>
           </div>
           <!-- /Corner radius -->
+          <app-stroke></app-stroke>
 
           <app-shadow shadowFor="Button" (shadowChange)="konva.changeButton('style', $event)"></app-shadow>
 

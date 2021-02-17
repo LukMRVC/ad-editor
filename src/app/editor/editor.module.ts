@@ -31,6 +31,7 @@ import { ImageFilterComponent } from './components/image-filter.component';
 import { ShapeDataComponent } from './components/shape-data/shape-data.component';
 import { ShapeNameDialogComponent } from './components/shape-name-dialog.component';
 import { TextStyleComponent } from './components/styling/text/text-style.component';
+import { StrokeComponent } from './components/styling/stroke.component';
 
 @NgModule({
   declarations: [
@@ -51,6 +52,7 @@ import { TextStyleComponent } from './components/styling/text/text-style.compone
     ShapeDataComponent,
     ShapeNameDialogComponent,
     TextStyleComponent,
+    StrokeComponent,
   ],
   imports: [
     CommonModule,

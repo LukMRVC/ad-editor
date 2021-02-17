@@ -27,7 +27,6 @@ export class ShapeDataComponent implements OnInit {
   }
 
   changeValue(datasetKey: string, shapeInfo: ShapeInformation, $event: Event): void {
-    // console.log($event);
     this.dataService.changeValue(datasetKey, shapeInfo, ($event.target as HTMLInputElement).value);
   }
 

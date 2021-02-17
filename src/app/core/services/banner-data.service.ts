@@ -52,7 +52,8 @@ export class BannerDataService {
         userShapeName: 'Button',
         isButton: true,
         shapeConfig: {
-          textConfig: {}
+          text: '',
+          textConfig: {},
         },
       }
     ];
@@ -84,7 +85,6 @@ export class BannerDataService {
         text: shapeType === 'text' ? userShapeName : '',
       },
     });
-
 
     if (toAll) {
       for (const dataset of this.datasets.values()) {
@@ -184,6 +184,7 @@ export class BannerDataService {
               }
               // Get image form image gallery service
             } else if (shapeInfo.isButton) {
+              shapeInfo.shapeConfig.text = values[i];
               shapeInfo.shapeConfig.textConfig.text = values[i];
             }
             const templateShape = templateDataset.find(s => s.userShapeName === shapeInfo.userShapeName);

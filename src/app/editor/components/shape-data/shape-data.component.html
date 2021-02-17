@@ -27,7 +27,8 @@
 
           <mat-form-field fxFlex appearance="outline" *ngIf="shapeInfo.isButton">
             <mat-label>{{ shapeInfo.userShapeName + ' content' }}</mat-label>
-            <input (input)="changeValue(dataset.key, shapeInfo, $event)" matInput [placeholder]="shapeInfo.userShapeName + ' content'" />
+            <textarea (input)="changeValue(dataset.key, shapeInfo, $event)" [value]="shapeInfo.shapeConfig.text"
+                      matInput [placeholder]="shapeInfo.userShapeName + ' content'" ></textarea>
           </mat-form-field>
         </div>
 

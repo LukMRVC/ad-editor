@@ -8,17 +8,19 @@ import {FileSystemFileEntry, NgxFileDropEntry} from 'ngx-file-drop';
   templateUrl: './image-gallery-dialog.component.html',
   styles: [
     `.gallery {
-      max-height: 500px;
+      max-height: 700px;
       overflow-y: auto;
       min-height: 200px;
     }
 
-    .mat-gallery-img {
-      margin: .5rem;
-      max-width: 25%;
-      border: 1px solid #e0e0e0;
+    .gallery-img {
+      max-height: 100%;
+      max-width: 100%;
     }
 
+    .img-select {
+      cursor: pointer;
+    }
     `
   ]
 })

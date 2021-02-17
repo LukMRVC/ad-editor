@@ -89,7 +89,7 @@
               <span>{{ cornerRadius }}</span>
             </div>
             <mat-slider (valueChange)="konva.changeButton('style', { cornerRadius: $event })"
-                        [(ngModel)]="cornerRadius" min="0" step="1" max="30" thumbLabel></mat-slider>
+                        [(ngModel)]="cornerRadius" min="0" step="1" max="40" thumbLabel></mat-slider>
           </div>
           <!-- /Corner radius -->
           <app-stroke strokeFor="Button" (strokeChange)="konva.changeButton('style', $event)"></app-stroke>

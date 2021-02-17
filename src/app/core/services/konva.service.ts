@@ -8,6 +8,7 @@ import {Banner, Point2D} from '@core/models/banner-layout';
 import {FilterChangedEvent} from '../../editor/components/image-filter.component';
 import {BannerDataService, ShapeInformation} from '@core/services/banner-data.service';
 
+// TODO: Pridat zkoseni
 
 @Injectable({
   providedIn: 'root',
@@ -157,6 +158,9 @@ export class KonvaService {
       if (ev.target === this.canvas) {
         nodes = [];
       } else if (ev.target.getAttr('transformable') !== false) {
+        if (ev.target.name() === 'button-text') {
+          ev.target = ev.target.getParent();
+        }
         if (ev.evt.ctrlKey) {
           nodes.push(ev.target);
         } else {
@@ -295,6 +299,7 @@ export class KonvaService {
       y: conf.y,
       opacity: 1,
       draggable: true,
+      transformable: true,
     });
 
     button.add(new Konva.Tag({
@@ -318,7 +323,7 @@ export class KonvaService {
       align: 'center',
       verticalAlign: 'middle',
       fill: 'white',
-      transformable: false,
+      transformable: true,
       ...textConfig,
     }));
 
@@ -541,9 +546,15 @@ export class KonvaService {
       }
 
       text.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, slugifiedShapeName));
-      text.on('transform', () => {
+      text.on('transform', (transform) => {
         for (const relativeBannerGroup of this.bannerGroups) {
           const relativeText = relativeBannerGroup.group.findOne(`.${slugifiedShapeName}`);
+          if (!this.shouldTransformRelatives) {
+            if (relativeText !== transform.target) {
+              continue;
+            }
+          }
+
           relativeText.setAttrs({
             // the Text width should never be bigger than its parent group so we do Math.min
             width: Math.min(Math.max( text.width() * text.scaleX(), 50), relativeBannerGroup.group.width()),
@@ -795,7 +806,12 @@ export class KonvaService {
     if (!shape.bannerShapeConfig) {
       shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
     }
+
     if (changeOf === 'style') {
+
+      const btnsToChange = this.shouldTransformRelatives
+        ? [] : this.transformers.nodes().filter(s => s.name() === 'button');
+
       for (const [index, bannerGroup] of this.bannerGroups.entries()) {
         const tag = bannerGroup.group.findOne('.button-tag');
         if (!tag) {
@@ -806,11 +822,13 @@ export class KonvaService {
         const btnSavedCfg = shape.bannerShapeConfig.get(index);
         btnSavedCfg.tagConfig = tag.getAttrs();
         // console.log(shape.bannerShapeConfig.get(index));
+        tag.cache();
       }
 
     } else {
       for (const [index, bannerGroup] of this.bannerGroups.entries()) {
         const text = bannerGroup.group.findOne('.button-text');
+        const tag = bannerGroup.group.findOne('.button-tag');
         if (!text) {
           this.drawButton({}, {}, config);
           break;
@@ -824,6 +842,7 @@ export class KonvaService {
         btnSavedCfg.textConfig = text.getAttrs();
         // console.log(text.getAttrs());
         // console.log(shape.bannerShapeConfig.get(index));
+        tag.cache();
       }
     }
 

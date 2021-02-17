@@ -93,6 +93,11 @@ export class ImageGalleryService {
 
     });
   }
+
+  public removeAllImages(): void {
+    this.images.splice(0, this.images.length);
+    localStorage.removeItem('cachedImages');
+  }
 }
 
 export interface UploadedImage {

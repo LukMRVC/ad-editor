@@ -1,31 +1,29 @@
 <h2 mat-dialog-title>Image gallery</h2>
 
 <mat-dialog-content style="padding: 1rem;" fxLayout="column" fxLayoutGap=".5rem">
+  <h1 *ngIf="imageService.getImages().length <= 0">The gallery seems to be empty.</h1>
+  <button *ngIf="imageService.getImages().length > 0" color="warn" fxFlexAlign="start"
+          mat-flat-button (click)="imageService.removeAllImages()">Remove all</button>
+
   <div fxLayout="row wrap" fxLayoutAlign="start" fxLayoutGap=".5rem" class="gallery">
-    <h1 *ngIf="imageService.getImages().length <= 0">The gallery seems to be empty.</h1>
 
+    <mat-grid-list cols="4" rowHeight="200px" gutterSize=".5rem" fxFlex>
+      <mat-grid-tile *ngFor="let img of imageUploads | keyvalue">
+        <mat-grid-tile-header>
+          <mat-progress-bar mode="determinate" color="accent" [value]="img.value"></mat-progress-bar>
+        </mat-grid-tile-header>
+        <img mat-card-image src="https://www.kvitkov.cz/wp-content/uploads/2020/10/image-placeholder.png" alt="Image placeholder">
+      </mat-grid-tile>
 
-    <mat-card *ngFor="let img of imageUploads | keyvalue" fxFlex="1 0 20" class="mat-gallery-img mat-elevation-z0">
-      <mat-progress-bar mode="determinate" color="accent" [value]="img.value"></mat-progress-bar>
-      <!-- TODO: Remove image source -->
-      <img mat-card-image src="https://www.kvitkov.cz/wp-content/uploads/2020/10/image-placeholder.png" alt="Image placeholder">
-    </mat-card>
+      <mat-grid-tile class="img-select" (click)="this.dialogRef.close(img)" *ngFor="let img of imageService.getImages()">
+        <mat-grid-tile-header fxLayout="row" fxLayoutAlign="space-between center">
+          {{ img.name }}
+          <button mat-button color="warn" (click)="imageService.removeImage(img.id)">Remove</button>
 
-    <mat-card *ngFor="let img of imageService.getImages()" fxFlex="1 0 20" class="mat-elevation-z0 mat-gallery-img">
-
-      <img mat-card-image class="uploaded-image" [src]="img.src" [alt]="img.name">
-      <mat-card-content>
-        <h4>{{ img.name }}</h4>
-      </mat-card-content>
-      <mat-card-footer>
-
-      </mat-card-footer>
-      <mat-card-actions class="gallery-actions">
-        <button [mat-dialog-close]="img" mat-raised-button color="primary">Select</button>
-        <button mat-button (click)="imageService.removeImage(img.id)" color="accent">Remove</button>
-      </mat-card-actions>
-
-    </mat-card>
+        </mat-grid-tile-header>
+        <img [src]="img.src" [alt]="img.name" class="gallery-img" />
+      </mat-grid-tile>
+    </mat-grid-list>
 
   </div>
 

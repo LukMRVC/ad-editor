@@ -13,7 +13,10 @@ import {BannerDataService} from '@core/services/banner-data.service';
 export class EditorComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('stageWrapper') stageWrapper: ElementRef;
+  @ViewChild('contextMenu') contextMenu: ElementRef;
   private subscription: Subscription = new Subscription();
+
+  downloadTargetId: string;
 
   constructor(
     public konva: KonvaService,
@@ -46,6 +49,18 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       },
       width: this.stageWrapper.nativeElement.offsetWidth,
       height: this.stageWrapper.nativeElement.offsetHeight,
+    });
+
+    this.konva.onContextMenu$.subscribe( event => {
+      this.contextMenu.nativeElement.style.display = 'flex';
+      const ancestor = event.target.findAncestor('Group', true);
+      console.log(ancestor);
+      console.log(ancestor.id());
+      this.downloadTargetId = ancestor.id();
+      const containerRect = this.stageWrapper.nativeElement.getBoundingClientRect();
+      this.contextMenu.nativeElement.style.top = containerRect.top + this.konva.getInstance().getPointerPosition().y + 'px';
+      this.contextMenu.nativeElement.style.left = containerRect.left + this.konva.getInstance().getPointerPosition().x + 'px';
+
     });
 
     this.dataService.setBanners(this.bannerService.getComputerBanners());

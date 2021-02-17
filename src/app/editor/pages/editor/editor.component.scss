@@ -58,3 +58,13 @@
 .canvas-stage.drawing:hover {
   cursor: crosshair;
 }
+
+#context-menu {
+  display: none;
+  flex-flow: column nowrap;
+  width: 120px;
+  position: absolute;
+  background-color: white;
+  box-shadow: 0 0 5px grey;
+  z-index: 99;
+}

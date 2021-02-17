@@ -19,6 +19,10 @@
 <!--    </div>-->
 
 <!--  </div>-->
+  <div (click)="contextMenu.style.display = 'none'" id="context-menu" #contextMenu>
+    <button (click)="konva.exportAsImage(this.downloadTargetId, 'image/jpeg')" mat-button>Download</button>
+  </div>
+
 
   <section id="editor" fxFlex="grow" fxLayout="row nowrap" class="editor">
 

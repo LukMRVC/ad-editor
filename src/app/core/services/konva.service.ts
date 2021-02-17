@@ -61,7 +61,8 @@ export class KonvaService {
   private transformers: Konva.Transformer = null;
   private shapes: ShapeInformation[];
 
-  onClickTap$: EventEmitter<any> = new EventEmitter<any>();
+  onClickTap$: EventEmitter<Konva.KonvaEventObject<MouseEvent>> = new EventEmitter<Konva.KonvaEventObject<MouseEvent>>();
+  onContextMenu$: EventEmitter<Konva.KonvaEventObject<MouseEvent>> = new EventEmitter<Konva.KonvaEventObject<MouseEvent>>();
   // onNewLayer$: EventEmitter<Konva.Layer> = new EventEmitter<Konva.Layer>();
   selectedNodes: Konva.Shape[] = [];
 
@@ -141,6 +142,14 @@ export class KonvaService {
     this.layers.push(bgLayer);
     this.canvas.draw();
     this.transformers = this.transformer();
+
+    this.canvas.on('contextmenu', (ev) => {
+      ev.evt.preventDefault();
+
+      this.onContextMenu$.emit(ev);
+
+    });
+
     bgLayer.add(this.transformers);
   }
 
@@ -278,11 +287,20 @@ export class KonvaService {
     this.redraw();
   }
 
-  exportAsImage(mime: 'image/jpeg' | 'image/png'): void {
-    const layer = this.canvas.getLayers()[2];
-    const dataUrl = layer.toDataURL({
-      mimeType: mime,
-    });
+  exportAsImage(target: string, mime: 'image/jpeg' | 'image/png'): void {
+    const group = this.bannerGroups.find(g => g.group.id() === target);
+    console.log(group);
+    console.log(target);
+    console.assert(group !== undefined);
+
+    group.group.getChildren().each(c => c.clearCache());
+    group.group.draw();
+
+    // const layer = this.canvas.getLayers()[2];
+    // const dataUrl = layer.toDataURL({
+    //   mimeType: mime,
+    // });
+    const dataUrl = group.group.toDataURL({ mimeType: mime, pixelRatio: 3 });
     const link = document.createElement('a');
     link.download = 'Ad1-file.jpeg';
     link.href = dataUrl;
@@ -310,6 +328,8 @@ export class KonvaService {
       shadowEnabled: false,
       shadowBlur: 5,
       shadowColor: '#000',
+      hitStrokeWidth: 0,
+      shadowForStrokeEnabled: false,
       ...tagConfig,
     }));
 
@@ -432,6 +452,7 @@ export class KonvaService {
         });
 
         const bg = this.rect({
+          id: `group-bg-${banner.layout.name}`,
           name: 'group-bg',
           x: posX,
           y: posY,

@@ -7,8 +7,12 @@ import {RectConfig} from 'konva/types/shapes/Rect';
 import {Banner, Point2D} from '@core/models/banner-layout';
 import {FilterChangedEvent} from '../../editor/components/image-filter.component';
 import {BannerDataService, ShapeInformation} from '@core/services/banner-data.service';
+import {ImageService} from '@core/services/drawing/image.service';
 
-// TODO: Pridat zkoseni
+// TODO: Add skewing
+// TODO: Fillable background color, gradients, watermarks
+// TODO: Fixed dataset upload - image scaling out of banner, individual scaling not saved
+// TODO: When drawing uploaded images, check if they are out of banner and better position them
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +21,7 @@ export class KonvaService {
 
   constructor(
     public dataService: BannerDataService,
+    public imageService: ImageService,
   ) {
     // console.log(`Creating ${KonvaService.name} instance`);
     // console.log(this.dataService.getActiveDataset());
@@ -497,40 +502,17 @@ export class KonvaService {
     if (!shape.bannerShapeConfig) {
       shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
     }
-    // console.log(shape);
-    for (const [index, banner] of this.banners.entries()) {
-      let konvaImage = null;
-      if (shape.bannerShapeConfig.has(index) &&  (shape.bannerShapeConfig.get(index) as Konva.ImageConfig).image === conf.image) {
-        if (!shape.bannerShapeConfig.get(index).shouldDraw) { continue; }
-
-        konvaImage = new Konva.Image(shape.bannerShapeConfig.get(index) as Konva.ImageConfig);
-      } else {
-        const logoDimensions = { width: conf.image.width as number, height: conf.image.height as number };
-        const { x: scaleX, y: scaleY } = banner.getScaleForLogo(logoDimensions);
-        const logos = this.bannerGroups[index].group.getChildren(children => children.name() === slugifiedShapeName);
-        logos.each(logo => logo.destroy());
-        const percentages = { x: 0, y: 0 };
-        if (shape.bannerShapeConfig.has(index) && shape.bannerShapeConfig.get(index).percentagePositions) {
-          percentages.x = shape.bannerShapeConfig.get(index).percentagePositions.x;
-          percentages.y = shape.bannerShapeConfig.get(index).percentagePositions.y;
-        }
-        const {x, y} = banner.getPixelPositionFromPercentage(percentages, logoDimensions, {scaleX, scaleY});
-
-
-        const offsetX = this.bannerGroups[index].group.clipX();
-        const offsetY = this.bannerGroups[index].group.clipY();
-        konvaImage = new Konva.Image({ name: slugifiedShapeName, x: x + offsetX, y: y + offsetY, scaleX, scaleY,  ...conf });
-        konvaImage.draggable(true);
-        // console.log(`For ${this.bannerGroups[index].group.id()} computed X: ${image.x()} and Y: ${image.y()}`);
-        konvaImage.setAttr('shouldDraw', true);
+    conf.name = slugifiedShapeName;
+    for (const banner of this.banners) {
+      const img = this.imageService.drawImage(this.bannerGroups[banner.id].group, banner, shape, conf);
+      if (img !== null) {
+        shape.bannerShapeConfig.set(banner.id, img.getAttrs());
+        img.on('dragmove', (dragging) => this.moveAllRelatives(dragging, banner.id, slugifiedShapeName));
+        img.on('transformstart', () => img.setAttr('initialScale', img.scale()));
+        img.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, banner.id, slugifiedShapeName));
       }
-      shape.bannerShapeConfig.set(index, konvaImage.getAttrs());
-      konvaImage.on('dragmove', (dragging) => this.moveAllRelatives(dragging, index, slugifiedShapeName));
-      konvaImage.on('transformstart', () => konvaImage.setAttr('initialScale', konvaImage.scale()));
-      konvaImage.on('transformend', (endedTransform) => this.transformRelatives(endedTransform, index, slugifiedShapeName));
-      konvaImage.cache();
-      this.bannerGroups[index].group.add(konvaImage);
     }
+
     this.transformers.moveToTop();
     this.redraw();
   }
@@ -907,7 +889,6 @@ export class KonvaService {
   }
 
   private transformRelatives(transformEvent: Konva.KonvaEventObject<Konva.Shape>, bannerGroupIndex, shapeName: string): void {
-    if (!this.shouldTransformRelatives) { return; }
     const initialScale = transformEvent.target.getAttr('initialScale');
     const currentScale = transformEvent.target.getAttr('scale');
     const scaleDelta = { x: currentScale.x - initialScale.x, y: currentScale.y - initialScale.y };
@@ -916,13 +897,25 @@ export class KonvaService {
       transformEvent.target.cache();
     }
     const percentages = this.getBannerPercentagesFromEvent(transformEvent, bannerGroupIndex);
+    const shapeData = this.shapes.find(s => s.userShapeName.slugify() === shapeName);
 
+    if (shapeData.userShapeName.slugify() === 'button') {
+      // save button data
+      console.log(transformEvent.target.name());
+      // shapeData.bannerShapeConfig.get(bannerGroupIndex).labelConfig = transformEvent.target.getAttrs();
+    } else {
+      shapeData.bannerShapeConfig.set(bannerGroupIndex, transformEvent.target.getAttrs());
+    }
+    console.log(shapeData.bannerShapeConfig.get(bannerGroupIndex));
+
+    if (!this.shouldTransformRelatives) { return; }
     for (const [index, bannerGroup] of this.bannerGroups.entries()) {
       if (bannerGroup.group === transformEvent.target.getParent()) { continue; }
       const relative = bannerGroup.group.findOne(`.${shapeName}`);
       if (!relative) { continue; }
       relative.scaleX( relative.scaleX() + scaleDelta.x );
       relative.scaleY( relative.scaleY() + scaleDelta.y );
+      const aspectRatio = relative.width() / relative.height();
 
       const pos = this.getPixelPositionsWithinBanner(index, percentages, relative);
       relative.x(pos.x);

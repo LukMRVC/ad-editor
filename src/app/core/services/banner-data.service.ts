@@ -22,8 +22,8 @@ export class BannerDataService {
   constructor(
     private imageService: ImageGalleryService,
   ) {
-    this.datasets.set(`Dataset #${++this.datasetCounter}`, this.createDataset());
-    this.activeDataset = `Dataset #${this.datasetCounter}`;
+    this.datasets.set(`Template #${++this.datasetCounter}`, this.createDataset());
+    this.activeDataset = `Template #${this.datasetCounter}`;
     // console.log(`Creating ${BannerDataService.name} instance!`);
   }
 
@@ -203,6 +203,10 @@ export class BannerDataService {
       reader.readAsText(file, 'utf-8');
     }
 
+  }
+
+  public getTemplateDataset(): ShapeInformation[] {
+    return this.datasets.values().next().value;
   }
 }
 

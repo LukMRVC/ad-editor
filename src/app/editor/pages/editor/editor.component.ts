@@ -13,7 +13,7 @@ import {BannerDataService} from '@core/services/banner-data.service';
 export class EditorComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('stageWrapper') stageWrapper: ElementRef;
-  @ViewChild('contextMenu') contextMenu: ElementRef;
+  contextMenu: {visibility: string, top: string, left: string} = {visibility: 'none', top: '', left: ''};
   private subscription: Subscription = new Subscription();
 
   downloadTargetId: string;
@@ -52,15 +52,24 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     });
 
     this.konva.onContextMenu$.subscribe( event => {
-      this.contextMenu.nativeElement.style.display = 'flex';
+      if (event.target === this.konva.getInstance()) {
+        return;
+      }
+      this.contextMenu.visibility = 'flex';
       const ancestor = event.target.findAncestor('Group', true);
-      console.log(ancestor);
-      console.log(ancestor.id());
+      // console.log(ancestor);
+      // console.log(ancestor.id());
+      console.assert(ancestor !== undefined);
       this.downloadTargetId = ancestor.id();
       const containerRect = this.stageWrapper.nativeElement.getBoundingClientRect();
-      this.contextMenu.nativeElement.style.top = containerRect.top + this.konva.getInstance().getPointerPosition().y + 'px';
-      this.contextMenu.nativeElement.style.left = containerRect.left + this.konva.getInstance().getPointerPosition().x + 'px';
+      this.contextMenu.top = containerRect.top + this.konva.getInstance().getPointerPosition().y + 'px';
+      this.contextMenu.left = containerRect.left + this.konva.getInstance().getPointerPosition().x + 'px';
+    });
 
+    this.konva.onClickTap$.subscribe(clicked => {
+      if (this.contextMenu.visibility !== 'none') {
+        this.contextMenu.visibility = 'none';
+      }
     });
 
     this.dataService.setBanners(this.bannerService.getComputerBanners());

@@ -148,25 +148,15 @@ export class BannerDataService {
       reader.onload = async () => {
         const result = reader.result as string;
         const lines = result.split(/\r?\n/);
-        const header = [];
         let columns = this.userShapes.map(s => s.userShapeName.slugify());
         columns = columns.concat(['headline', 'background', 'logo', 'button']);
-        for (const column of lines[0].split(';')) {
-          if (column === '') {
-            continue;
-          } else if (!columns.includes(column)) {
-            throw new Error(`Unknown header \'${column}\' found in dataset!`);
-          }
-          header.push(column);
-        }
-        const dataLines = lines.slice(1);
+        const header = this.parseCsvHeader(lines, columns);
+
+        const dataLines = lines.slice(1).filter(l => l != null);
         const templateDataset = this.datasets.values().next().value as ShapeInformation[];
         // console.log(templateDataset);
 
         for (const line of dataLines) {
-          if (!line) {
-            continue;
-          }
           const dataset = this.createDataset();
           const values = line.split(';');
           for (let i = 0; i < header.length; ++i) {
@@ -175,13 +165,8 @@ export class BannerDataService {
             if (shapeInfo.isText) {
               shapeInfo.shapeConfig.text = values[i];
             } else if (shapeInfo.isImage) {
-              try {
-                const image = await this.imageService.getImageInstanceByName( values[i]);
+                const image = await this.imageService.loadImage( values[i]);
                 shapeInfo.shapeConfig = { image };
-              } catch (e) {
-                console.error(`Error while iterating over line ${line}`, e);
-                continue;
-              }
               // Get image form image gallery service
             } else if (shapeInfo.isButton) {
               shapeInfo.shapeConfig.text = values[i];
@@ -190,8 +175,6 @@ export class BannerDataService {
             const templateShape = templateDataset.find(s => s.userShapeName === shapeInfo.userShapeName);
             console.assert(templateShape !== undefined);
             if (templateShape.bannerShapeConfig) {
-              console.log(templateShape);
-              // es6 deep copy
               shapeInfo.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(templateShape.bannerShapeConfig);
             }
 
@@ -207,6 +190,19 @@ export class BannerDataService {
 
   public getTemplateDataset(): ShapeInformation[] {
     return this.datasets.values().next().value;
+  }
+
+  private parseCsvHeader(lines: string[], expectedHeaders: string[]): string[] {
+    const header = [];
+    for (const column of lines[0].split(';')) {
+      if (column === '') {
+        continue;
+      } else if (!expectedHeaders.includes(column)) {
+        throw new Error(`Unknown header \'${column}\' found in dataset!`);
+      }
+      header.push(column);
+    }
+    return header;
   }
 }
 

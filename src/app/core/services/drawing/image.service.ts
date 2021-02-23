@@ -26,12 +26,11 @@ export class ImageService {
       let { x: scaleX, y: scaleY } = banner.getScaleForLogo(logoDimensions);
       if (templateScale.bannerShapeConfig.get(banner.id)) {
         const templateScaleX = templateScale.bannerShapeConfig.get(banner.id).scaleX;
-        const templateScaleY = templateScale.bannerShapeConfig.get(banner.id).scaleY;
         // not like an actual target, but my goal
         const templateImgDimension = {
           width: templateScale.bannerShapeConfig.get(banner.id).image.width as number,
           height: templateScale.bannerShapeConfig.get(banner.id).image.height as number,
-        }
+        };
         const currentImgAspectRatio = logoDimensions.height / logoDimensions.width;
         const targetWidth = templateImgDimension.width * templateScaleX;
         // Current image X scale

@@ -75,21 +75,28 @@ export class ImageGalleryService {
     return this.images.findIndex(img => img.name === file.name) !== -1;
   }
 
-  public getImageInstanceByName(imgName: string): Promise<HTMLImageElement> {
-    return new Promise<HTMLImageElement>((resolve, reject) => {
+  public loadImage(nameOrUrl: string): Promise<HTMLImageElement> {
+    return new Promise<HTMLImageElement>( (resolve, reject) => {
       const img = new Image();
-      const imgData = this.images.find(i => i.name === imgName);
-      if (!imgData) {
-        reject(`Image \'${imgName}\' was not found in gallery`);
+      try {
+        const url = new URL(nameOrUrl);
+        img.src = url.toString();
+      } catch (_) {
+        const imgData  = this.images.find(i => i.name === nameOrUrl);
+        if (!imgData) {
+          img.remove();
+          reject(`Image \'${nameOrUrl}\' was not found in gallery and is not a valid URL`);
+        }
+        img.src = imgData.src;
       }
-
       img.onload = () => {
         resolve(img);
       };
+
       img.onerror = (err) => {
+        img.remove();
         reject(err);
       };
-      img.src = imgData?.src;
 
     });
   }

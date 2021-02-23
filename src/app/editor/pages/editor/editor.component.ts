@@ -25,8 +25,6 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   ) { }
 
   ngAfterViewInit(): void {
-    // console.log(this.stageWrapper);
-
     this.konva.init({
       container: 'stage',
       draggable: true,
@@ -86,6 +84,16 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   onWindowResize($event): void {
     this.konva.getInstance().width(this.stageWrapper.nativeElement.offsetWidth);
     this.konva.getInstance().height(this.stageWrapper.nativeElement.offsetHeight);
+  }
+
+  @HostListener('document:keydown.Control')
+  onCtrlKeyDown(): void {
+    this.konva.shouldTransformRelatives = false;
+  }
+
+  @HostListener('document:keyup.Control')
+  onCtrlKeyUp(): void {
+    this.konva.shouldTransformRelatives = true;
   }
 
   @HostListener('document:keydown.delete')

@@ -25,6 +25,9 @@ export class ImageService {
       const templateScale = this.dataService.getTemplateDataset().find(s => s.userShapeName.slugify() === conf.name);
       let { x: scaleX, y: scaleY } = banner.getScaleForLogo(logoDimensions);
       if (templateScale.bannerShapeConfig.get(banner.id)) {
+        if (!templateScale.bannerShapeConfig.get(banner.id).shouldDraw) {
+          return;
+        }
         const templateScaleX = templateScale.bannerShapeConfig.get(banner.id).scaleX;
         // not like an actual target, but my goal
         const templateImgDimension = {

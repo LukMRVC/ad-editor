@@ -11,6 +11,7 @@ import {ImageService} from '@core/services/drawing/image.service';
 
 // TODO: Add skewing
 // TODO: Fillable background color, gradients, watermarks
+// TODO: Groupovani obrazku
 
 @Injectable({
   providedIn: 'root',

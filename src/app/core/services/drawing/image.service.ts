@@ -22,25 +22,34 @@ export class ImageService {
       konvaImage = new Konva.Image(shapeData.bannerShapeConfig.get(banner.id) as Konva.ImageConfig);
     } else {
       const logoDimensions = {width: conf.image.width as number, height: conf.image.height as number};
-      // TODO: Get template scaling and apply, if image is outside banner move it, if is bigger, get default scale
       const templateScale = this.dataService.getTemplateDataset().find(s => s.userShapeName.slugify() === conf.name);
-
+      let { x: scaleX, y: scaleY } = banner.getScaleForLogo(logoDimensions);
       if (templateScale.bannerShapeConfig.get(banner.id)) {
-        // const {x: scaleX, y: scaleY} = templateScale.bannerShapeConfig.get(banner.id).scale;
-        const scaleX2 = templateScale.bannerShapeConfig.get(banner.id).scaleX;
-        const scaleY2 = templateScale.bannerShapeConfig.get(banner.id).scaleY;
-        // TODO: it is not the scale that i need, i need the final width and height (=width() * scaleX(), ...)
+        const templateScaleX = templateScale.bannerShapeConfig.get(banner.id).scaleX;
+        const templateScaleY = templateScale.bannerShapeConfig.get(banner.id).scaleY;
+        // not like an actual target, but my goal
+        const templateImgDimension = {
+          width: templateScale.bannerShapeConfig.get(banner.id).image.width as number,
+          height: templateScale.bannerShapeConfig.get(banner.id).image.height as number,
+        }
+        const currentImgAspectRatio = logoDimensions.height / logoDimensions.width;
+        const targetWidth = templateImgDimension.width * templateScaleX;
+        // Current image X scale
+        scaleX = targetWidth / logoDimensions.width;
+        // Now get current image Y scale
+        const desiredWidth = logoDimensions.width * scaleX;
+        const desiredHeight = currentImgAspectRatio * desiredWidth;
+        scaleY = desiredHeight / logoDimensions.height;
 
       }
 
-      const { x: scaleX, y: scaleY } = banner.getScaleForLogo(logoDimensions);
       const logos = bannerGroup.getChildren(children => children.name() === conf.name);
       logos.each(logo => logo.destroy());
       const percentages = {x: 0, y: 0};
 
-      if (shapeData.bannerShapeConfig.has(banner.id) && shapeData.bannerShapeConfig.get(banner.id).percentagePositions) {
-        percentages.x = shapeData.bannerShapeConfig.get(banner.id).percentagePositions.x;
-        percentages.y = shapeData.bannerShapeConfig.get(banner.id).percentagePositions.y;
+      if (templateScale.bannerShapeConfig.has(banner.id) && templateScale.bannerShapeConfig.get(banner.id).percentagePositions) {
+        percentages.x = templateScale.bannerShapeConfig.get(banner.id).percentagePositions.x;
+        percentages.y = templateScale.bannerShapeConfig.get(banner.id).percentagePositions.y;
       }
 
       const {x, y} = banner.getPixelPositionFromPercentage(percentages, logoDimensions, {scaleX, scaleY});

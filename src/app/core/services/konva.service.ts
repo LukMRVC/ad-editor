@@ -11,8 +11,6 @@ import {ImageService} from '@core/services/drawing/image.service';
 
 // TODO: Add skewing
 // TODO: Fillable background color, gradients, watermarks
-// TODO: Fixed dataset upload - image scaling out of banner, individual scaling not saved
-// TODO: When drawing uploaded images, check if they are out of banner and better position them
 
 @Injectable({
   providedIn: 'root',
@@ -503,6 +501,7 @@ export class KonvaService {
       shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
     }
     conf.name = slugifiedShapeName;
+    if (!conf.image) { return; }
     for (const banner of this.banners) {
       const img = this.imageService.drawImage(this.bannerGroups[banner.id].group, banner, shape, conf);
       if (img !== null) {
@@ -906,7 +905,7 @@ export class KonvaService {
     } else {
       shapeData.bannerShapeConfig.set(bannerGroupIndex, transformEvent.target.getAttrs());
     }
-    console.log(shapeData.bannerShapeConfig.get(bannerGroupIndex));
+    // console.log(shapeData.bannerShapeConfig.get(bannerGroupIndex));
 
     if (!this.shouldTransformRelatives) { return; }
     for (const [index, bannerGroup] of this.bannerGroups.entries()) {
@@ -918,9 +917,12 @@ export class KonvaService {
       const aspectRatio = relative.width() / relative.height();
 
       const pos = this.getPixelPositionsWithinBanner(index, percentages, relative);
+
+
       relative.x(pos.x);
       relative.y(pos.y);
       relative.rotation(transformEvent.target.getAbsoluteRotation());
+      shapeData.bannerShapeConfig.set(index, relative.getAttrs());
       if (relative.isCached()) {
         relative.cache();
       }

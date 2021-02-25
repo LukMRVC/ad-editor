@@ -86,9 +86,19 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     this.konva.getInstance().height(this.stageWrapper.nativeElement.offsetHeight);
   }
 
-  @HostListener('document:keydown.Control')
+  @HostListener('document:keydown.control')
   onCtrlKeyDown(): void {
     this.konva.shouldTransformRelatives = false;
+  }
+
+  @HostListener('document:keydown.pagedown')
+  onPageDown(): void {
+    this.konva.moveObjectZIndices('Down');
+  }
+
+  @HostListener('document:keydown.pageup')
+  onPageUp(): void {
+    this.konva.moveObjectZIndices('Up');
   }
 
   @HostListener('document:keyup.Control')

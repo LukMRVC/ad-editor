@@ -273,21 +273,21 @@ export class KonvaService {
     this.layers.forEach(l => l.batchDraw());
   }
 
-  moveObjectZIndices(direction: 'down' | 'down-one' | 'up-one' | 'up'): void {
-    switch (direction) {
-      case 'down':
-        this.selectedNodes.forEach(n => n.moveToBottom());
-        break;
-      case 'down-one':
-        this.selectedNodes.forEach(n => n.moveDown());
-        break;
-      case 'up-one':
-        this.selectedNodes.forEach(n => n.moveUp());
-        break;
-      case 'up':
-        this.selectedNodes.forEach(n => n.moveToTop());
-        break;
+  moveObjectZIndices(direction: 'Down' | 'ToBottom' | 'ToTop' | 'Up'): void {
+    const selectedNodes = this.transformers.nodes();
+    if (this.shouldTransformRelatives) {
+      const nodesNamesToMove = selectedNodes.map(node => node.name()).filter( (nodeName, index, self) =>
+        self.indexOf(nodeName) === index );
+      for (const bannerGroup of this.bannerGroups) {
+        for (const nodeName of nodesNamesToMove) {
+          const node = bannerGroup.group.findOne(`.${nodeName}`);
+          node[`move${direction}`]();
+        }
+      }
+    } else {
+      selectedNodes.forEach( node => node[`move${direction}`]() );
     }
+
     this.redraw();
   }
 

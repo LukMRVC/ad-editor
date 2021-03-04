@@ -28,6 +28,33 @@
                     (valueChange)="konva.zoomBackground($event)"></mat-slider>
       </div>
 
+      <!-- Gradients -->
+      <section fxLayout="row wrap" fxLayoutGap="5px">
+        <div fxFlex id="background-preview-stage"></div>
+        <div fxFlex fxLayout="column" fxLayoutGap="5px">
+          <mat-button-toggle-group fxFlexAlign="end" (change)="changeFillStyle()" [(ngModel)]="fillStyle" name="fillStyle" aria-label="Fill Style">
+            <mat-button-toggle checked="true" value="color">Solid</mat-button-toggle>
+            <mat-button-toggle value="linear-gradient">Linear</mat-button-toggle>
+            <mat-button-toggle value="radial-gradient">Radial</mat-button-toggle>
+          </mat-button-toggle-group>
+          <ng-container *ngIf="fillStyle !== 'color'">
+            <mat-form-field>
+              <mat-label>Gradient color</mat-label>
+              <input [(ngModel)]="defaultGradientColor" (keydown.enter)="gradientPicker.close()" (focus)="gradientPicker.open()"
+                     [ngxMatColorPicker]="gradientPicker" (colorChange)="gradientColorChanged($event)" matInput #gradientColourInput>
+              <ngx-mat-color-toggle matSuffix [for]="gradientPicker"></ngx-mat-color-toggle>
+              <ngx-mat-color-picker [defaultColor]="defaultGradientColor" #gradientPicker touchUi="false"></ngx-mat-color-picker>
+            </mat-form-field>
+          </ng-container>
+          <div fxLayout="column" fxFlex *ngIf="fillStyle === 'radial-gradient'">
+            <span>Radius</span>
+            <mat-slider thumbLabel (change)="radialGradientRadiusChanged($event)" [(ngModel)]="radialGradientRadius"
+                        min="1" step="1" max="100" >
+            </mat-slider>
+          </div>
+        </div>
+      </section>
+
     </div>
   </ng-template>
 </mat-expansion-panel>

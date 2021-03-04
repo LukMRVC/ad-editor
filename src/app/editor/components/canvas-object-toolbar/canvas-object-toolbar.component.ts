@@ -26,8 +26,7 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
   canvasObjectType: 'image' | 'text' | 'shape' | 'background';
 
   subscription: Subscription = new Subscription();
-  defaultFillColour = new Color(255, 0, 0, 255);
-  defaultGradientColor = new Color(255, 255, 255, 0);
+
   defaultShadowColor = new Color(0, 0, 0, 255);
   fontList: WebFont[] = [];
   fontFamilyControl: FormControl = new FormControl();
@@ -38,6 +37,9 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
   strokeColor: Color = new Color(0, 0, 0, 255);
   strokeEnabled = true;
   strokeWidth = 1;
+
+  defaultFillColour = new Color(255, 0, 0, 255);
+  defaultGradientColor = new Color(255, 255, 255, 0);
   fillStyle = 'color';
   radialGradientRadius = 50;
   drawPoint: {x: number, y: number} = { x: 0, y: 0 };

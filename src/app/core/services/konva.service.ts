@@ -590,20 +590,22 @@ export class KonvaService {
         }
       }
 
+      const shouldDraw = shape.bannerShapeConfig?.get(index)?.shouldDraw ?? true;
 
       if ('fontScaling' in attributes) {
         attributes.fontSize = (bannerGroup.group.findOne(`.${slugifiedShapeName}`) as Konva.Text).getAttr('initialFontSize');
         attributes.fontSize *= 1 + (attributes.fontScaling / 10);
       }
-      if (!textShape) {
+      if ( !textShape && shouldDraw) {
         this.drawText(slugifiedShapeName, {...attributes});
         break;
-      } else {
+      } else if (textShape) {
+        // textShape.clearCache();
         textShape.setAttrs(attributes);
         textShape.cache();
+        shape.bannerShapeConfig.set(index, textShape.getAttrs());
       }
-      textShape.setAttr('shouldDraw', true);
-      shape.bannerShapeConfig.set(index, textShape.getAttrs());
+      // textShape.setAttr('shouldDraw', true);
     }
     this.redraw();
   }
@@ -817,9 +819,13 @@ export class KonvaService {
 
       for (const [index, bannerGroup] of this.bannerGroups.entries()) {
         const tag = bannerGroup.group.findOne('.button-tag');
+        const shouldDraw = shape.bannerShapeConfig?.get(index)?.shouldDraw ?? true;
         if (!tag) {
-          this.drawButton({}, config, {});
-          break;
+          if (shouldDraw) {
+            this.drawButton({}, config, {});
+            break;
+          }
+          continue;
         }
         tag.setAttrs(config);
         const btnSavedCfg = shape.bannerShapeConfig.get(index);
@@ -829,23 +835,31 @@ export class KonvaService {
       }
 
     } else {
+
       for (const [index, bannerGroup] of this.bannerGroups.entries()) {
         const text = bannerGroup.group.findOne('.button-text');
-        const tag = bannerGroup.group.findOne('.button-tag');
+        // const tag = bannerGroup.group.findOne('.button-tag');
+        const shouldDraw = shape.bannerShapeConfig?.get(index)?.shouldDraw ?? true;
+
         if (!text) {
-          this.drawButton({}, {}, config);
-          break;
+          if (shouldDraw) {
+            this.drawButton({}, {}, config);
+            break;
+          }
+          continue;
         }
+
         if ('fontScaling' in config) {
           config.fontSize = text.getAttr('initialFontSize');
           config.fontSize *= 1 + (config.fontScaling / 10);
         }
+
         text.setAttrs(config);
         const btnSavedCfg = shape.bannerShapeConfig.get(index);
         btnSavedCfg.textConfig = text.getAttrs();
         // console.log(text.getAttrs());
         // console.log(shape.bannerShapeConfig.get(index));
-        tag.cache();
+        // tag.cache();
       }
     }
 
@@ -874,7 +888,7 @@ export class KonvaService {
     for (const [index, bannerGroup] of this.bannerGroups.entries()) {
       if (bannerGroup.group === dragEvent.target.getParent()) { continue; }
       const relativeShape = bannerGroup.group.findOne(`.${shapeName}`);
-      if (!relativeShape) { return; }
+      if (!relativeShape) { continue; }
       relativeShape.setAttr('percentagePositions', percentages);
       const pos = this.getPixelPositionsWithinBanner(index, percentages, relativeShape);
       relativeShape.x(pos.x);

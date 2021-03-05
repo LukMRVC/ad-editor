@@ -293,18 +293,23 @@ export class KonvaService {
 
   exportAsImage(target: string, mime: 'image/jpeg' | 'image/png'): void {
     const group = this.bannerGroups.find(g => g.group.id() === target);
-    console.log(group);
+    console.log(group.group.getChildren().toArray());
     console.log(target);
     console.assert(group !== undefined);
 
-    group.group.getChildren().each(c => c.clearCache());
-    group.group.draw();
+
+    group.group.getChildren().each(c => {
+      c.clearCache();
+      c.draw();
+    });
+    group.bg.clearCache();
+    // group.group.draw();
 
     // const layer = this.canvas.getLayers()[2];
     // const dataUrl = layer.toDataURL({
     //   mimeType: mime,
     // });
-    const dataUrl = group.group.toDataURL({ mimeType: mime, pixelRatio: 3 });
+    const dataUrl = group.group.toDataURL({ mimeType: mime, pixelRatio: 1 });
     const link = document.createElement('a');
     link.download = 'Ad1-file.jpeg';
     link.href = dataUrl;

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable} from 'rxjs';
+import {HttpClient} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +9,9 @@ export class ImageGalleryService {
 
   private images: UploadedImage[] = [];
 
-  constructor() {
+  constructor(
+    public httpClient: HttpClient,
+  ) {
     if (localStorage.getItem('cachedImages') !== null) {
       this.images = JSON.parse(localStorage.getItem('cachedImages'));
     }
@@ -17,7 +20,6 @@ export class ImageGalleryService {
   public uploadImage(file: File): Observable<number> {
 
     return new Observable<number>(subscriber => {
-
       if (this.hasImage(file)) {
         subscriber.next(100);
         subscriber.complete();
@@ -25,7 +27,6 @@ export class ImageGalleryService {
       }
 
       const reader = new FileReader();
-
       reader.onprogress = (progress: ProgressEvent<FileReader>) => {
         if (progress.lengthComputable) {
           subscriber.next( Math.round( ( progress.loaded / progress.total ) * 100)  );
@@ -42,12 +43,12 @@ export class ImageGalleryService {
           size: file.size,
         });
         subscriber.complete();
-
         localStorage.setItem('cachedImages', JSON.stringify(this.images));
       };
       reader.readAsDataURL(file);
     });
   }
+
 
   // Simple ID generation
   // taken from https://stackoverflow.com/a/60035555/6803924
@@ -76,16 +77,24 @@ export class ImageGalleryService {
   }
 
   public loadImage(nameOrUrl: string): Promise<HTMLImageElement> {
-    return new Promise<HTMLImageElement>( (resolve, reject) => {
+    return new Promise<HTMLImageElement>( async (resolve, reject) => {
       const img = new Image();
       try {
         const url = new URL(nameOrUrl);
-        img.src = url.toString();
+
+        const imgBlob = await this.httpClient.get(url.toString(), { responseType: 'blob'}).toPromise();
+        const reader = new FileReader();
+        reader.onload = (e: ProgressEvent<FileReader>) => {
+          img.src = reader.result as string;
+        };
+        reader.readAsDataURL(imgBlob);
+
       } catch (_) {
         const imgData  = this.images.find(i => i.name === nameOrUrl);
         if (!imgData) {
           img.remove();
           reject(`Image \'${nameOrUrl}\' was not found in gallery and is not a valid URL`);
+          return;
         }
         img.src = imgData.src;
       }

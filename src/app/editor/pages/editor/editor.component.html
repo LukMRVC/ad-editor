@@ -22,7 +22,7 @@
   <div (click)="contextMenu.visibility = 'none'"
        [style.top]="contextMenu.top" [style.left]="contextMenu.left"
        [style.display]="contextMenu.visibility"  id="context-menu">
-    <button (click)="konva.exportAsImage(this.downloadTargetId, 'image/jpeg')" mat-button>Download</button>
+    <button (click)="konva.exportAsImage(this.downloadTargetId, 'image/png')" mat-button>Download</button>
   </div>
 
 

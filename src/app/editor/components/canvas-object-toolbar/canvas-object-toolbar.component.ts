@@ -85,7 +85,7 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
         this.drawPoint = { x: Math.round(node.x()), y: Math.round(node.y()) };
         this.dimension = { w: node.width(), h: node.height() };
         if (node.getClassName() === 'Text') {
-          this.text = ev.target.text();
+          this.text = ev.target.value().toString();
         }
         // console.log('Node: ', node);
         let rgb = hexToRgb(node.fill());

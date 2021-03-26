@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import Konva from 'konva';
 import {Banner} from '@core/models/banner-layout';
-import {BannerDataService, ShapeInformation} from '@core/services/banner-data.service';
+import {BannerDataService} from '@core/services/banner-data.service';
+import {ShapeInformation} from '@core/models/dataset';
 
 @Injectable({
   providedIn: 'root'

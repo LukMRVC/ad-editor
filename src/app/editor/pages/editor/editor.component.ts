@@ -4,6 +4,8 @@ import {KonvaService} from '@core/services/konva.service';
 import {Subscription} from 'rxjs';
 import {BannerService} from '@core/services/banner.service';
 import {BannerDataService} from '@core/services/banner-data.service';
+import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
+import {$} from 'protractor';
 
 @Component({
   selector: 'app-editor',
@@ -111,4 +113,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     // this.konva.deleteSelected();
   }
 
+  reorderDatasets($event: CdkDragDrop<string[]>): void {
+    moveItemInArray(this.dataService.datasets, $event.previousIndex, $event.currentIndex);
+  }
 }

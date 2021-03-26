@@ -6,8 +6,9 @@ import {TransformerConfig} from 'konva/types/shapes/Transformer';
 import {RectConfig} from 'konva/types/shapes/Rect';
 import {Banner, Point2D} from '@core/models/banner-layout';
 import {FilterChangedEvent} from '../../editor/components/image-filter.component';
-import {BannerDataService, ShapeInformation} from '@core/services/banner-data.service';
+import {BannerDataService} from '@core/services/banner-data.service';
 import {ImageService} from '@core/services/drawing/image.service';
+import {ShapeInformation} from '@core/models/dataset';
 
 // TODO: Add skewing
 // TODO: Fillable background color, gradients, watermarks

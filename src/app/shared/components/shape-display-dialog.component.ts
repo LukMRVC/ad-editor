@@ -1,7 +1,8 @@
 import {AfterViewInit, Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {BannerDataService, ShapeInformation} from '@core/services/banner-data.service';
+import {BannerDataService} from '@core/services/banner-data.service';
 import {Banner} from '@core/models/banner-layout';
+import {ShapeInformation} from '@core/models/dataset';
 
 @Component({
   selector: 'app-shape-display-dialog',

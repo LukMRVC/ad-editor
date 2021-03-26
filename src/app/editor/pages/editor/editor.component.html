@@ -1,5 +1,6 @@
 
 <main class="main" fxLayout="column">
+
 <!--  <div fxLayout="row nowrap" fxLayoutGap="10px" fxLayoutAlign="start end" class="stage-settings">-->
 <!--    <span class="fill-space" fxFlex="25"></span>-->
 <!--&lt;!&ndash;    <mat-checkbox fxFlexAlign="center" [(ngModel)]="konva.addNewShapeToNewLayer">Add new shape to a new layer</mat-checkbox>&ndash;&gt;-->
@@ -30,7 +31,17 @@
 
     <app-shape-data fxFlexOrder="1"></app-shape-data>
 
-    <div fxLayout="row nowrap" #stageWrapper fxLayoutAlign="center start" fxFlex class="canvas-wrapper" fxFlexOrder="2">
+    <div fxLayout="column nowrap" #stageWrapper fxLayoutAlign="start" fxFlex class="canvas-wrapper" fxFlexOrder="2">
+      <!-- Datasets-->
+      <div fxLayout="row nowrap" class="datasets" cdkDropListOrientation="horizontal" cdkDropList
+           cdkDropListLockAxis="x" (cdkDropListDropped)="reorderDatasets($event)">
+        <button cdkDrag mat-flat-button *ngFor="let dataset of dataService.datasets"
+                [ngClass]="{'active': dataset.datasetName === dataService.activeDataset}"
+                (click)="dataService.setActiveDataset(dataset.datasetName)">
+          {{ dataset.datasetName }}
+        </button>
+      </div>
+      <!-- Stage -->
       <div id="stage" (dragover)="$event.preventDefault()" class="canvas-stage" ></div>
     </div>
 

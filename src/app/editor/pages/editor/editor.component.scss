@@ -68,3 +68,40 @@
   box-shadow: 0 0 5px grey;
   z-index: 99;
 }
+
+.datasets {
+  background-color: #f8f8f8;
+}
+
+.datasets > * {
+  border-radius: 0px;
+}
+
+.datasets > *.active {
+  border-bottom: 2px solid $primary-darkest;
+}
+
+.datasets > *:not(:last-child) {
+  border-right: 2px solid $primary;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.datasets:last-child {
+  border: none;
+}
+
+/* Animate items as they're being sorted. */
+.cdk-drop-list-dragging .cdk-drag {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.datasets.cdk-drop-list-dragging .datasets:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

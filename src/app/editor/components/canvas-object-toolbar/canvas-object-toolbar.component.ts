@@ -11,7 +11,7 @@ import {FormControl} from '@angular/forms';
 import {map, startWith} from 'rxjs/operators';
 import {MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 
-import * as WebFontLoader from 'webfontloader';
+import WebFontLoader from 'webfontloader';
 import Konva from 'konva';
 import KonvaEventObject = Konva.KonvaEventObject;
 import {MatSliderChange} from '@angular/material/slider';

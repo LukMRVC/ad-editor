@@ -3,6 +3,7 @@ import Konva from 'konva';
 import {BehaviorSubject, Subject} from 'rxjs';
 import {Banner} from '@core/models/banner-layout';
 import {ImageGalleryService} from '@core/services/image-gallery.service';
+import {Dataset, ShapeInformation} from '@core/models/dataset';
 
 @Injectable({
   providedIn: 'root'
@@ -14,21 +15,22 @@ export class BannerDataService {
   public informationUpdated$ = new Subject<string>();
   public banners$ = new BehaviorSubject<Banner[]>([]);
 
-  datasets = new Map<string, ShapeInformation[]>();
+  public template: Dataset;
+
+  public datasets: Dataset[] = [];
   private datasetCounter = 0;
-  private activeDataset: string;
+  public activeDataset: string = null;
   private banners: Banner[] = [];
 
   constructor(
     private imageService: ImageGalleryService,
   ) {
-    this.datasets.set(`Template #${++this.datasetCounter}`, this.createDataset());
-    this.activeDataset = `Template #${this.datasetCounter}`;
-    // console.log(`Creating ${BannerDataService.name} instance!`);
+    this.template = new Dataset('Template', null, this.createDataset());
+    // this.datasets.set(`Template #${++this.datasetCounter}`, this.createDataset());
   }
 
   private createDataset(): ShapeInformation[] {
-    const dataset: ShapeInformation[] = [
+    const datasetShapes: ShapeInformation[] = [
       {
         userShapeName: 'Logo',
         isImage: true,
@@ -57,12 +59,14 @@ export class BannerDataService {
         },
       }
     ];
-
-    return dataset.concat( JSON.parse(JSON.stringify(this.userShapes)) );
+    return datasetShapes.concat( JSON.parse(JSON.stringify(this.userShapes)) );
   }
 
   public addDataset(): void {
-    this.datasets.set(`Dataset #${++this.datasetCounter}`, this.createDataset());
+    this.datasets.push(
+      new Dataset(`Dataset #${++this.datasetCounter}`, this.datasets.length + 1, this.createDataset())
+    );
+    // this.datasets.set(`Dataset #${++this.datasetCounter}`, this.createDataset());
   }
 
   public setActiveDataset(setName: string): void {
@@ -73,7 +77,10 @@ export class BannerDataService {
   }
 
   public getActiveDataset(): ShapeInformation[] {
-    return this.datasets.get(this.activeDataset);
+    if (this.activeDataset === 'template') {
+      return this.template.shapes;
+    }
+    return this.datasets.find(dataset => dataset.datasetName === this.activeDataset)?.shapes ?? [];
   }
 
   public addToDataset(userShapeName: string, shapeType: 'text'|'image', toAll: boolean = true): void {
@@ -87,8 +94,8 @@ export class BannerDataService {
     });
 
     if (toAll) {
-      for (const dataset of this.datasets.values()) {
-        dataset.push({
+      for (const dataset of this.datasets) {
+        dataset.shapes.push({
           userShapeName,
           isText: shapeType === 'text',
           isImage: shapeType === 'image',
@@ -98,7 +105,7 @@ export class BannerDataService {
         });
       }
     } else {
-      this.datasets.get(this.activeDataset).push({
+      this.getActiveDataset().push({
         userShapeName,
         isText: shapeType === 'text',
         isImage: shapeType === 'image',
@@ -106,14 +113,13 @@ export class BannerDataService {
           text: shapeType === 'text' ? userShapeName : '',
         },
       });
-
     }
     this.informationUpdated$.next(userShapeName);
   }
 
-  public changeValue(datasetKey: string, shapeInfo: ShapeInformation, nextValue: any): void {
-    const dataset = this.datasets.get(datasetKey);
-    const shapeInformation = dataset.find(shape => shape.userShapeName === shapeInfo.userShapeName);
+  public changeValue(datasetName: string, shapeInfo: ShapeInformation, nextValue: any): void {
+    const datasetShapes = this.datasets.find(dataset => dataset.datasetName === datasetName)?.shapes ?? [];
+    const shapeInformation = datasetShapes.find(shape => shape.userShapeName === shapeInfo.userShapeName);
     if (!shapeInformation) { return; }
     if (shapeInformation.isText) {
       shapeInformation.shapeConfig = { text: nextValue };
@@ -153,7 +159,7 @@ export class BannerDataService {
         const header = this.parseCsvHeader(lines, columns);
 
         const dataLines = lines.slice(1).filter(l => l != null);
-        const templateDataset = this.datasets.values().next().value as ShapeInformation[];
+        const templateDataset = this.template.shapes as ShapeInformation[];
         // console.log(templateDataset);
 
         for (const line of dataLines) {
@@ -179,7 +185,14 @@ export class BannerDataService {
             }
 
           }
-          this.datasets.set(`Dataset #${++this.datasetCounter}`, dataset);
+          this.datasets.push(
+            new Dataset(
+              `Dataset #${++this.datasetCounter}`,
+              this.datasets.length + 1,
+              dataset,
+            )
+          );
+          // this.datasets.set(, dataset);
         }
 
       };
@@ -189,7 +202,7 @@ export class BannerDataService {
   }
 
   public getTemplateDataset(): ShapeInformation[] {
-    return this.datasets.values().next().value;
+    return this.template.shapes;
   }
 
   private parseCsvHeader(lines: string[], expectedHeaders: string[]): string[] {
@@ -204,13 +217,4 @@ export class BannerDataService {
     }
     return header;
   }
-}
-
-export interface ShapeInformation {
-  userShapeName: string;
-  isText?: boolean;
-  isImage?: boolean;
-  isButton?: boolean;
-  shapeConfig?: Konva.ShapeConfig;
-  bannerShapeConfig?: Map<number, Konva.ShapeConfig>;
 }

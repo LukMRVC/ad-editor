@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import {BannerDataService, ShapeInformation} from '@core/services/banner-data.service';
+import {BannerDataService} from '@core/services/banner-data.service';
 import {MatDialog} from '@angular/material/dialog';
 import {ImageGalleryDialogComponent} from '@shared/components/image-gallery-dialog.component';
 import {UploadedImage} from '@core/services/image-gallery.service';
 import {ShapeDisplayDialogComponent} from '@shared/components/shape-display-dialog.component';
 import {KonvaService} from '@core/services/konva.service';
+import {ShapeInformation} from '@core/models/dataset';
 
 @Component({
   selector: 'app-shape-data',

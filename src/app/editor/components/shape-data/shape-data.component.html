@@ -1,48 +1,65 @@
-<div appHideable="left" [hide]="isHidden" class="shape-aside" fxFlex fxLayout="column" fxLayoutGap=".5rem">
+<div class="shape-aside" fxFlex fxLayout="column" fxLayoutGap=".5rem">
 
-  <button (click)="isHidden = !isHidden" mat-mini-fab  class="show-btn">
-    <mat-icon *ngIf="!isHidden">chevron_left</mat-icon>
-    <mat-icon *ngIf="isHidden">chevron_right</mat-icon>
-  </button>
+<!--  <mat-accordion>-->
+<!--    <mat-expansion-panel [expanded]="selectedSet === dataset.key"  *ngFor="let dataset of dataService.datasets | keyvalue "-->
+<!--                         class="mat-elevation-z0 expansion-panel radius-none" (opened)="changeDataset(dataset.key)">-->
+<!--      <mat-expansion-panel-header>-->
+<!--        <mat-panel-title>{{ dataset.key }}</mat-panel-title>-->
+<!--      </mat-expansion-panel-header>-->
 
-  <mat-accordion>
-    <mat-expansion-panel [expanded]="selectedSet === dataset.key"  *ngFor="let dataset of dataService.datasets | keyvalue "
-                         class="mat-elevation-z0 expansion-panel radius-none" (opened)="changeDataset(dataset.key)">
-      <mat-expansion-panel-header>
-        <mat-panel-title>{{ dataset.key }}</mat-panel-title>
-      </mat-expansion-panel-header>
+<!--      <div fxLayout="column" fxLayoutGap=".5rem">-->
+<!--        <div *ngFor="let shapeInfo of dataset.value">-->
+<!--          <mat-form-field fxFlex appearance="outline" *ngIf="shapeInfo.isText">-->
+<!--            <mat-label>{{ shapeInfo.userShapeName }}</mat-label>-->
+<!--            <textarea (input)="changeValue(dataset.key, shapeInfo, $event)" [value]="shapeInfo.shapeConfig.text"-->
+<!--                      matInput [placeholder]="shapeInfo.userShapeName + ' text'" ></textarea>-->
+<!--          </mat-form-field>-->
 
-      <div fxLayout="column" fxLayoutGap=".5rem">
-        <div *ngFor="let shapeInfo of dataset.value">
-          <mat-form-field fxFlex appearance="outline" *ngIf="shapeInfo.isText">
-            <mat-label>{{ shapeInfo.userShapeName }}</mat-label>
-            <textarea (input)="changeValue(dataset.key, shapeInfo, $event)" [value]="shapeInfo.shapeConfig.text"
-                      matInput [placeholder]="shapeInfo.userShapeName + ' text'" ></textarea>
-          </mat-form-field>
+<!--          <button (click)="openGallery(dataset.key, shapeInfo)" fxFlex *ngIf="shapeInfo.isImage" #uploadBtn mat-raised-button color="primary">-->
+<!--            <mat-icon>insert_photo</mat-icon>-->
+<!--            {{ shapeInfo.userShapeName }}-->
+<!--          </button>-->
 
-          <button (click)="openGallery(dataset.key, shapeInfo)" fxFlex *ngIf="shapeInfo.isImage" #uploadBtn mat-raised-button color="primary">
-            <mat-icon>insert_photo</mat-icon>
-            {{ shapeInfo.userShapeName }}
-          </button>
+<!--          <mat-form-field fxFlex appearance="outline" *ngIf="shapeInfo.isButton">-->
+<!--            <mat-label>{{ shapeInfo.userShapeName + ' content' }}</mat-label>-->
+<!--            <textarea (input)="changeValue(dataset.key, shapeInfo, $event)" [value]="shapeInfo.shapeConfig.text"-->
+<!--                      matInput [placeholder]="shapeInfo.userShapeName + ' content'" ></textarea>-->
+<!--          </mat-form-field>-->
+<!--        </div>-->
 
-          <mat-form-field fxFlex appearance="outline" *ngIf="shapeInfo.isButton">
-            <mat-label>{{ shapeInfo.userShapeName + ' content' }}</mat-label>
-            <textarea (input)="changeValue(dataset.key, shapeInfo, $event)" [value]="shapeInfo.shapeConfig.text"
-                      matInput [placeholder]="shapeInfo.userShapeName + ' content'" ></textarea>
-          </mat-form-field>
-        </div>
+<!--        <button mat-flat-button (click)="displayOptions(dataset.value)" color="accent">Display options</button>-->
+<!--      </div>-->
 
-        <button mat-flat-button (click)="displayOptions(dataset.value)" color="accent">Display options</button>
-      </div>
-
-    </mat-expansion-panel>
-  </mat-accordion>
+<!--    </mat-expansion-panel>-->
+<!--  </mat-accordion>-->
 
   <div style="padding: .5rem" fxLayout="column" fxLayoutGap=".5rem">
+    <button (click)="changeDataset('template')" color="primary" mat-flat-button>Template view</button>
     <button (click)="dataService.addDataset()" mat-flat-button color="accent" fxFlex>Add dataset</button>
     <button (click)="datasetUpload.click()" mat-flat-button color="accent" fxFlex>Upload dataset</button>
 
     <input type="file" (change)="dataService.uploadDatasets($event)" style="display: none" #datasetUpload name="file" class="hidden" accept="text/csv">
   </div>
+
+  <div fxLayout="column" fxLayoutAlign="start" fxLayoutGap=".25rem">
+    <div fxLayout="row" fxFlex fxLayoutGap=".25rem">
+      <button mat-button fxFlex>
+        <mat-icon class="toolbar-mat-icon">lens</mat-icon>
+      </button>
+      <button mat-button fxFlex>
+        <mat-icon class="toolbar-mat-icon">crop_square</mat-icon>
+      </button>
+    </div>
+
+    <div fxLayout="row" fxFlex fxLayoutGap=".25rem">
+      <button mat-button fxFlex>
+        <mat-icon class="toolbar-mat-icon">insert_photo</mat-icon>
+      </button>
+      <button mat-button fxFlex>
+        <mat-icon class="toolbar-mat-icon">format_size</mat-icon>
+      </button>
+    </div>
+  </div>
+
 
 </div>

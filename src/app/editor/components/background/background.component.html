@@ -64,7 +64,7 @@
 
             <mat-button-toggle-group fxFlexAlign="start" name="colorStops" aria-label="color stops">
               <ng-container *ngFor="let colorStop of colorStops; index as i">
-                <mat-button-toggle  *ngIf="i % 2 === 1">
+                <mat-button-toggle (change)="setEditableColorStop($event.value)" [value]="i"  *ngIf="i % 2 === 1">
                   {{ i }}
                 </mat-button-toggle>
               </ng-container>
@@ -73,9 +73,17 @@
               </mat-button-toggle>
             </mat-button-toggle-group>
 
-            <div>
+            <div fxLayout="column nowrap">
               <ng-container *ngFor="let colorStop of colorStops; let i = index;trackBy:trackByIdx">
-                <div *ngIf="i % 2 === 0" fxLayout="row nowrap" fxLayoutAlign="start start" fxLayoutGap=".25rem">
+                <mat-form-field *ngIf="editableColorStopIdx === i" fxFlexOrder="1">
+                  <mat-label>Color stop {{ i }}</mat-label>
+                  <input [(ngModel)]="colorStopEditableColor" (keydown.enter)="colorStopPicker.close()" (focus)="colorStopPicker.open()"
+                         [ngxMatColorPicker]="colorStopPicker" (colorChange)="changeColorStopColor($event)" matInput #gradientColourInput>
+                  <ngx-mat-color-toggle matSuffix [for]="colorStopPicker"></ngx-mat-color-toggle>
+                  <ngx-mat-color-picker [defaultColor]="colorStopEditableColor" #colorStopPicker [touchUi]="touchUi"></ngx-mat-color-picker>
+                </mat-form-field>
+
+                <div *ngIf="i % 2 === 0" fxLayout="row nowrap" fxFlexOrder="2" fxLayoutAlign="start start" fxLayoutGap=".25rem">
                   <span class="slider-label">{{ i }}</span>
                   <mat-slider [(ngModel)]="colorStops[i]" (valueChange)="changeColorStop()" [value]="colorStop"
                               fxFill thumbLabel min="0" step="0.01" max="1"></mat-slider>

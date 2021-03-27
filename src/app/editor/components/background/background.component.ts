@@ -55,6 +55,8 @@ export class BackgroundComponent implements OnInit, AfterViewInit {
 
   // must alternate number and color
   colorStops: any[] = [];
+  editableColorStopIdx = -1;
+  colorStopEditableColor = new Color(255, 255, 255, 255);
 
   constructor(
     public konva: KonvaService,
@@ -294,8 +296,7 @@ export class BackgroundComponent implements OnInit, AfterViewInit {
   }
 
   addColorStop(): void {
-    const randomColor = `#${Math.floor(Math.random() * 16_777_215).toString(16)}`.padEnd(7, '0');
-    console.log(randomColor);
+    const randomColor = `#${Math.floor(Math.random() * 16_777_215).toString(16)}`.padEnd(9, 'f');
     this.colorStops.push(0.5, randomColor);
     this.fillColorChanged();
   }
@@ -306,5 +307,27 @@ export class BackgroundComponent implements OnInit, AfterViewInit {
 
   trackByIdx(index: number, obj: any): any {
     return index;
+  }
+
+  changeColorStopColor($event: NgxMatColorPickerInputEvent): void {
+    this.colorStops[this.editableColorStopIdx] = $event.value.toHex8String();
+    this.fillColorChanged();
+  }
+
+  setEditableColorStop(colorStopIndex: number): void {
+    const hexToRgb = (hex: string) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      // console.log(result);
+      return {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+        a: parseInt(result[4], 16)
+      };
+    };
+
+    this.editableColorStopIdx = colorStopIndex;
+    const rgb = hexToRgb(this.colorStops[this.editableColorStopIdx]);
+    this.colorStopEditableColor = new Color(rgb.r, rgb.b, rgb.g, rgb?.a);
   }
 }

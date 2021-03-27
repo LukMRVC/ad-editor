@@ -23,28 +23,23 @@ export class KonvaService {
     public dataService: BannerDataService,
     public imageService: ImageService,
   ) {
-    // console.log(`Creating ${KonvaService.name} instance`);
-    // console.log(this.dataService.getActiveDataset());
     this.shapes = this.dataService.getActiveDataset();
 
     this.dataService.datasetChanged$.subscribe(() => {
-      // console.log(this.dataService.getActiveDataset());
       this.shapes = this.dataService.getActiveDataset();
       this.transformers.nodes([]);
-
-      // console.log('Changed shapes', this.shapes);
       this.redrawShapes();
     });
 
     this.dataService.banners$.subscribe(newBanners => {
       this.banners = newBanners;
       this.shapes = this.dataService.getActiveDataset();
-      // console.log('Drawing banners');
       this.drawBanners();
     });
 
     this.dataService.informationUpdated$.subscribe(updatedShapeName => {
       this.shapes = this.dataService.getActiveDataset();
+      console.log(updatedShapeName);
       const updatedShape = this.shapes.find(s => s.userShapeName === updatedShapeName);
       // console.log(updatedShape);
       if (updatedShape.isText) {
@@ -347,8 +342,8 @@ export class KonvaService {
       name: 'button-text',
       text: 'Button 1',
       fontFamily: 'Calibri',
-      fontSize: 18,
-      initialFontSize: 18,
+      fontSize: 16,
+      initialFontSize: 16,
       padding: 5,
       align: 'center',
       verticalAlign: 'middle',
@@ -935,11 +930,7 @@ export class KonvaService {
       if (!relative) { continue; }
       relative.scaleX( relative.scaleX() + scaleDelta.x );
       relative.scaleY( relative.scaleY() + scaleDelta.y );
-      const aspectRatio = relative.width() / relative.height();
-
       const pos = this.getPixelPositionsWithinBanner(index, percentages, relative);
-
-
       relative.x(pos.x);
       relative.y(pos.y);
       relative.rotation(transformEvent.target.getAbsoluteRotation());

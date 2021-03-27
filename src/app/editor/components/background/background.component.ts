@@ -8,13 +8,18 @@ import {
   NgxMatColorPickerInputEvent
 } from '@angular-material-components/color-picker';
 import Konva from 'konva';
+import {ImageGalleryService, UploadedImage} from '@core/services/image-gallery.service';
+import {MatDialog} from '@angular/material/dialog';
+import {BannerDataService} from '@core/services/banner-data.service';
+import {ShapeInformation} from '@core/models/dataset';
+import {ImageGalleryDialogComponent} from '@shared/components/image-gallery-dialog.component';
 
 @Component({
   selector: 'app-background',
   templateUrl: './background.component.html',
   styleUrls: ['./background.component.scss']
 })
-export class BackgroundComponent implements AfterViewInit {
+export class BackgroundComponent implements OnInit, AfterViewInit {
   public imageFitOptions = [
     'left-top',
     'left-middle',
@@ -40,10 +45,20 @@ export class BackgroundComponent implements AfterViewInit {
   defaultGradientColor = new Color(255, 255, 255, 0);
   fillStyle = 'color';
   radialGradientRadius = 50;
+  activeDataset = null;
+  logoShapeInfo = null;
 
   constructor(
     public konva: KonvaService,
+    public imageService: ImageGalleryService,
+    public dialog: MatDialog,
+    public dataService: BannerDataService,
   ) { }
+
+  ngOnInit(): void {
+    this.activeDataset = this.dataService.getActiveDataset();
+    this.logoShapeInfo = this.activeDataset.find(s => s.userShapeName?.toLowerCase() === 'background');
+  }
 
   ngAfterViewInit(): void {
     this.gradientStage = new Konva.Stage({ container: 'background-preview-stage', width: 200, height: 200 });
@@ -137,6 +152,14 @@ export class BackgroundComponent implements AfterViewInit {
     layer.add(this.gradientPoints[2]);
     this.gradientStage.add(layer);
     this.gradientStage.draw();
+  }
+
+  async openGallery(datasetKey: string, shapeInfo: ShapeInformation): Promise<void> {
+    const dlg = this.dialog.open(ImageGalleryDialogComponent, { width: '70%' });
+    const img: UploadedImage|string = await dlg.afterClosed().toPromise();
+    if (img) {
+      this.dataService.changeValue(datasetKey, shapeInfo, (img as UploadedImage).src);
+    }
   }
 
   fillColorChanged(ev: NgxMatColorPickerInputEvent): void {

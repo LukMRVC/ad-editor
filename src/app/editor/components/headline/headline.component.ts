@@ -1,6 +1,4 @@
-import {Component, OnInit} from '@angular/core';
-import {Color} from '@angular-material-components/color-picker';
-import {FormControl} from '@angular/forms';
+import {Component} from '@angular/core';
 import {KonvaService} from '@core/services/konva.service';
 
 @Component({
@@ -12,6 +10,8 @@ export class HeadlineComponent {
 
   headlineText = '';
 
-  constructor() { }
+  constructor(
+    public konva: KonvaService,
+  ) { }
 
 }

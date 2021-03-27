@@ -23,6 +23,14 @@
 
     <ng-template matExpansionPanelContent>
       <ng-container *ngIf="shapeInfo.isText; else imageContainer">
+        <mat-form-field>
+          <mat-label>{{ shapeInfo.userShapeName + ' content' }}</mat-label>
+          <textarea (input)="dataService.changeValue(dataService.activeDataset, shapeInfo, $event.target.value)"
+                    [value]="shapeInfo.shapeConfig.text"
+                    matInput [placeholder]="shapeInfo.userShapeName + ' text'" >
+          </textarea>
+        </mat-form-field>
+
         <app-text-style [shapeName]="shapeInfo.userShapeName.slugify()"></app-text-style>
       </ng-container>
       <ng-template #imageContainer>

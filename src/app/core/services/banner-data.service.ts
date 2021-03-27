@@ -26,6 +26,7 @@ export class BannerDataService {
     private imageService: ImageGalleryService,
   ) {
     this.template = new Dataset('Template', null, this.createDataset());
+    this.activeDataset = 'template';
     // this.datasets.set(`Template #${++this.datasetCounter}`, this.createDataset());
   }
 
@@ -83,7 +84,7 @@ export class BannerDataService {
     return this.datasets.find(dataset => dataset.datasetName === this.activeDataset)?.shapes ?? [];
   }
 
-  public addToDataset(userShapeName: string, shapeType: 'text'|'image', toAll: boolean = true): void {
+  public addShape(userShapeName: string, shapeType: 'text'|'image'): void {
     this.userShapes.push({
       userShapeName,
       isText: shapeType === 'text',
@@ -92,20 +93,16 @@ export class BannerDataService {
         text: shapeType === 'text' ? userShapeName : '',
       },
     });
-
-    if (toAll) {
-      for (const dataset of this.datasets) {
-        dataset.shapes.push({
-          userShapeName,
-          isText: shapeType === 'text',
-          isImage: shapeType === 'image',
-          shapeConfig: {
-            text: shapeType === 'text' ? userShapeName : '',
-          },
-        });
-      }
-    } else {
-      this.getActiveDataset().push({
+    this.template.shapes.push({
+      userShapeName,
+      isText: shapeType === 'text',
+      isImage: shapeType === 'image',
+      shapeConfig: {
+        text: shapeType === 'text' ? userShapeName : '',
+      },
+    });
+    for (const dataset of this.datasets) {
+      dataset.shapes.push({
         userShapeName,
         isText: shapeType === 'text',
         isImage: shapeType === 'image',
@@ -118,7 +115,10 @@ export class BannerDataService {
   }
 
   public changeValue(datasetName: string, shapeInfo: ShapeInformation, nextValue: any): void {
-    const datasetShapes = this.datasets.find(dataset => dataset.datasetName === datasetName)?.shapes ?? [];
+    let datasetShapes = this.datasets.find(dataset => dataset.datasetName === datasetName)?.shapes ?? [];
+    if (datasetName === 'template') {
+      datasetShapes = this.template.shapes;
+    }
     const shapeInformation = datasetShapes.find(shape => shape.userShapeName === shapeInfo.userShapeName);
     if (!shapeInformation) { return; }
     if (shapeInformation.isText) {

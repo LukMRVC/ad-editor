@@ -10,6 +10,11 @@
   <ng-template matExpansionPanelContent>
     <div fxLayout="column" fxLayoutAlign="start" fxLayoutGap="0.5rem">
 
+      <button (click)="openGallery(dataService.activeDataset, logoShapeInfo)" fxFlex #uploadBtn mat-raised-button color="primary">
+        <mat-icon>insert_photo</mat-icon>
+        Background image
+      </button>
+
       <mat-form-field appearance="outline">
         <mat-label>Background fit</mat-label>
         <mat-select [(ngModel)]="selectedBackgroundFit" (selectionChange)="konva.positionBackground($event.value); konva.redraw()">

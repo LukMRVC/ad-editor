@@ -9,6 +9,10 @@
   </mat-expansion-panel-header>
   <ng-template matExpansionPanelContent>
     <div fxLayout="column" fxLayoutAlign="start" fxLayoutGap="0.5rem">
+      <button (click)="openGallery(dataService.activeDataset, logoShapeInfo)" fxFlex #uploadBtn mat-raised-button color="primary">
+        <mat-icon>insert_photo</mat-icon>
+        Logo
+      </button>
       <app-image-filter (filterChanged)="konva.applyImageFilter('logo', $event)"></app-image-filter>
     </div>
   </ng-template>

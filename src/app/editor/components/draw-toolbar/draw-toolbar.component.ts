@@ -28,7 +28,7 @@ export class DrawToolbarComponent implements OnInit {
     const dlg = this.dialog.open(ShapeNameDialogComponent);
     const userShapeName = await dlg.afterClosed().toPromise();
     if (userShapeName) {
-      this.dataService.addToDataset(userShapeName, 'text');
+      this.dataService.addShape(userShapeName, 'text');
     }
   }
 
@@ -36,7 +36,7 @@ export class DrawToolbarComponent implements OnInit {
     const dlg = this.dialog.open(ShapeNameDialogComponent);
     const userShapeName = await dlg.afterClosed().toPromise();
     if (userShapeName) {
-      this.dataService.addToDataset(userShapeName, 'image');
+      this.dataService.addShape(userShapeName, 'image');
     }
   }
 }

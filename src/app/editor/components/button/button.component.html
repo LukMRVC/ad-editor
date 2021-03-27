@@ -16,8 +16,17 @@
           <mat-icon>text_fields</mat-icon> Text
         </ng-template>
 
+        <!-- TODO: Fix this -->
         <!-- Tab text content -->
         <div fxLayout="column" style="margin-top: .5rem" fxLayoutGap="0.5rem">
+
+            <mat-form-field fxFlex appearance="outline">
+              <mat-label>CTA content</mat-label>
+              <textarea matInput (input)="konva.changeButton('text', { text: $event.target.value })"></textarea>
+<!--              <textarea (input)="konva.changeButton('text', { text: $event.target.value })-->
+<!--                      changeValue(dataset.key, shapeInfo, $event)" [value]="shapeInfo.shapeConfig.text"-->
+<!--                        matInput [placeholder]="shapeInfo.userShapeName + ' content'" ></textarea>-->
+            </mat-form-field>
 
           <!-- Text font chooser -->
           <app-font-chooser (fontFamilyLoaded)="konva.changeButton('text', { fontFamily: $event })"></app-font-chooser>

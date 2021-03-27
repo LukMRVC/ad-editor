@@ -12,8 +12,7 @@ import {ShapeInformation} from '@core/models/dataset';
 
 // TODO: Add skewing
 // TODO: Fillable background color, gradients, watermarks
-// TODO: Groupovani obrazku
-
+// TODO: Groupovani
 @Injectable({
   providedIn: 'root',
 })

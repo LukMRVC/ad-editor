@@ -24,6 +24,7 @@ export interface ShapeInformation {
   isText?: boolean;
   isImage?: boolean;
   isButton?: boolean;
+  shapeType?: string;
   shapeConfig?: Konva.ShapeConfig;
   bannerShapeConfig?: Map<number, Konva.ShapeConfig>;
 }

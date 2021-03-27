@@ -6,6 +6,7 @@ import {UploadedImage} from '@core/services/image-gallery.service';
 import {ShapeDisplayDialogComponent} from '@shared/components/shape-display-dialog.component';
 import {KonvaService} from '@core/services/konva.service';
 import {ShapeInformation} from '@core/models/dataset';
+import {ShapeNameDialogComponent} from '../shape-name-dialog.component';
 
 @Component({
   selector: 'app-shape-data',
@@ -27,17 +28,12 @@ export class ShapeDataComponent implements OnInit {
     this.selectedSet = this.dataService.datasets.keys().next().value;
   }
 
-  changeValue(datasetKey: string, shapeInfo: ShapeInformation, $event: Event): void {
-    this.dataService.changeValue(datasetKey, shapeInfo, ($event.target as HTMLInputElement).value);
-  }
-
   async openGallery(datasetKey: string, shapeInfo: ShapeInformation): Promise<void> {
     const dlg = this.dialog.open(ImageGalleryDialogComponent, { width: '70%' });
     const img: UploadedImage|string = await dlg.afterClosed().toPromise();
     if (img) {
       this.dataService.changeValue(datasetKey, shapeInfo, (img as UploadedImage).src);
     }
-    // console.log(imgSrc);
   }
 
   changeDataset(key: string): void {
@@ -45,10 +41,19 @@ export class ShapeDataComponent implements OnInit {
     this.dataService.setActiveDataset(key);
   }
 
-  async displayOptions(dataset: ShapeInformation[]): Promise<void> {
-    const dlg = this.dialog.open(ShapeDisplayDialogComponent, { maxWidth: '70%', minWidth: '50%', data: dataset });
-    const result = await dlg.afterClosed().toPromise();
-    // console.log(result);
-    this.konva.redrawShapes();
+  // TODO: move to corresponding shape name
+  // async displayOptions(dataset: ShapeInformation[]): Promise<void> {
+  //   const dlg = this.dialog.open(ShapeDisplayDialogComponent, { maxWidth: '70%', minWidth: '50%', data: dataset });
+  //   const result = await dlg.afterClosed().toPromise();
+  //   // console.log(result);
+  //   this.konva.redrawShapes();
+  // }
+
+  async addShape(shapeType: 'image'|'text'|'rect'|'circle'): Promise<void> {
+    const dlg = this.dialog.open(ShapeNameDialogComponent);
+    const userShapeName = await dlg.afterClosed().toPromise();
+    if (userShapeName) {
+      this.dataService.addShape(userShapeName, shapeType);
+    }
   }
 }

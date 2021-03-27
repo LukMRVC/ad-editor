@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, HostListener, OnInit, ViewChild} from '@angular/core';
 import {FileSystemFileEntry, NgxFileDropEntry} from 'ngx-file-drop';
 import {KonvaService} from '@core/services/konva.service';
 import {MatSliderChange} from '@angular/material/slider';
@@ -39,21 +39,31 @@ export class BackgroundComponent implements OnInit, AfterViewInit {
   gradientStage: Konva.Stage;
   gradientBackgroundRect: Konva.Rect;
   gradientPoints: Konva.Shape[] = [];
+  layer: Konva.Layer;
 
-  fillColor: Color = new Color(255, 0, 0, 255);
-  defaultFillColour = new Color(255, 0, 0, 255);
-  defaultGradientColor = new Color(255, 255, 255, 0);
+  fillColor: Color = new Color(255, 255, 255, 255);
+  defaultFillColour = new Color(255, 255, 255, 255);
+  defaultGradientColor = new Color(255, 0, 0, 255);
   fillStyle = 'color';
-  radialGradientRadius = 50;
+
+  radialGradientEndRadius = 50;
+  radialGradientStartRadius = 0;
   activeDataset = null;
   logoShapeInfo = null;
+
+  touchUi = false;
+
+  // must alternate number and color
+  colorStops: any[] = [];
 
   constructor(
     public konva: KonvaService,
     public imageService: ImageGalleryService,
     public dialog: MatDialog,
     public dataService: BannerDataService,
-  ) { }
+  ) {
+    this.onScreenResize();
+  }
 
   ngOnInit(): void {
     this.activeDataset = this.dataService.getActiveDataset();
@@ -62,7 +72,7 @@ export class BackgroundComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.gradientStage = new Konva.Stage({ container: 'background-preview-stage', width: 200, height: 200 });
-    const layer = new Konva.Layer({ id: 'grad-1' });
+    this.layer = new Konva.Layer({ id: 'grad-1' });
 
     this.gradientPoints.push(new Konva.Rect({
       id: 'grad:0',
@@ -137,20 +147,20 @@ export class BackgroundComponent implements OnInit, AfterViewInit {
       fill: this.defaultFillColour.toHex8String(),
       listening: false,
       fillRadialGradientStartPoint: { x: this.gradientPoints[2].x(), y: this.gradientPoints[2].y() },
-      fillRadialGradientStartRadius: 0,
+      fillRadialGradientStartRadius: this.radialGradientStartRadius,
       fillRadialGradientEndPoint: { x: this.gradientPoints[2].x() + 10, y: this.gradientPoints[2].y() + 10 },
-      fillRadialGradientEndRadius: (this.radialGradientRadius / 100) * this.gradientStage.width(),
+      fillRadialGradientEndRadius: (this.radialGradientEndRadius / 100) * this.gradientStage.width(),
       fillRadialGradientColorStops: [0, this.defaultGradientColor.toHex8String(), 1, this.fillColor.toHexString()],
       fillLinearGradientStartPoint: { x: this.gradientPoints[0].x(), y: this.gradientPoints[0].y() },
       fillLinearGradientEndPoint: { x: this.gradientPoints[1].x(), y: this.gradientPoints[1].y() },
       fillLinearGradientColorStops: [0, this.defaultGradientColor.toHex8String(), 1, this.fillColor.toHexString()],
     });
 
-    layer.add(this.gradientBackgroundRect);
-    layer.add(this.gradientPoints[0]);
-    layer.add(this.gradientPoints[1]);
-    layer.add(this.gradientPoints[2]);
-    this.gradientStage.add(layer);
+    this.layer.add(this.gradientBackgroundRect);
+    this.layer.add(this.gradientPoints[0]);
+    this.layer.add(this.gradientPoints[1]);
+    this.layer.add(this.gradientPoints[2]);
+    this.gradientStage.add(this.layer);
     this.gradientStage.draw();
   }
 
@@ -162,19 +172,24 @@ export class BackgroundComponent implements OnInit, AfterViewInit {
     }
   }
 
-  fillColorChanged(ev: NgxMatColorPickerInputEvent): void {
+  fillColorChanged(ev?: NgxMatColorPickerInputEvent): void {
     const fillAttributes = {
       fill: this.fillColor.toHex8String(),
-      alpha: ev.value.a,
-      fillLinearGradientColorStops: [0, this.defaultGradientColor.toHex8String() , 1, this.fillColor.toHex8String()],
-      fillRadialGradientColorStops: [0, this.defaultGradientColor.toHex8String(), 1, this.fillColor.toHexString()],
+      alpha: ev?.value?.a ?? 1,
+      fillLinearGradientColorStops:
+        [0, this.defaultGradientColor.toHex8String()]
+          .concat(this.colorStops).concat([1, this.fillColor.toHex8String()]),
+
+      fillRadialGradientColorStops:
+        [0, this.defaultGradientColor.toHex8String()]
+          .concat(this.colorStops).concat([1, this.fillColor.toHex8String()]),
     };
     this.konva.selectedNodes.forEach(node => {
       node.setAttrs(fillAttributes);
     });
     this.gradientBackgroundRect.setAttrs(fillAttributes);
-    this.konva.redraw();
     this.gradientStage.batchDraw();
+    // this.konva.redraw();
     // this.konva.updateSelected({ fill: ev.value.toHex8String(true), alpha: ev.value.a });
     // this.konva.updateSelectedFillColor(ev.value);
   }
@@ -242,7 +257,7 @@ export class BackgroundComponent implements OnInit, AfterViewInit {
         fillRadialGradientStartPoint: calculatedCoordinates(2),
         fillRadialGradientEndPoint: calculatedCoordinates(2),
         fillRadialGradientStartRadius: 0,
-        fillRadialGradientEndRadius: (this.radialGradientRadius / 100) * node.width(),
+        fillRadialGradientEndRadius: (this.radialGradientEndRadius / 100) * node.width(),
         fillRadialGradientColorStops: [0, this.defaultGradientColor.toHex8String(), 1, this.fillColor.toHexString()],
       });
     });
@@ -250,8 +265,12 @@ export class BackgroundComponent implements OnInit, AfterViewInit {
   }
 
   radialGradientRadiusChanged($event: MatSliderChange): void {
-    this.gradientBackgroundRect.fillRadialGradientEndRadius((this.radialGradientRadius / 100) * this.gradientBackgroundRect.width());
-    this.konva.selectedNodes.forEach(node => node.setAttr('fillRadialGradientEndRadius', (this.radialGradientRadius / 100) * node.width()));
+    this.gradientBackgroundRect
+      .fillRadialGradientStartRadius((this.radialGradientStartRadius / 100) * this.gradientBackgroundRect.width());
+    this.gradientBackgroundRect
+      .fillRadialGradientEndRadius((this.radialGradientEndRadius / 100) * this.gradientBackgroundRect.width());
+    this.konva.selectedNodes
+      .forEach(node => node.setAttr('fillRadialGradientEndRadius', (this.radialGradientEndRadius / 100) * node.width()));
     this.konva.redraw();
     this.gradientStage.batchDraw();
   }
@@ -267,5 +286,25 @@ export class BackgroundComponent implements OnInit, AfterViewInit {
     this.gradientBackgroundRect.setAttrs(fillAttributes);
     this.konva.redraw();
     this.gradientStage.batchDraw();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onScreenResize(event?): void {
+    this.touchUi = window.innerWidth < 720;
+  }
+
+  addColorStop(): void {
+    const randomColor = `#${Math.floor(Math.random() * 16_777_215).toString(16)}`.padEnd(7, '0');
+    console.log(randomColor);
+    this.colorStops.push(0.5, randomColor);
+    this.fillColorChanged();
+  }
+
+  changeColorStop(): void {
+    this.fillColorChanged();
+  }
+
+  trackByIdx(index: number, obj: any): any {
+    return index;
   }
 }

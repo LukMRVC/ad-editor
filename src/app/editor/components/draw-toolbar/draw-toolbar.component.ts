@@ -10,35 +10,13 @@ import {BannerDataService} from '@core/services/banner-data.service';
   templateUrl: './draw-toolbar.component.html',
   styleUrls: ['./draw-toolbar.component.scss']
 })
-export class DrawToolbarComponent implements OnInit {
+export class DrawToolbarComponent {
 
   constructor(
     public konva: KonvaService,
     public dialog: MatDialog,
     public dataService: BannerDataService,
   ) { }
-
-  ngOnInit(): void {}
-
-  dragEnd($event: CdkDragEnd): void {
-    console.log($event);
-  }
-
-  async addText(): Promise<void> {
-    const dlg = this.dialog.open(ShapeNameDialogComponent);
-    const userShapeName = await dlg.afterClosed().toPromise();
-    if (userShapeName) {
-      this.dataService.addShape(userShapeName, 'text');
-    }
-  }
-
-  async addImage(): Promise<void> {
-    const dlg = this.dialog.open(ShapeNameDialogComponent);
-    const userShapeName = await dlg.afterClosed().toPromise();
-    if (userShapeName) {
-      this.dataService.addShape(userShapeName, 'image');
-    }
-  }
 }
 
 

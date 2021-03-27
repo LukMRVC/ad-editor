@@ -84,9 +84,10 @@ export class BannerDataService {
     return this.datasets.find(dataset => dataset.datasetName === this.activeDataset)?.shapes ?? [];
   }
 
-  public addShape(userShapeName: string, shapeType: 'text'|'image'): void {
+  public addShape(userShapeName: string, shapeType: 'text'|'image'|'rect'|'circle'): void {
     this.userShapes.push({
       userShapeName,
+      shapeType,
       isText: shapeType === 'text',
       isImage: shapeType === 'image',
       shapeConfig: {
@@ -95,6 +96,7 @@ export class BannerDataService {
     });
     this.template.shapes.push({
       userShapeName,
+      shapeType,
       isText: shapeType === 'text',
       isImage: shapeType === 'image',
       shapeConfig: {
@@ -104,6 +106,7 @@ export class BannerDataService {
     for (const dataset of this.datasets) {
       dataset.shapes.push({
         userShapeName,
+        shapeType,
         isText: shapeType === 'text',
         isImage: shapeType === 'image',
         shapeConfig: {

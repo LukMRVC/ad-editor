@@ -12,6 +12,7 @@ import { HideableDirective } from './directives/hideable.directive';
 import { ShapeDisplayDialogComponent } from './components/shape-display-dialog.component';
 import { SlugifyPipe } from './pipes/slugify.pipe';
 import { UnslugifyPipe } from './pipes/unslugify.pipe';
+import { EvenOddPipe } from './pipes/even-odd.pipe';
 
 
 @NgModule({
@@ -20,7 +21,8 @@ import { UnslugifyPipe } from './pipes/unslugify.pipe';
     HideableDirective,
     ShapeDisplayDialogComponent,
     SlugifyPipe,
-    UnslugifyPipe
+    UnslugifyPipe,
+    EvenOddPipe
   ],
   imports: [
     CommonModule,
@@ -41,6 +43,7 @@ import { UnslugifyPipe } from './pipes/unslugify.pipe';
     HideableDirective,
     MaterialModule,
     FlexLayoutModule,
+    EvenOddPipe,
   ],
   entryComponents: [
     ImageGalleryDialogComponent,

@@ -15,8 +15,7 @@ import {
   faLayerGroup,
   faArrowsAltH,
   faArrowsAltV,
-  faLongArrowAltUp, faLongArrowAltDown, faAngleDoubleUp, faAngleDoubleDown, faAlignCenter, faAlignLeft,
-  faAlignRight, faAlignJustify
+  faLongArrowAltUp, faLongArrowAltDown, faAngleDoubleUp, faAngleDoubleDown,
 } from '@fortawesome/free-solid-svg-icons';
 import { LogoComponent } from './components/logo/logo.component';
 import { HeadlineComponent } from './components/headline/headline.component';
@@ -32,6 +31,7 @@ import { ShapeDataComponent } from './components/shape-data/shape-data.component
 import { ShapeNameDialogComponent } from './components/shape-name-dialog.component';
 import { TextStyleComponent } from './components/styling/text/text-style.component';
 import { StrokeComponent } from './components/styling/stroke.component';
+import { ShapeBgColorComponent } from './components/styling/shape-bg-color.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +53,7 @@ import { StrokeComponent } from './components/styling/stroke.component';
     ShapeNameDialogComponent,
     TextStyleComponent,
     StrokeComponent,
+    ShapeBgColorComponent,
   ],
   imports: [
     CommonModule,

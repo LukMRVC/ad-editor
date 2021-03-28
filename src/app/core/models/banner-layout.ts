@@ -26,7 +26,6 @@ export class Banner {
     objectDimensions: Dimension2D,
     scale: { scaleX: number, scaleY: number } = {scaleX: 1, scaleY: 1}
   ): Point2D {
-
     let widthDelta = (this.layout.dimensions.width - (objectDimensions.width * scale.scaleX));
     if (widthDelta <= 0) {
       widthDelta = this.layout.dimensions.width;

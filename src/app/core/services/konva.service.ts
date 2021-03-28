@@ -9,6 +9,7 @@ import {FilterChangedEvent} from '../../editor/components/image-filter.component
 import {BannerDataService} from '@core/services/banner-data.service';
 import {ImageService} from '@core/services/drawing/image.service';
 import {ShapeInformation} from '@core/models/dataset';
+import {$e} from 'codelyzer/angular/styles/chars';
 
 // TODO: Add skewing
 // TODO: Fillable background color, gradients, watermarks
@@ -425,7 +426,7 @@ export class KonvaService {
 
   public drawBanners(): void {
     if (this.canvas) {
-      console.log('Drawing banners');
+      // console.log('Drawing banners');
       for (const bannerGroup of this.bannerGroups) {
         bannerGroup.group.destroy();
       }
@@ -469,8 +470,6 @@ export class KonvaService {
         label.name('banner-label');
         label.y( label.y() - label.height() );
         label.x( posX + banner.layout.dimensions.width - label.width() );
-        bg.cache();
-        label.cache();
 
         group.add(bg, label);
 
@@ -990,5 +989,40 @@ export class KonvaService {
       }
 
     }
+  }
+
+  updateBackground($event: Konva.ShapeConfig): void {
+    // console.log($event);
+    const pixelPoints = {
+      fillLinearGradientStartPoint: undefined,
+      fillLinearGradientEndPoint: undefined,
+      fillRadialGradientStartPoint: undefined,
+      fillRadialGradientEndPoint: undefined,
+    };
+
+    const keysToDelete = [];
+    // Dont delete key directly to avoid Undefined behaviour
+    for (const key of Object.keys(pixelPoints)) {
+      if ( !(key in $event)) {
+        keysToDelete.push(key);
+      }
+    }
+
+    for (const key of keysToDelete) {
+      delete pixelPoints[key];
+    }
+
+    for (const [index, {bg, group}] of this.bannerGroups.entries()) {
+      for (const pointKey of Object.keys(pixelPoints)) {
+        pixelPoints[pointKey] = this.banners[index].getPixelPositionFromPercentage($event[pointKey], {width: 1, height: 1});
+      }
+      const radialGradientRadiuses = {
+        fillRadialGradientStartRadius: (($event.fillRadialGradientStartRadius ?? 0) / 100.0) * this.banners[index].layout.dimensions.width,
+        fillRadialGradientEndRadius: (($event.fillRadialGradientEndRadius ?? 0) / 100.0) * this.banners[index].layout.dimensions.width,
+      };
+
+      bg.setAttrs({...$event, ...pixelPoints, ...radialGradientRadiuses});
+    }
+    this.redraw();
   }
 }

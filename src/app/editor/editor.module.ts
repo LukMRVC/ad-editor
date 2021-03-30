@@ -32,6 +32,7 @@ import { ShapeNameDialogComponent } from './components/shape-name-dialog.compone
 import { TextStyleComponent } from './components/styling/text/text-style.component';
 import { StrokeComponent } from './components/styling/stroke.component';
 import { ShapeBgColorComponent } from './components/styling/shape-bg-color.component';
+import {ComponentStateService} from '@core/services/component-state.service';
 
 @NgModule({
   declarations: [
@@ -61,7 +62,9 @@ import { ShapeBgColorComponent } from './components/styling/shape-bg-color.compo
     EditorRoutingModule,
     FontAwesomeModule,
   ],
-
+  providers: [
+    ComponentStateService,
+  ]
 })
 export class EditorModule {
   constructor(lib: FaIconLibrary) {

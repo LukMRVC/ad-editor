@@ -3,7 +3,6 @@ import {BannerDataService} from '@core/services/banner-data.service';
 import {MatDialog} from '@angular/material/dialog';
 import {ImageGalleryDialogComponent} from '@shared/components/image-gallery-dialog.component';
 import {UploadedImage} from '@core/services/image-gallery.service';
-import {ShapeDisplayDialogComponent} from '@shared/components/shape-display-dialog.component';
 import {KonvaService} from '@core/services/konva.service';
 import {ShapeInformation} from '@core/models/dataset';
 import {ShapeNameDialogComponent} from '../shape-name-dialog.component';
@@ -11,7 +10,7 @@ import {ShapeNameDialogComponent} from '../shape-name-dialog.component';
 @Component({
   selector: 'app-shape-data',
   templateUrl: './shape-data.component.html',
-  styleUrls: ['./shape-data.component.scss']
+  styleUrls: ['./shape-data.component.scss'],
 })
 export class ShapeDataComponent implements OnInit {
 

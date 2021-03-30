@@ -4,12 +4,13 @@ import {
   Component,
   EventEmitter,
   HostListener,
-  Input,
+  Input, OnDestroy,
   OnInit,
   Output
 } from '@angular/core';
 import Konva from 'konva';
 import {Color, NgxMatColorPickerInputEvent} from '@angular-material-components/color-picker';
+import {ComponentStateService} from '@core/services/component-state.service';
 
 @Component({
   selector: 'app-shape-bg-color',
@@ -98,9 +99,9 @@ import {Color, NgxMatColorPickerInputEvent} from '@angular-material-components/c
   styles: [
     '.preview-stage { border: 1px solid #a0a0a0;}',
     '.slider-label { margin-top: 15px!important; }',
-  ]
+  ],
 })
-export class ShapeBgColorComponent implements OnInit, AfterViewInit, AfterContentInit {
+export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Input() shape: string;
 
@@ -127,79 +128,86 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, AfterConten
   editableColorStopIdx = -1;
   colorStopEditableColor = new Color(255, 255, 255, 255);
 
-  constructor() {
+  constructor(
+    private stateService: ComponentStateService
+  ) {
     this.onScreenResize();
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.stateService.recoverState(`shape-bg-${this.shape}`, this);
+    console.log(this.colorStops);
+    console.log(this.fillStyle);
+  }
 
   ngAfterViewInit(): void {
-    console.log('BG - View init');
     this.gradientStage = new Konva.Stage({ container: `${this.shape}-gradient-stage`, width: this.stageWidth, height: this.stageHeight });
     this.layer = new Konva.Layer({ id: 'grad-1' });
 
-    this.gradientPoints.push(new Konva.Rect({
-      id: 'grad:0',
-      x: 0,
-      y: 0,
-      width: 10,
-      height: 10,
-      fill: '#f0d732',
-      strokeWidth: 1,
-      stroke: 'black',
-      opacity: 0,
-      draggable: true,
-      dragBoundFunc: (pos) => {
-        const newX = pos.x < 0 ? 0 : (pos.x > 190 ? 190 : pos.x);
-        const newY = pos.y < 0 ? 0 : (pos.y > 190 ? 190 : pos.y);
-        return {
-          x: newX,
-          y: newY,
-        };
-      }
-    }));
+    if ( !this.gradientPoints.length) {
+      this.gradientPoints.push(new Konva.Rect({
+        id: 'grad:0',
+        x: 0,
+        y: 0,
+        width: 10,
+        height: 10,
+        fill: '#f0d732',
+        strokeWidth: 1,
+        stroke: 'black',
+        opacity: 0,
+        draggable: true,
+        dragBoundFunc: (pos) => {
+          const newX = pos.x < 0 ? 0 : (pos.x > 190 ? 190 : pos.x);
+          const newY = pos.y < 0 ? 0 : (pos.y > 190 ? 190 : pos.y);
+          return {
+            x: newX,
+            y: newY,
+          };
+        }
+      }));
 
-    this.gradientPoints.push(new Konva.Rect({
-      id: 'grad:1',
-      x: this.gradientStage.width() - 10,
-      y: this.gradientStage.height() - 10,
-      width: 10,
-      height: 10,
-      fill: '#f0d732',
-      strokeWidth: 1,
-      stroke: 'black',
-      opacity: 0,
-      draggable: true,
-      dragBoundFunc: (pos) => {
-        const newX = pos.x < 0 ? 0 : (pos.x > 190 ? 190 : pos.x);
-        const newY = pos.y < 0 ? 0 : (pos.y > 190 ? 190 : pos.y);
-        return {
-          x: newX,
-          y: newY,
-        };
-      }
-    }));
+      this.gradientPoints.push(new Konva.Rect({
+        id: 'grad:1',
+        x: this.gradientStage.width() - 10,
+        y: this.gradientStage.height() - 10,
+        width: 10,
+        height: 10,
+        fill: '#f0d732',
+        strokeWidth: 1,
+        stroke: 'black',
+        opacity: 0,
+        draggable: true,
+        dragBoundFunc: (pos) => {
+          const newX = pos.x < 0 ? 0 : (pos.x > 190 ? 190 : pos.x);
+          const newY = pos.y < 0 ? 0 : (pos.y > 190 ? 190 : pos.y);
+          return {
+            x: newX,
+            y: newY,
+          };
+        }
+      }));
 
-    this.gradientPoints.push(new Konva.Rect({
-      id: 'grad:2',
-      x: this.gradientStage.width() / 2,
-      y: this.gradientStage.height() / 2,
-      width: 10,
-      height: 10,
-      fill: '#f0d732',
-      strokeWidth: 1,
-      stroke: 'black',
-      opacity: 0,
-      draggable: true,
-      dragBoundFunc: (pos) => {
-        const newX = pos.x < 0 ? 0 : (pos.x > 190 ? 190 : pos.x);
-        const newY = pos.y < 0 ? 0 : (pos.y > 190 ? 190 : pos.y);
-        return {
-          x: newX,
-          y: newY,
-        };
-      }
-    }));
+      this.gradientPoints.push(new Konva.Rect({
+        id: 'grad:2',
+        x: this.gradientStage.width() / 2,
+        y: this.gradientStage.height() / 2,
+        width: 10,
+        height: 10,
+        fill: '#f0d732',
+        strokeWidth: 1,
+        stroke: 'black',
+        opacity: 0,
+        draggable: true,
+        dragBoundFunc: (pos) => {
+          const newX = pos.x < 0 ? 0 : (pos.x > 190 ? 190 : pos.x);
+          const newY = pos.y < 0 ? 0 : (pos.y > 190 ? 190 : pos.y);
+          return {
+            x: newX,
+            y: newY,
+          };
+        }
+      }));
+    }
     this.gradientPoints.forEach(p => p.on('dragmove', () => {  this.handleGradPointDrag(); }));
     this.gradientPoints.forEach(p => p.on('dragend', () => {  this.setSelectedFillStyle(); }));
 
@@ -209,6 +217,7 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, AfterConten
       x: 0,
       y: 0,
       fill: this.defaultFillColour.toHex8String(),
+      fillPriority: this.fillStyle ?? 'color',
       listening: false,
       fillRadialGradientStartPoint: { x: this.gradientPoints[2].x(), y: this.gradientPoints[2].y() },
       fillRadialGradientStartRadius: this.radialGradientStartRadius,
@@ -228,8 +237,15 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, AfterConten
     this.gradientStage.draw();
   }
 
-  ngAfterContentInit(): void {
-    console.log('BG - content init')
+  ngOnDestroy(): void {
+    this.stateService.saveState(`shape-bg-${this.shape}`, {
+      gradientPoints: this.gradientPoints,
+      fillColor: this.fillColor,
+      fillStyle: this.fillStyle,
+      radialGradientEndRadius: this.radialGradientEndRadius,
+      radialGradientStartRadius: this.radialGradientStartRadius,
+      colorStops: this.colorStops,
+    });
   }
 
   fillColorChanged(ev?: NgxMatColorPickerInputEvent): void {

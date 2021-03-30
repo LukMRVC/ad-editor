@@ -1,7 +1,6 @@
 import {AfterViewInit, Component, EventEmitter, HostListener, Input, OnInit, Output} from '@angular/core';
 import Konva from 'konva';
 import {Color, NgxMatColorPickerInputEvent} from '@angular-material-components/color-picker';
-import {MatSliderChange} from '@angular/material/slider';
 
 @Component({
   selector: 'app-shape-bg-color',
@@ -35,46 +34,49 @@ import {MatSliderChange} from '@angular/material/slider';
 
         <ng-container *ngIf="fillStyle !== 'color'">
           <h5>{{ shape | titlecase }} color stops</h5>
-
-          <mat-button-toggle-group fxFlexAlign="start" name="colorStops" aria-label="color stops">
-            <ng-container *ngFor="let colorStop of colorStops; index as i">
-              <mat-button-toggle (change)="setEditableColorStop($event.value)" [value]="i"  *ngIf="i % 2 === 1">
-                {{ i }}
-              </mat-button-toggle>
-            </ng-container>
-            <mat-button-toggle (click)="addColorStop()">
+          <div fxLayout="row nowrap" aria-label="Color stops">
+            <button (click)="setEditableColorStop(i)" *ngFor="let colorStop of colorStops; index as i"
+                    [style.backgroundColor]="colorStop.color"
+                    mat-button style="border-radius: 0">
+            </button>
+            <button mat-flat-button (click)="addColorStop()">
               <mat-icon>add</mat-icon>
-            </mat-button-toggle>
-          </mat-button-toggle-group>
+            </button>
+          </div>
 
           <div fxLayout="column nowrap">
-            <ng-container *ngFor="let colorStop of colorStops; let i = index;trackBy:trackByIdx">
-              <mat-form-field *ngIf="editableColorStopIdx === i" fxFlexOrder="1">
-                <mat-label>Color stop {{ i }}</mat-label>
-                <input [(ngModel)]="colorStopEditableColor" (keydown.enter)="colorStopPicker.close()" (focus)="colorStopPicker.open()"
-                       [ngxMatColorPicker]="colorStopPicker" (colorChange)="changeColorStopColor($event)" matInput #gradientColourInput>
-                <ngx-mat-color-toggle matSuffix [for]="colorStopPicker"></ngx-mat-color-toggle>
-                <ngx-mat-color-picker [defaultColor]="colorStopEditableColor" #colorStopPicker [touchUi]="touchUi"></ngx-mat-color-picker>
-              </mat-form-field>
+            <ng-container *ngFor="let colorStop of colorStops; let i = index; trackBy:trackByIdx">
+              <div fxLayout="row nowrap" fxLayoutAlign="start start" fxFlex fxLayoutGap=".5rem" fxFlexOrder="1">
+                <mat-form-field *ngIf="editableColorStopIdx === i" style="max-width: 80%">
+                  <mat-label>Color stop {{ i }}</mat-label>
+                  <input [(ngModel)]="colorStopEditableColor" (keydown.enter)="colorStopPicker.close()" (focus)="colorStopPicker.open()"
+                         [ngxMatColorPicker]="colorStopPicker" (colorChange)="changeColorStopColor($event)" matInput #gradientColourInput>
+                  <ngx-mat-color-toggle matSuffix [for]="colorStopPicker"></ngx-mat-color-toggle>
+                  <ngx-mat-color-picker [defaultColor]="colorStopEditableColor" #colorStopPicker [touchUi]="touchUi"></ngx-mat-color-picker>
+                </mat-form-field>
+
+                <button (click)="removeColorStop(i)" fxFlex *ngIf="editableColorStopIdx === i" mat-flat-button color="warn">
+                  <mat-icon>remove</mat-icon>
+                </button>
+              </div>
+
 
               <div *ngIf="i % 2 === 0" fxLayout="row nowrap" fxFlexOrder="2" fxLayoutAlign="start start" fxLayoutGap=".25rem">
                 <span class="slider-label">{{ i + 1 }}</span>
-                <mat-slider [(ngModel)]="colorStops[i]" (valueChange)="changeColorStop()" [value]="colorStop"
+                <mat-slider [(ngModel)]="colorStops[i].position" (valueChange)="changeColorStop()"
                             fxFill thumbLabel min="0" step="0.01" max="1"></mat-slider>
               </div>
 
             </ng-container>
           </div>
-
-
-
         </ng-container>
+
         <div fxLayout="column" fxFlex *ngIf="fillStyle === 'radial-gradient'">
           <span>Start gradient radius</span>
           <mat-slider thumbLabel (change)="radialGradientRadiusChanged()" [(ngModel)]="radialGradientStartRadius"
                       min="1" step="1" max="100" >
           </mat-slider>
-        </div>e
+        </div>
         <div fxLayout="column" fxFlex *ngIf="fillStyle === 'radial-gradient'">
           <span>End gradient radius</span>
           <mat-slider thumbLabel (change)="radialGradientRadiusChanged()" [(ngModel)]="radialGradientEndRadius"
@@ -112,7 +114,7 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit {
   touchUi = false;
 
   // must alternate number and color
-  colorStops: any[] = [];
+  colorStops: {position: number, color: string}[] = [];
   editableColorStopIdx = -1;
   colorStopEditableColor = new Color(255, 255, 255, 255);
 
@@ -218,7 +220,8 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit {
 
   fillColorChanged(ev?: NgxMatColorPickerInputEvent): void {
     const allColorStops = [0, this.defaultGradientColor.toHex8String()]
-        .concat(this.colorStops).concat([1, this.fillColor.toHex8String()]);
+      .concat(this.colorStops.flatMap((stop) => Object.values(stop) ))
+      .concat([1, this.fillColor.toHex8String()]);
     const getPoint2D = (shape) => ({x: shape.x(), y: shape.y()});
     const getPoint2DPercentage = (shape, w, h) => ({x: 100 * (shape.x() / w), y: 100 * (shape.y() / h)});
     const fillAttributes = {
@@ -338,7 +341,7 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit {
 
   addColorStop(): void {
     const randomColor = `#${Math.floor(Math.random() * 16_777_215).toString(16)}`.padEnd(9, 'f');
-    this.colorStops.push(0.5, randomColor);
+    this.colorStops.push({position: 0.5, color: randomColor});
     this.fillColorChanged();
   }
 
@@ -351,7 +354,7 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit {
   }
 
   changeColorStopColor($event: NgxMatColorPickerInputEvent): void {
-    this.colorStops[this.editableColorStopIdx] = $event.value.toHex8String();
+    this.colorStops[this.editableColorStopIdx].color = $event.value.toHex8String();
     this.fillColorChanged();
   }
 
@@ -368,8 +371,13 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit {
     };
 
     this.editableColorStopIdx = colorStopIndex;
-    const rgb = hexToRgb(this.colorStops[this.editableColorStopIdx]);
-    this.colorStopEditableColor = new Color(rgb.r, rgb.b, rgb.g, rgb?.a);
+    const rgb = hexToRgb(this.colorStops[this.editableColorStopIdx].color);
+    this.colorStopEditableColor = new Color(rgb.r, rgb.g, rgb.b, rgb?.a);
   }
 
+  removeColorStop(index: number): void {
+    this.colorStops.splice(index, 1);
+    this.fillColorChanged();
+    this.editableColorStopIdx = null;
+  }
 }

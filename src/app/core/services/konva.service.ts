@@ -4,7 +4,7 @@ import {StageConfig} from 'konva/types/Stage';
 import {LayerConfig} from 'konva/types/Layer';
 import {TransformerConfig} from 'konva/types/shapes/Transformer';
 import {RectConfig} from 'konva/types/shapes/Rect';
-import {Banner, Point2D} from '@core/models/banner-layout';
+import {Banner, Dimension2D, Point2D} from '@core/models/banner-layout';
 import {FilterChangedEvent} from '../../editor/components/image-filter.component';
 import {BannerDataService} from '@core/services/banner-data.service';
 import {ImageService} from '@core/services/drawing/image.service';
@@ -1012,16 +1012,28 @@ export class KonvaService {
       delete pixelPoints[key];
     }
 
+    // banner dimensions
+    const banDim = (dim: Dimension2D) => ({w: dim.width, h: dim.height});
+
     for (const [index, {bg, group}] of this.bannerGroups.entries()) {
       for (const pointKey of Object.keys(pixelPoints)) {
         pixelPoints[pointKey] = this.banners[index].getPixelPositionFromPercentage($event[pointKey], {width: 1, height: 1});
       }
+      // dimensions
+      const dims = banDim(this.banners[index].layout.dimensions);
+
       const radialGradientRadiuses = {
-        fillRadialGradientStartRadius: (($event.fillRadialGradientStartRadius ?? 0) / 100.0) * this.banners[index].layout.dimensions.width,
-        fillRadialGradientEndRadius: (($event.fillRadialGradientEndRadius ?? 0) / 100.0) * this.banners[index].layout.dimensions.width,
+        fillRadialGradientStartRadius: (($event.fillRadialGradientStartRadius ?? 0) / 100.0) *
+          (dims.w >= dims.h ? dims.w : dims.h),
+        fillRadialGradientEndRadius: (($event.fillRadialGradientEndRadius ?? 0) / 100.0) *
+          (dims.w >= dims.h ? dims.w : dims.h),
       };
 
-      bg.setAttrs({...$event, ...pixelPoints, ...radialGradientRadiuses});
+      if ('fillRadialGradientStartRadius' in $event) {
+        bg.setAttrs({...$event, ...pixelPoints, ...radialGradientRadiuses});
+      } else {
+        bg.setAttrs({...$event, ...pixelPoints,});
+      }
     }
     this.redraw();
   }

@@ -45,7 +45,9 @@ export class BackgroundComponent implements OnInit, OnDestroy {
     this.logoShapeInfo = this.activeDataset.find(s => s.userShapeName?.toLowerCase() === 'background');
 
     this.bgChanged.pipe(debounceTime(250))
-      .subscribe(bgAttributes => this.konva.updateBackground(bgAttributes));
+      .subscribe(bgAttributes => {
+        this.konva.updateBackgroundOfShape(bgAttributes, 'background');
+      });
   }
 
   ngOnDestroy(): void {

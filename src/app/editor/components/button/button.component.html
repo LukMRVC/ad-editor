@@ -1,4 +1,4 @@
-<mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none">
+<mat-expansion-panel expanded="true" class="mat-elevation-z0 expansion-panel radius-none">
   <mat-expansion-panel-header>
     <mat-panel-title>
       CTA
@@ -7,79 +7,83 @@
       <mat-icon>smart_button</mat-icon>
     </mat-panel-description>
   </mat-expansion-panel-header>
-  <ng-template matExpansionPanelContent>
-    <!-- Button panel content-->
-    <mat-tab-group dynamicHeight mat-align-tabs="start">
-      <mat-tab>
-        <!-- Tab label -->
-        <ng-template mat-tab-label>
-          <mat-icon>text_fields</mat-icon> Text
-        </ng-template>
 
-        <!-- Tab text content -->
-        <div fxLayout="column" style="margin-top: .5rem" fxLayoutGap="0.5rem">
+  <!-- Button panel content-->
+  <mat-tab-group dynamicHeight mat-align-tabs="start">
+    <mat-tab>
 
-            <mat-form-field fxFlex appearance="outline">
-              <mat-label>CTA content</mat-label>
-              <textarea matInput (input)="konva.changeButton('text', { text: $event.target.value })"></textarea>
+      <!-- Tab label -->
+      <ng-template mat-tab-label>
+        <mat-icon>text_fields</mat-icon> Text
+      </ng-template>
+
+      <!-- Tab text content -->
+      <div fxLayout="column" style="margin-top: .5rem" fxLayoutGap="0.5rem">
+
+          <mat-form-field fxFlex appearance="outline">
+            <mat-label>CTA content</mat-label>
+            <textarea matInput (input)="konva.changeButton('text', { text: $event.target.value })"></textarea>
 <!--              <textarea (input)="konva.changeButton('text', { text: $event.target.value })-->
 <!--                      changeValue(dataset.key, shapeInfo, $event)" [value]="shapeInfo.shapeConfig.text"-->
 <!--                        matInput [placeholder]="shapeInfo.userShapeName + ' content'" ></textarea>-->
-            </mat-form-field>
-
-          <!-- Text font chooser -->
-          <app-font-chooser (fontFamilyLoaded)="konva.changeButton('text', { fontFamily: $event })"></app-font-chooser>
-
-          <mat-form-field fxFlex appearance="outline">
-            <mat-label>Text color</mat-label>
-            <input [(ngModel)]="fontFillColor" (keydown.enter)="fontFillPicker.close()" (focus)="fontFillPicker.open()"
-                   [ngxMatColorPicker]="fontFillPicker"
-                   (colorChange)="konva.changeButton('text',{fill: fontFillColor.toHex8String()})" matInput #fillColourInput>
-            <ngx-mat-color-toggle matSuffix [for]="fontFillPicker"></ngx-mat-color-toggle>
-            <ngx-mat-color-picker defaultColor="#000" #fontFillPicker touchUi="false"></ngx-mat-color-picker>
           </mat-form-field>
 
+        <!-- Text font chooser -->
+        <app-font-chooser (fontFamilyLoaded)="konva.changeButton('text', { fontFamily: $event })"></app-font-chooser>
 
-          <app-text-h-alignment (alignmentChanged)="konva.changeButton('text', { align: $event })"></app-text-h-alignment>
-          <app-text-v-alignment (alignmentChanged)="konva.changeButton('text', { verticalAlign: $event})"></app-text-v-alignment>
-          <app-text-decoration
-            (decorationChanged)="konva.changeButton('text', { fontStyle: $event.fontStyle, textDecoration: $event.textDecoration})" >
-          </app-text-decoration>
+        <mat-form-field fxFlex appearance="outline">
+          <mat-label>Text color</mat-label>
+          <input [(ngModel)]="fontFillColor" (keydown.enter)="fontFillPicker.close()" (focus)="fontFillPicker.open()"
+                 [ngxMatColorPicker]="fontFillPicker"
+                 (colorChange)="konva.changeButton('text',{fill: fontFillColor.toHex8String()})" matInput #fillColourInput>
+          <ngx-mat-color-toggle matSuffix [for]="fontFillPicker"></ngx-mat-color-toggle>
+          <ngx-mat-color-picker defaultColor="#000" #fontFillPicker touchUi="false"></ngx-mat-color-picker>
+        </mat-form-field>
 
 
-          <div fxFlex fxLayout="column">
-            <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-              <label>Font size</label>
-              <span>{{ fontSize }}</span>
-            </div>
-            <mat-slider value="0" (change)="konva.changeButton('text', { fontScaling: $event.value })"
-                        min="-10" step="0.2" max="20" thumbLabel></mat-slider>
+        <app-text-h-alignment (alignmentChanged)="konva.changeButton('text', { align: $event })"></app-text-h-alignment>
+        <app-text-v-alignment (alignmentChanged)="konva.changeButton('text', { verticalAlign: $event})"></app-text-v-alignment>
+        <app-text-decoration
+          (decorationChanged)="konva.changeButton('text', { fontStyle: $event.fontStyle, textDecoration: $event.textDecoration})" >
+        </app-text-decoration>
+
+
+        <div fxFlex fxLayout="column">
+          <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
+            <label>Font size</label>
+            <span>{{ fontSize }}</span>
           </div>
-
-          <app-shadow shadowFor="Text" (shadowChange)="konva.changeButton('text', $event)"></app-shadow>
-
+          <mat-slider value="0" (change)="konva.changeButton('text', { fontScaling: $event.value })"
+                      min="-10" step="0.2" max="20" thumbLabel></mat-slider>
         </div>
-      </mat-tab>
-      <!-- /Tab text content-->
 
-      <!-- Tab style content -->
-      <mat-tab>
-        <!-- Tab style label -->
-        <ng-template mat-tab-label>
-          <mat-icon>palette</mat-icon> Style
-        </ng-template>
+        <app-shadow shadowFor="Text" (shadowChange)="konva.changeButton('text', $event)"></app-shadow>
+
+      </div>
+    </mat-tab>
+    <!-- /Tab text content-->
+
+    <!-- Tab style content -->
+    <mat-tab>
+
+      <!-- Tab style label -->
+      <ng-template mat-tab-label>
+        <mat-icon>palette</mat-icon> Style
+      </ng-template>
+      <ng-template matTabContent>
         <!-- Style tab content -->
         <div fxLayout="column"  fxLayoutGap="0.5rem">
+          <app-shape-bg-color (colorChanged)="backgroundChanged($event)" shape="button"></app-shape-bg-color>
 
-          <!-- Button fill color -->
-          <mat-form-field fxFlex style="margin-top: .25rem" appearance="outline">
-            <mat-label>Button color</mat-label>
-            <input [(ngModel)]="buttonFillColor" (keydown.enter)="buttonFillPicker.close()" (focus)="buttonFillPicker.open()"
-                   [ngxMatColorPicker]="buttonFillPicker"
-                   (colorChange)="konva.changeButton('style',{fill: buttonFillColor.toHex8String()})" matInput #fillColourInput>
-            <ngx-mat-color-toggle matSuffix [for]="buttonFillPicker"></ngx-mat-color-toggle>
-            <ngx-mat-color-picker defaultColor="#000" #buttonFillPicker touchUi="false"></ngx-mat-color-picker>
-          </mat-form-field>
+          <!--          &lt;!&ndash; Button fill color &ndash;&gt;-->
+  <!--          <mat-form-field fxFlex style="margin-top: .25rem" appearance="outline">-->
+  <!--            <mat-label>Button color</mat-label>-->
+  <!--            <input [(ngModel)]="buttonFillColor" (keydown.enter)="buttonFillPicker.close()" (focus)="buttonFillPicker.open()"-->
+  <!--                   [ngxMatColorPicker]="buttonFillPicker"-->
+  <!--                   (colorChange)="konva.changeButton('style',{fill: buttonFillColor.toHex8String()})" matInput #fillColourInput>-->
+  <!--            <ngx-mat-color-toggle matSuffix [for]="buttonFillPicker"></ngx-mat-color-toggle>-->
+  <!--            <ngx-mat-color-picker defaultColor="#000" #buttonFillPicker touchUi="false"></ngx-mat-color-picker>-->
+  <!--          </mat-form-field>-->
 
           <div fxFlex fxLayout="column">
             <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
@@ -100,15 +104,16 @@
                         [(ngModel)]="cornerRadius" min="0" step="1" max="40" thumbLabel></mat-slider>
           </div>
           <!-- /Corner radius -->
+
           <app-stroke strokeFor="Button" (strokeChange)="konva.changeButton('style', $event)"></app-stroke>
 
           <app-shadow shadowFor="Button" (shadowChange)="konva.changeButton('style', $event)"></app-shadow>
 
         </div>
         <!-- /Tab content -->
-      </mat-tab>
-      <!-- /Style tab -->
-    </mat-tab-group>
+      </ng-template>
+    </mat-tab>
+    <!-- /Style tab -->
+  </mat-tab-group>
 
-  </ng-template>
 </mat-expansion-panel>

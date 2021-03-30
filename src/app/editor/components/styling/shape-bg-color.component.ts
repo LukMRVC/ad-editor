@@ -1,4 +1,13 @@
-import {AfterViewInit, Component, EventEmitter, HostListener, Input, OnInit, Output} from '@angular/core';
+import {
+  AfterContentInit,
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnInit,
+  Output
+} from '@angular/core';
 import Konva from 'konva';
 import {Color, NgxMatColorPickerInputEvent} from '@angular-material-components/color-picker';
 
@@ -91,7 +100,7 @@ import {Color, NgxMatColorPickerInputEvent} from '@angular-material-components/c
     '.slider-label { margin-top: 15px!important; }',
   ]
 })
-export class ShapeBgColorComponent implements OnInit, AfterViewInit {
+export class ShapeBgColorComponent implements OnInit, AfterViewInit, AfterContentInit {
 
   @Input() shape: string;
 
@@ -125,6 +134,7 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit {
   ngOnInit(): void { }
 
   ngAfterViewInit(): void {
+    console.log('BG - View init');
     this.gradientStage = new Konva.Stage({ container: `${this.shape}-gradient-stage`, width: this.stageWidth, height: this.stageHeight });
     this.layer = new Konva.Layer({ id: 'grad-1' });
 
@@ -216,6 +226,10 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit {
     this.layer.add(this.gradientPoints[2]);
     this.gradientStage.add(this.layer);
     this.gradientStage.draw();
+  }
+
+  ngAfterContentInit(): void {
+    console.log('BG - content init')
   }
 
   fillColorChanged(ev?: NgxMatColorPickerInputEvent): void {

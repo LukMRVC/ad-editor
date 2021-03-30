@@ -811,12 +811,19 @@ export class KonvaService {
       shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
     }
 
+    const btnsToChange = this.shouldTransformRelatives
+      ? [] : this.transformers.nodes().filter(s => s.name() === 'button');
+
     if (changeOf === 'style') {
 
-      const btnsToChange = this.shouldTransformRelatives
-        ? [] : this.transformers.nodes().filter(s => s.name() === 'button');
-
       for (const [index, bannerGroup] of this.bannerGroups.entries()) {
+        const btn =  bannerGroup.group.findOne('.button');
+        if (btnsToChange.length) {
+          if ( !btnsToChange.includes(btn)) {
+            continue;
+          }
+        }
+
         const tag = bannerGroup.group.findOne('.button-tag');
         const shouldDraw = shape.bannerShapeConfig?.get(index)?.shouldDraw ?? true;
         if (!tag) {
@@ -834,8 +841,14 @@ export class KonvaService {
       }
 
     } else {
-
       for (const [index, bannerGroup] of this.bannerGroups.entries()) {
+        const btn =  bannerGroup.group.findOne('.button');
+        const tag = bannerGroup.group.findOne('.button-tag');
+        if (btnsToChange.length) {
+          if ( !btnsToChange.includes(btn)) {
+            continue;
+          }
+        }
         const text = bannerGroup.group.findOne('.button-text');
         // const tag = bannerGroup.group.findOne('.button-tag');
         const shouldDraw = shape.bannerShapeConfig?.get(index)?.shouldDraw ?? true;
@@ -856,9 +869,7 @@ export class KonvaService {
         text.setAttrs(config);
         const btnSavedCfg = shape.bannerShapeConfig.get(index);
         btnSavedCfg.textConfig = text.getAttrs();
-        // console.log(text.getAttrs());
-        // console.log(shape.bannerShapeConfig.get(index));
-        // tag.cache();
+        tag.cache();
       }
     }
 
@@ -991,7 +1002,11 @@ export class KonvaService {
     }
   }
 
-  updateBackground($event: Konva.ShapeConfig): void {
+  public getPointPixelPositionFromPercentage(percentage: Point2D, maxDimensions: Dimension2D): Point2D {
+    return {x: (percentage.x / 100) * maxDimensions.width, y: (percentage.y / 100) * maxDimensions.height };
+  }
+
+  updateBackgroundOfShape($event: Konva.ShapeConfig, slugifiedShapeName: string): void {
     // console.log($event);
     const pixelPoints = {
       fillLinearGradientStartPoint: undefined,
@@ -1012,27 +1027,33 @@ export class KonvaService {
       delete pixelPoints[key];
     }
 
-    // banner dimensions
-    const banDim = (dim: Dimension2D) => ({w: dim.width, h: dim.height});
-
+    // shape dimensions
+    const shapeDim = (shape: Konva.Node): Dimension2D => ({width: shape.width(), height: shape.height()});
     for (const [index, {bg, group}] of this.bannerGroups.entries()) {
+      const shape = group.findOne(`.${slugifiedShapeName}`);
+      if (!shape) {
+        continue;
+      }
       for (const pointKey of Object.keys(pixelPoints)) {
-        pixelPoints[pointKey] = this.banners[index].getPixelPositionFromPercentage($event[pointKey], {width: 1, height: 1});
+        pixelPoints[pointKey] = this.getPointPixelPositionFromPercentage($event[pointKey], shapeDim(shape));
       }
       // dimensions
-      const dims = banDim(this.banners[index].layout.dimensions);
+      const dims = shapeDim(shape);
 
       const radialGradientRadiuses = {
         fillRadialGradientStartRadius: (($event.fillRadialGradientStartRadius ?? 0) / 100.0) *
-          (dims.w >= dims.h ? dims.w : dims.h),
+          (dims.width >= dims.height ? dims.width : dims.height),
         fillRadialGradientEndRadius: (($event.fillRadialGradientEndRadius ?? 0) / 100.0) *
-          (dims.w >= dims.h ? dims.w : dims.h),
+          (dims.width >= dims.height ? dims.width : dims.height),
       };
 
       if ('fillRadialGradientStartRadius' in $event) {
-        bg.setAttrs({...$event, ...pixelPoints, ...radialGradientRadiuses});
+        shape.setAttrs({ ...$event, ...pixelPoints, ...radialGradientRadiuses });
       } else {
-        bg.setAttrs({...$event, ...pixelPoints,});
+        shape.setAttrs({ ...$event, ...pixelPoints });
+      }
+      if (shape.isCached()) {
+        shape.cache();
       }
     }
     this.redraw();

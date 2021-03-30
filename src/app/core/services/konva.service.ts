@@ -9,10 +9,12 @@ import {FilterChangedEvent} from '../../editor/components/image-filter.component
 import {BannerDataService} from '@core/services/banner-data.service';
 import {ImageService} from '@core/services/drawing/image.service';
 import {ShapeInformation} from '@core/models/dataset';
-import {$e} from 'codelyzer/angular/styles/chars';
+import {ShapeFactoryService} from '@core/services/shape-factory.service';
 
 // TODO: Add skewing
-// TODO: Fillable background color, gradients, watermarks
+// TODO: Add simple shapes
+// TODO: Fix scaling based on percentage dimensions
+// TODO: Refactor this class and separate concenrns
 // TODO: Groupovani
 @Injectable({
   providedIn: 'root',
@@ -22,6 +24,7 @@ export class KonvaService {
   constructor(
     public dataService: BannerDataService,
     public imageService: ImageService,
+    private shapeFactory: ShapeFactoryService,
   ) {
     this.shapes = this.dataService.getActiveDataset();
 
@@ -52,8 +55,9 @@ export class KonvaService {
         }
       } else if (updatedShape.isButton) {
         this.changeButton('text', updatedShape.shapeConfig);
+      } else {
+        this.shapeFactory.createShape(updatedShape.shapeConfig);
       }
-
     });
   }
 

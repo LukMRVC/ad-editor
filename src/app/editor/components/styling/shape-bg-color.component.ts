@@ -135,8 +135,6 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.stateService.recoverState(`shape-bg-${this.shape}`, this);
-    console.log(this.colorStops);
-    console.log(this.fillStyle);
   }
 
   ngAfterViewInit(): void {

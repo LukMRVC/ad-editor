@@ -22,7 +22,7 @@
     </mat-expansion-panel-header>
 
     <ng-template matExpansionPanelContent>
-      <ng-container *ngIf="shapeInfo.isText; else imageContainer">
+      <ng-container *ngIf="shapeInfo.isText;">
         <mat-form-field>
           <mat-label>{{ shapeInfo.userShapeName + ' content' }}</mat-label>
           <textarea (input)="dataService.changeValue(dataService.activeDataset, shapeInfo, $event.target.value)"
@@ -33,9 +33,9 @@
 
         <app-text-style [shapeName]="shapeInfo.userShapeName.slugify()"></app-text-style>
       </ng-container>
-      <ng-template #imageContainer>
+      <ng-container *ngIf="shapeInfo.isImage" #imageContainer>
         <app-image-filter (filterChanged)="konva.applyImageFilter(shapeInfo.userShapeName.slugify(), $event)"></app-image-filter>
-      </ng-template>
+      </ng-container>
     </ng-template>
 
 

@@ -22,29 +22,29 @@
 
           <mat-form-field fxFlex appearance="outline">
             <mat-label>CTA content</mat-label>
-            <textarea matInput (input)="konva.changeButton('text', { text: $event.target.value })"></textarea>
+            <textarea matInput (input)="konva.updateButton('text', { text: $event.target.value })"></textarea>
 <!--              <textarea (input)="konva.changeButton('text', { text: $event.target.value })-->
 <!--                      changeValue(dataset.key, shapeInfo, $event)" [value]="shapeInfo.shapeConfig.text"-->
 <!--                        matInput [placeholder]="shapeInfo.userShapeName + ' content'" ></textarea>-->
           </mat-form-field>
 
         <!-- Text font chooser -->
-        <app-font-chooser (fontFamilyLoaded)="konva.changeButton('text', { fontFamily: $event })"></app-font-chooser>
+        <app-font-chooser (fontFamilyLoaded)="konva.updateButton('text', { fontFamily: $event })"></app-font-chooser>
 
         <mat-form-field fxFlex appearance="outline">
           <mat-label>Text color</mat-label>
           <input [(ngModel)]="fontFillColor" (keydown.enter)="fontFillPicker.close()" (focus)="fontFillPicker.open()"
                  [ngxMatColorPicker]="fontFillPicker"
-                 (colorChange)="konva.changeButton('text',{fill: fontFillColor.toHex8String()})" matInput #fillColourInput>
+                 (colorChange)="konva.updateButton('text',{fill: fontFillColor.toHex8String()})" matInput #fillColourInput>
           <ngx-mat-color-toggle matSuffix [for]="fontFillPicker"></ngx-mat-color-toggle>
           <ngx-mat-color-picker defaultColor="#000" #fontFillPicker touchUi="false"></ngx-mat-color-picker>
         </mat-form-field>
 
 
-        <app-text-h-alignment (alignmentChanged)="konva.changeButton('text', { align: $event })"></app-text-h-alignment>
-        <app-text-v-alignment (alignmentChanged)="konva.changeButton('text', { verticalAlign: $event})"></app-text-v-alignment>
+        <app-text-h-alignment (alignmentChanged)="konva.updateButton('text', { align: $event })"></app-text-h-alignment>
+        <app-text-v-alignment (alignmentChanged)="konva.updateButton('text', { verticalAlign: $event})"></app-text-v-alignment>
         <app-text-decoration
-          (decorationChanged)="konva.changeButton('text', { fontStyle: $event.fontStyle, textDecoration: $event.textDecoration})" >
+          (decorationChanged)="konva.updateButton('text', { fontStyle: $event.fontStyle, textDecoration: $event.textDecoration})" >
         </app-text-decoration>
 
 
@@ -53,11 +53,11 @@
             <label>Font size</label>
             <span>{{ fontSize }}</span>
           </div>
-          <mat-slider value="0" (change)="konva.changeButton('text', { fontScaling: $event.value })"
+          <mat-slider value="0" (change)="konva.updateButton('text', { fontScaling: $event.value })"
                       min="-10" step="0.2" max="20" thumbLabel></mat-slider>
         </div>
 
-        <app-shadow shadowFor="Text" (shadowChange)="konva.changeButton('text', $event)"></app-shadow>
+        <app-shadow shadowFor="Text" (shadowChange)="konva.updateButton('text', $event)"></app-shadow>
 
       </div>
     </mat-tab>
@@ -90,7 +90,7 @@
               <label>Button padding</label>
               <span>{{ padding }}</span>
             </div>
-            <mat-slider (change)="konva.changeButton('text', { padding: $event.value })"
+            <mat-slider (change)="konva.updateButton('text', { padding: $event.value })"
                         min="0" step="1" max="30" thumbLabel></mat-slider>
           </div>
 
@@ -100,14 +100,14 @@
               <label>Corner radius</label>
               <span>{{ cornerRadius }}</span>
             </div>
-            <mat-slider (valueChange)="konva.changeButton('style', { cornerRadius: $event })"
+            <mat-slider (valueChange)="konva.updateButton('style', { cornerRadius: $event })"
                         [(ngModel)]="cornerRadius" min="0" step="1" max="40" thumbLabel></mat-slider>
           </div>
           <!-- /Corner radius -->
 
-          <app-stroke strokeFor="Button" (strokeChange)="konva.changeButton('style', $event)"></app-stroke>
+          <app-stroke strokeFor="Button" (strokeChange)="konva.updateButton('style', $event)"></app-stroke>
 
-          <app-shadow shadowFor="Button" (shadowChange)="konva.changeButton('style', $event)"></app-shadow>
+          <app-shadow shadowFor="Button" (shadowChange)="konva.updateButton('style', $event)"></app-shadow>
 
         </div>
         <!-- /Tab content -->

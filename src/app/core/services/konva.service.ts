@@ -15,6 +15,13 @@ import {ShapeFactoryService} from '@core/services/shape-factory.service';
 // TODO: Add simple shapes
 // TODO: Fix scaling based on percentage dimensions
 // TODO: Refactor this class and separate concenrns
+// TODO: stylizace banneru
+// TODO: Sablony banneru a tlacitek
+// TODO: Hotovo bannery dat do bakalarky
+// TODO: Font scaling jednotlivych textu
+// TODO: Vyresit texty
+// TODO: Vice banneru
+// TODO: Undo/Redo
 // TODO: Groupovani
 @Injectable({
   providedIn: 'root',
@@ -162,7 +169,9 @@ export class KonvaService {
   }
 
   transformer(conf?: TransformerConfig): Konva.Transformer {
-    const tr = new Konva.Transformer();
+    const tr = new Konva.Transformer({
+      rotationSnaps: [0, 90, 180, 270],
+    });
     // tr.moveToTop();
     console.log('Creating transformer');
     this.canvas.on('click', ev => {
@@ -279,9 +288,17 @@ export class KonvaService {
       const nodesNamesToMove = selectedNodes.map(node => node.name()).filter( (nodeName, index, self) =>
         self.indexOf(nodeName) === index );
       for (const bannerGroup of this.bannerGroups) {
+        const bg = bannerGroup.group.findOne('.background');
         for (const nodeName of nodesNamesToMove) {
           const node = bannerGroup.group.findOne(`.${nodeName}`);
+          if (direction === 'Down' && node.zIndex() - 1 <= bg.zIndex()) {
+            continue;
+          }
+          // call method
           node[`move${direction}`]();
+        }
+        if (direction === 'ToBottom') {
+          bg.moveToBottom();
         }
       }
     } else {
@@ -462,7 +479,7 @@ export class KonvaService {
 
         const bg = this.rect({
           id: `group-bg-${banner.layout.name}`,
-          name: 'group-bg',
+          name: 'background',
           x: posX,
           y: posY,
           width: banner.layout.dimensions.width,
@@ -494,11 +511,6 @@ export class KonvaService {
     }
 
   }
-
-  public drawLogo(conf: Konva.ImageConfig): void {
-    this.drawImage('logo', conf);
-  }
-
   public drawImage(slugifiedShapeName: string, conf: Konva.ImageConfig = {image: null}): void {
     const shape = this.shapes.find(s => s.userShapeName.slugify() === slugifiedShapeName);
     if (!shape.bannerShapeConfig) {
@@ -917,32 +929,43 @@ export class KonvaService {
   }
 
   private transformRelatives(transformEvent: Konva.KonvaEventObject<Konva.Shape>, bannerGroupIndex, shapeName: string): void {
-    const initialScale = transformEvent.target.getAttr('initialScale');
-    const currentScale = transformEvent.target.getAttr('scale');
-    const scaleDelta = { x: currentScale.x - initialScale.x, y: currentScale.y - initialScale.y };
-    // console.log('Is cached', transformEvent.target.isCached());
     if (transformEvent.target.isCached()) {
       transformEvent.target.cache();
     }
+    // Object image center in percentage
     const percentages = this.getBannerPercentagesFromEvent(transformEvent, bannerGroupIndex);
+    // current shape data
     const shapeData = this.shapes.find(s => s.userShapeName.slugify() === shapeName);
 
     if (shapeData.userShapeName.slugify() === 'button') {
       // save button data
       console.log(transformEvent.target.name());
-      // shapeData.bannerShapeConfig.get(bannerGroupIndex).labelConfig = transformEvent.target.getAttrs();
+      shapeData.bannerShapeConfig.get(bannerGroupIndex).labelConfig = transformEvent.target.getAttrs();
     } else {
       shapeData.bannerShapeConfig.set(bannerGroupIndex, transformEvent.target.getAttrs());
     }
     // console.log(shapeData.bannerShapeConfig.get(bannerGroupIndex));
+    // calculate final dimensions in percentages relative to its banner
+    let dimensionsWidthPercentage = transformEvent.target.width() * transformEvent.target.scaleX();
+    dimensionsWidthPercentage /= this.bannerGroups[bannerGroupIndex].group.width();
+    dimensionsWidthPercentage *= 100;
+    let aspectRatio = transformEvent.target.height() * transformEvent.target.scaleY();
+    aspectRatio /= transformEvent.target.width() * transformEvent.target.scaleX();
 
     if (!this.shouldTransformRelatives) { return; }
     for (const [index, bannerGroup] of this.bannerGroups.entries()) {
       if (bannerGroup.group === transformEvent.target.getParent()) { continue; }
       const relative = bannerGroup.group.findOne(`.${shapeName}`);
+      // some relatives might not exist, because the user set it
       if (!relative) { continue; }
-      relative.scaleX( relative.scaleX() + scaleDelta.x );
-      relative.scaleY( relative.scaleY() + scaleDelta.y );
+      const finalWidth = (dimensionsWidthPercentage / 100) * bannerGroup.group.width();
+      // to preserve aspect ration
+      const finalHeight = finalWidth * aspectRatio;
+      // if (transformEvent.target.getClassName() === 'image') {
+      //
+      // }
+      relative.scaleX( finalWidth / relative.width() );
+      relative.scaleY( finalHeight / relative.height() );
       const pos = this.getPixelPositionsWithinBanner(index, percentages, relative);
       relative.x(pos.x);
       relative.y(pos.y);

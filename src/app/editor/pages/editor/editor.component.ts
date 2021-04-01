@@ -93,13 +93,15 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     this.konva.shouldTransformRelatives = false;
   }
 
-  @HostListener('document:keydown.pagedown')
-  onPageDown(): void {
+  @HostListener('document:keydown.pagedown', ['$event'])
+  onPageDown($event): void {
+    $event.preventDefault();
     this.konva.moveObjectZIndices('Down');
   }
 
-  @HostListener('document:keydown.pageup')
-  onPageUp(): void {
+  @HostListener('document:keydown.pageup', ['$event'])
+  onPageUp($event): void {
+    $event.preventDefault();
     this.konva.moveObjectZIndices('Up');
   }
 

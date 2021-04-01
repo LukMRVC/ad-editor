@@ -46,7 +46,7 @@ import {ComponentStateService} from '@core/services/component-state.service';
           <div fxLayout="row nowrap" aria-label="Color stops">
             <button (click)="setEditableColorStop(i)" *ngFor="let colorStop of colorStops; index as i"
                     [style.backgroundColor]="colorStop.color"
-                    mat-button style="border-radius: 0">
+                    mat-button style="border-radius: 0; max-width: 20px">
             </button>
             <button mat-flat-button (click)="addColorStop()">
               <mat-icon>add</mat-icon>

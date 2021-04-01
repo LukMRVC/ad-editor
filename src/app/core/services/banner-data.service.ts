@@ -220,4 +220,20 @@ export class BannerDataService {
     }
     return header;
   }
+
+  removeDataset(datasetIndex: number): void {
+    const datasetToRemove = this.datasets[datasetIndex];
+
+    if (this.datasets.length - 1 === 0) {
+      this.activeDataset = 'template';
+    }
+
+    if (this.activeDataset === datasetToRemove.datasetName) {
+      if (this.datasets.length - 1 > 0) {
+        this.activeDataset = this.datasets[(datasetIndex + 1) % this.datasets.length].datasetName;
+      }
+    }
+    this.datasets.splice(datasetIndex, 1);
+
+  }
 }

@@ -35,10 +35,15 @@
       <!-- Datasets-->
       <div fxLayout="row nowrap" class="datasets" cdkDropListOrientation="horizontal" cdkDropList
            cdkDropListLockAxis="x" (cdkDropListDropped)="reorderDatasets($event)">
-        <button cdkDrag mat-flat-button *ngFor="let dataset of dataService.datasets"
+
+        <button disableRipple cdkDrag mat-flat-button *ngFor="let dataset of dataService.datasets; index as i"
                 [ngClass]="{'active': dataset.datasetName === dataService.activeDataset}"
                 (click)="dataService.setActiveDataset(dataset.datasetName)">
           {{ dataset.datasetName }}
+
+          <button (click)="$event.stopImmediatePropagation(); dataService.removeDataset(i)" mat-icon-button>
+            <mat-icon style="font-size: 13pt;">delete</mat-icon>
+          </button>
         </button>
       </div>
       <!-- Stage -->

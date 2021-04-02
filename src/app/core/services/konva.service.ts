@@ -2,7 +2,6 @@ import {EventEmitter, Injectable} from '@angular/core';
 import Konva from 'konva';
 import {StageConfig} from 'konva/types/Stage';
 import {LayerConfig} from 'konva/types/Layer';
-import {TransformerConfig} from 'konva/types/shapes/Transformer';
 import {Banner, Dimension2D, Point2D} from '@core/models/banner-layout';
 import {FilterChangedEvent} from '../../editor/components/image-filter.component';
 import {BannerDataService} from '@core/services/banner-data.service';
@@ -13,7 +12,6 @@ import {ButtonDrawingService} from '@core/services/button-drawing.service';
 import {TextDrawingService} from '@core/services/text-drawing.service';
 
 // TODO: Add skewing
-// TODO: Refactor this class and separate concenrns
 // TODO: stylizace banneru
 // TODO: Sablony banneru a tlacitek
 // TODO: Hotovo bannery dat do bakalarky
@@ -50,9 +48,8 @@ export class KonvaService {
 
     this.dataService.informationUpdated$.subscribe(updatedShapeName => {
       this.shapes = this.dataService.getActiveDataset();
-      console.log(updatedShapeName);
+      // console.log(updatedShapeName);
       const updatedShape = this.shapes.find(s => s.userShapeName === updatedShapeName);
-      // console.log(updatedShape);
       if (updatedShape.isText) {
         this.updateText(updatedShapeName.slugify(), updatedShape.shapeConfig);
       } else if (updatedShape.isImage) {
@@ -70,8 +67,10 @@ export class KonvaService {
   }
 
   private canvas: Konva.Stage;
+  private editGroup: Konva.Group = null;
   private transformers: Konva.Transformer = null;
   private shapes: ShapeInformation[];
+
 
   onClickTap$: EventEmitter<Konva.KonvaEventObject<MouseEvent>> = new EventEmitter<Konva.KonvaEventObject<MouseEvent>>();
   onContextMenu$: EventEmitter<Konva.KonvaEventObject<MouseEvent>> = new EventEmitter<Konva.KonvaEventObject<MouseEvent>>();
@@ -144,9 +143,18 @@ export class KonvaService {
   }
 
   public init(conf: StageConfig): void {
-    // console.log('Initializing konvaJS stage with', conf);
     this.canvas = new Konva.Stage(conf);
     this.canvas.on('click tap', (e: Konva.KonvaEventObject<MouseEvent>) => {
+      if (this.editGroup !== null && e.target.getParent() !== this.editGroup) {
+        this.editGroup.getChildren(c => c.name() === 'editPoint').each(c => c.destroy());
+        this.editGroup.getChildren().each(c => {
+          c.moveTo(this.editGroup.getParent());
+          c.setAttr('transformable', true);
+          c.setAttr('draggable', true);
+        });
+        this.editGroup = null;
+      }
+
       this.onClickTap$.emit(e);
     });
     this.canvas.scale({ x: 0.75, y: 0.75 });
@@ -172,7 +180,7 @@ export class KonvaService {
     return this.canvas;
   }
 
-  public transformer(conf?: TransformerConfig): Konva.Transformer {
+  public transformer(): Konva.Transformer {
     const tr = new Konva.Transformer({
       rotationSnaps: [0, 90, 180, 270],
     });
@@ -214,7 +222,7 @@ export class KonvaService {
     conf = { ...{name: `Layer ${this.layers.length + 1}`, id: `${this.layers.length}`}, ...conf };
     const layer = new Konva.Layer(conf);
     if (!addToInstance) { return layer; }
-    const tr = this.transformer({});
+    const tr = this.transformer();
     layer.add(tr);
     this.layers.push(layer);
     this.canvas.add(layer);
@@ -223,10 +231,6 @@ export class KonvaService {
     // layer.on('dragmove', this.guidelinesSnapping);
     // layer.on('dragend', KonvaService.destroyGuideLines);
     return layer;
-  }
-
-  private getWorkingLayerInstance(): Konva.Layer {
-    return this.layer();
   }
 
   public updateSelected(updatedValues: object): void {
@@ -278,7 +282,6 @@ export class KonvaService {
     console.log(group.group.getChildren().toArray());
     console.log(target);
     console.assert(group !== undefined);
-
 
     group.group.getChildren().each(c => {
       c.clearCache();
@@ -752,7 +755,7 @@ export class KonvaService {
     const rect = event.target;
     const r = { x: rect.x(), y: rect.y(), w: rect.width(), h: rect.height() };
     const points = [r.x, r.y, r.x + r.w, r.y, r.x + r.w, r.y + r.h, r.x, r.y + r.h];
-    const editGroup = new Konva.Group({ draggable: true, transformable: false, });
+    this.editGroup = new Konva.Group({ draggable: true, transformable: false, });
     const polygon = new Konva.Line({
       closed: true,
       fill: rect.fill(),
@@ -761,7 +764,7 @@ export class KonvaService {
       transformable: false,
       points,
     });
-    editGroup.add(polygon);
+    this.editGroup.add(polygon);
 
     const pairwise = (arr: any[], func) => {
       if (arr.length % 2 !== 0) {
@@ -774,23 +777,56 @@ export class KonvaService {
 
     pairwise(polygon.points(), (cx, cy, pidx) => {
       const editPoint = new Konva.Circle({
+        name: 'editPoint',
         x: cx,
         y: cy,
-        radius: 10,
-        fill: '#777',
-        stroke: '#000',
+        radius: 8,
+        fill: '#fff',
+        stroke: '#333',
         draggable: true,
         transformable: false,
       });
-      editPoint.on('dragmove', (drag) => {
+      editPoint.on('dragmove', () => {
         const polyPoints = polygon.points();
         polyPoints[pidx] = editPoint.x();
         polyPoints[pidx + 1] = editPoint.y();
         this.redraw();
       });
-      editGroup.add(editPoint);
+      this.editGroup.add(editPoint);
     });
-    event.target.getParent().add(editGroup);
+    // now add skewing points
+
+    // const skewPoint = new Konva.Circle({
+    //   x: r.x + (r.w / 2),
+    //   y: r.y - 35,
+    //   radius: 8,
+    //   fill: '#fff',
+    //   stroke: '#666',
+    //   draggable: true,
+    //   startPosition: r.x + (r.w / 2),
+    //   dragBoundFunc: (pos) => ({x: pos.x, y: skewPoint.getAbsolutePosition().y}),
+    //   transformable: false,
+    // });
+    //
+    // skewPoint.on('mouseenter', () => {
+    //   this.canvas.container().style.cursor = 'ew-resize';
+    // });
+    // skewPoint.on('mouseleave', () => {
+    //   this.canvas.container().style.cursor = 'default';
+    // });
+    // skewPoint.on('dragmove', () => {
+    //   const startPoint = skewPoint.getAttr('startPosition');
+    //   const pointDiff = Math.abs(startPoint - skewPoint.x());
+    //   const skewing = Math.sign(startPoint - skewPoint.x()) * (pointDiff / 30);
+    //   polygon.skewX(skewing);
+    //   console.log(`Skewing for: ${skewing}`);
+    //   console.log(`Polygon posiiton:`, polygon.points());
+    //   this.redraw();
+    // });
+    //
+    // editGroup.add(skewPoint);
+
+    event.target.getParent().add(this.editGroup);
     this.redraw();
   }
 
@@ -968,7 +1004,7 @@ export class KonvaService {
 
     // shape dimensions
     const shapeDim = (shape: Konva.Node): Dimension2D => ({width: shape.width(), height: shape.height()});
-    for (const [index, {bg, group}] of this.bannerGroups.entries()) {
+    for (const {group: group} of this.bannerGroups.values()) {
       const shape = group.findOne(`.${slugifiedShapeName}`);
       if (!shape) {
         continue;

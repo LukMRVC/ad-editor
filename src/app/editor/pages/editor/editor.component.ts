@@ -51,26 +51,20 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       height: this.stageWrapper.nativeElement.offsetHeight,
     });
 
-    this.konva.onContextMenu$.subscribe( event => {
-      if (event.target === this.konva.getInstance()) {
-        return;
-      }
-      this.contextMenu.visibility = 'flex';
-      const ancestor = event.target.findAncestor('Group', true);
-      // console.log(ancestor);
-      // console.log(ancestor.id());
-      console.assert(ancestor !== undefined);
-      this.downloadTargetId = ancestor.id();
-      const containerRect = this.stageWrapper.nativeElement.getBoundingClientRect();
-      this.contextMenu.top = containerRect.top + this.konva.getInstance().getPointerPosition().y + 'px';
-      this.contextMenu.left = containerRect.left + this.konva.getInstance().getPointerPosition().x + 'px';
-    });
-
-    this.konva.onClickTap$.subscribe(clicked => {
-      if (this.contextMenu.visibility !== 'none') {
-        this.contextMenu.visibility = 'none';
-      }
-    });
+    // this.konva.onContextMenu$.subscribe( event => {
+    //   if (event.target === this.konva.getInstance()) {
+    //     return;
+    //   }
+    //   this.contextMenu.visibility = 'flex';
+    //   const ancestor = event.target.findAncestor('Group', true);
+    //   // console.log(ancestor);
+    //   // console.log(ancestor.id());
+    //   console.assert(ancestor !== undefined);
+    //   this.downloadTargetId = ancestor.id();
+    //   const containerRect = this.stageWrapper.nativeElement.getBoundingClientRect();
+    //   this.contextMenu.top = containerRect.top + this.konva.getInstance().getPointerPosition().y + 'px';
+    //   this.contextMenu.left = containerRect.left + this.konva.getInstance().getPointerPosition().x + 'px';
+    // });
 
     this.dataService.setBanners(this.bannerService.getComputerBanners());
     // this.konva.drawHeadline({ draggable: true, padding: 10, /*text: 'Test text', fontStyle: 'italic bold' */});

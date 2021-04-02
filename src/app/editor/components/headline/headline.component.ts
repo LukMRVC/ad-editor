@@ -1,5 +1,6 @@
 import {Component} from '@angular/core';
 import {KonvaService} from '@core/services/konva.service';
+import {TextDrawingService} from '@core/services/text-drawing.service';
 
 @Component({
   selector: 'app-headline',
@@ -11,7 +12,7 @@ export class HeadlineComponent {
   headlineText = '';
 
   constructor(
-    public konva: KonvaService,
+    public textService: TextDrawingService,
   ) { }
 
 }

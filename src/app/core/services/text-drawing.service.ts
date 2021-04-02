@@ -2,15 +2,20 @@ import { Injectable } from '@angular/core';
 import Konva from 'konva';
 import {Banner} from '@core/models/banner-layout';
 import {ShapeInformation} from '@core/models/dataset';
+import {KonvaService} from '@core/services/konva.service';
+import {BannerDataService} from '@core/services/banner-data.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TextDrawingService {
 
-  constructor() { }
+  constructor(
+    private dataService: BannerDataService,
+    private konvaService: KonvaService,
+  ) { }
 
-  public drawText(group: Konva.Group, banner: Banner, shape: ShapeInformation, conf: Konva.TextConfig, slug = null): Konva.Text {
+  private static createText(group: Konva.Group, banner: Banner, shape: ShapeInformation, conf: Konva.TextConfig, slug = null): Konva.Text {
     if (slug === null) {
       slug = shape.userShapeName.slugify();
     }
@@ -38,25 +43,85 @@ export class TextDrawingService {
     return text;
   }
 
-  public updateText(textToUpdate: Konva.Text, group: Konva.Group, banner: Banner,
-                    shape: ShapeInformation, conf: Konva.TextConfig, slug = null): Konva.Text {
+  private static editText(textToUpdate: Konva.Text, group: Konva.Group, banner: Banner,
+                          shape: ShapeInformation, conf: Konva.TextConfig, slug = null): Konva.Text {
     if (slug === null) {
       slug = shape.userShapeName.slugify();
     }
+
     const shouldDraw = shape.bannerShapeConfig?.get(banner.id)?.shouldDraw ?? true;
     if ('fontScaling' in conf) {
       conf.fontSize = (group.findOne(`.${slug}`) as Konva.Text).getAttr('initialFontSize');
       conf.fontSize *= 1 + (conf.fontScaling / 10);
     }
+
     if ( !textToUpdate && shouldDraw) {
       shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
-      return this.drawText(group, banner, shape, {...conf}, slug);
+      return TextDrawingService.createText(group, banner, shape, {...conf}, slug);
     } else if (textToUpdate) {
-      // textShape.clearCache();
       textToUpdate.setAttrs(conf);
-      textToUpdate.cache();
+      if (textToUpdate.isCached()) {
+        textToUpdate.cache();
+      }
       shape.bannerShapeConfig.set(banner.id, textToUpdate.getAttrs());
     }
     return null;
   }
+
+  public drawText(slugifiedShapeName: string, conf: Konva.TextConfig = {}): void {
+    const shape = this.dataService.getActiveDataset().find(s => s.userShapeName.slugify() === slugifiedShapeName);
+    if (!shape.bannerShapeConfig) {
+      shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
+    }
+    for (const [index, bannerGroup] of this.konvaService.getBannerGroups().entries()) {
+      const banner = this.dataService.getBannerById(index);
+      const text = TextDrawingService.createText(bannerGroup, banner, shape, conf);
+      if (text !== null) {
+        this.bindTextEvents(text, index, slugifiedShapeName);
+      }
+    }
+    this.konvaService.redraw();
+  }
+
+  private bindTextEvents(text: Konva.Text, index: number, slugifiedShapeName: string): void {
+    text.on('dragmove', (dragging) => this.konvaService.moveAllRelatives(dragging, index, slugifiedShapeName));
+    text.on('transform', (transform) => {
+      for (const relativeBannerGroup of this.konvaService.getBannerGroups()) {
+        const relativeText = relativeBannerGroup.findOne(`.${slugifiedShapeName}`);
+        if (!this.konvaService.shouldTransformRelatives) {
+          if (relativeText !== transform.target) {
+            continue;
+          }
+        }
+        relativeText.setAttrs({
+          // the Text width should never be bigger than its parent group so we do Math.min
+          width: Math.min(Math.max( text.width() * text.scaleX(), 50), relativeBannerGroup.width()),
+          scaleX: 1,
+        });
+        relativeText.cache();
+      }
+    });
+  }
+
+  public updateText(slugifiedShapeName: string, attributes: Konva.TextConfig): void {
+    const shape = this.dataService.getActiveDataset().find(s => s.userShapeName.slugify() === slugifiedShapeName);
+    const textsToUpdate = this.konvaService.shouldTransformRelatives
+      ? [] : this.konvaService.getTransformer().nodes().filter(s => s.name() === slugifiedShapeName);
+
+    for (const [index, bannerGroup] of this.konvaService.getBannerGroups().entries()) {
+      const textShape = bannerGroup.findOne(`.${slugifiedShapeName}`);
+      if (textsToUpdate.length) {
+        if (!textsToUpdate.includes(textShape)) {
+          continue;
+        }
+      }
+      const banner = this.dataService.getBannerById(index);
+      const text = TextDrawingService.editText(textShape as Konva.Text, bannerGroup, banner, shape, attributes, slugifiedShapeName);
+      if (text !== null) {
+        this.bindTextEvents(text, index, slugifiedShapeName);
+      }
+    }
+    this.konvaService.redraw();
+  }
+
 }

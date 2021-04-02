@@ -13,7 +13,9 @@
 
       <mat-form-field fxFlex appearance="outline">
         <mat-label>Headline</mat-label>
-        <textarea [(ngModel)]="headlineText" (input)="konva.changeHeadline({text: headlineText})" matInput></textarea>
+        <textarea [(ngModel)]="headlineText"
+                  (input)="textService.updateText('headline', {text: headlineText})" matInput>
+        </textarea>
       </mat-form-field>
 
      <app-text-style shapeName="headline"></app-text-style>

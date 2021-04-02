@@ -145,6 +145,10 @@ export class BannerDataService {
     return this.banners;
   }
 
+  public getBannerById(bannerId: number): Banner {
+    return this.banners[bannerId];
+  }
+
   public setBanners(banners: Banner[]): void {
     this.banners = banners;
     this.banners$.next(this.banners);

@@ -78,8 +78,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('window:resize', ['$event'])
   onWindowResize($event): void {
-    this.konva.getInstance().width(this.stageWrapper.nativeElement.offsetWidth);
-    this.konva.getInstance().height(this.stageWrapper.nativeElement.offsetHeight);
+    this.konva.getStage().width(this.stageWrapper.nativeElement.offsetWidth);
+    this.konva.getStage().height(this.stageWrapper.nativeElement.offsetHeight);
   }
 
   @HostListener('document:keydown.control')

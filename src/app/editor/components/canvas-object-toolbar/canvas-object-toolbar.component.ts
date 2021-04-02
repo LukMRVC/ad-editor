@@ -230,36 +230,36 @@ export class CanvasObjectToolbarComponent implements OnInit, OnDestroy, AfterVie
     // this.konva.updateSelected({ fill: ev.value.toHex8String(true), alpha: ev.value.a });
     // this.konva.updateSelectedFillColor(ev.value);
   }
+  //
+  // strokeColorChanged(ev: NgxMatColorPickerInputEvent): void {
+  //   this.konva.updateSelected({ stroke: ev.value.toHex8String(true) });
+  // }
 
-  strokeColorChanged(ev: NgxMatColorPickerInputEvent): void {
-    this.konva.updateSelected({ stroke: ev.value.toHex8String(true) });
-  }
+  // loadFont($event: MatAutocompleteSelectedEvent): void {
+  //   const optionValue = $event.option.value;
+  //   WebFontLoader.load({
+  //     fontactive: (familyName, fvd) => { this.konva.updateSelected({ fontFamily: familyName }); },
+  //     google: {
+  //       families: [optionValue.family]
+  //     }
+  //   });
+  // }
 
-  loadFont($event: MatAutocompleteSelectedEvent): void {
-    const optionValue = $event.option.value;
-    WebFontLoader.load({
-      fontactive: (familyName, fvd) => { this.konva.updateSelected({ fontFamily: familyName }); },
-      google: {
-        families: [optionValue.family]
-      }
-    });
-  }
-
-  fontSizeChanged(): void {
-    this.konva.updateSelected({ fontSize: this.fontSize });
-  }
-
-  textChanged(): void {
-    this.konva.updateSelected({ text: this.text });
-  }
-
-  strokeEnableChanged(): void {
-    this.konva.updateSelected({ strokeEnabled: this.strokeEnabled });
-  }
-
-  strokeWidthChanged(): void {
-    this.konva.updateSelected({ strokeWidth: this.strokeWidth });
-  }
+  // fontSizeChanged(): void {
+  //   this.konva.updateSelected({ fontSize: this.fontSize });
+  // }
+  //
+  // textChanged(): void {
+  //   this.konva.updateSelected({ text: this.text });
+  // }
+  //
+  // strokeEnableChanged(): void {
+  //   this.konva.updateSelected({ strokeEnabled: this.strokeEnabled });
+  // }
+  //
+  // strokeWidthChanged(): void {
+  //   this.konva.updateSelected({ strokeWidth: this.strokeWidth });
+  // }
 
   changeFillStyle(): void {
     if (this.fillStyle === 'color') {

@@ -2,15 +2,20 @@ import { Injectable } from '@angular/core';
 import Konva from 'konva';
 import {Banner} from '@core/models/banner-layout';
 import {ShapeInformation} from '@core/models/dataset';
+import {KonvaService} from '@core/services/konva.service';
+import {BannerDataService} from '@core/services/banner-data.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ButtonDrawingService {
 
-  constructor() { }
+  constructor(
+    private konvaService: KonvaService,
+    private dataService: BannerDataService,
+  ) { }
 
-  private createButton(conf: Konva.ShapeConfig, tagConfig = {}, textConfig = {}): Konva.Label {
+  private static createButtonLabel(conf: Konva.ShapeConfig, tagConfig = {}, textConfig = {}): Konva.Label {
     const button = new Konva.Label({
       name: 'button',
       x: conf.x,
@@ -50,26 +55,23 @@ export class ButtonDrawingService {
     return button;
   }
 
-  public drawButton(group: Konva.Group, banner: Banner, shape: ShapeInformation, configs, slug = null): Konva.Label {
-    if (slug === null) {
-      slug = shape.userShapeName.slugify();
-    }
+  private static createButton(group: Konva.Group, banner: Banner, shape: ShapeInformation, configs): Konva.Label {
     let button = null;
     if (shape.bannerShapeConfig.has(banner.id)) {
       const savedData = shape.bannerShapeConfig.get(banner.id);
       if (!savedData.shouldDraw) { return null; }
       // console.log('Recovering button from', savedData);
-      button = this.createButton( savedData.labelConfig, savedData.tagConfig, savedData.textConfig );
+      button = ButtonDrawingService.createButtonLabel(savedData.labelConfig, savedData.tagConfig, savedData.textConfig);
     } else {
       const dimensions = { width: banner.layout.dimensions.width / 3, height: banner.layout.dimensions.height / 5 };
       const {x, y} = banner.getPixelPositionFromPercentage(banner.layout.buttonPosition, dimensions);
       const offsetX = group.clipX();
       const offsetY = group.clipY();
-      button = this.createButton(
+      button = ButtonDrawingService.createButtonLabel(
         { x: x + offsetX, y: y + offsetY, ...configs.labelConfig },
         {...configs.tagConfig},
         {...configs.textConfig}
-        );
+      );
       const tag = button.findOne('.button-tag');
       const text = button.findOne('.button-text');
       shape.bannerShapeConfig.set(banner.id, { shouldDraw: true, labelConfig: button.getAttrs(),
@@ -79,7 +81,7 @@ export class ButtonDrawingService {
     return button;
   }
 
-  public updateButton(
+  private static editButton(
     changeOf: 'style'|'text',
     btn: Konva.Label,
     config: Konva.TagConfig|Konva.TextConfig,
@@ -88,18 +90,18 @@ export class ButtonDrawingService {
     shape: ShapeInformation): Konva.Label {
 
     if (changeOf === 'style') {
-        const tag = group.findOne('.button-tag');
-        const shouldDraw = shape.bannerShapeConfig?.get(banner.id)?.shouldDraw ?? true;
-        if (!tag) {
-          if (shouldDraw) {
-            return this.drawButton(group, banner, shape, {tagConfig: config});
-          }
-          return;
+      const tag = group.findOne('.button-tag');
+      const shouldDraw = shape.bannerShapeConfig?.get(banner.id)?.shouldDraw ?? true;
+      if (!tag) {
+        if (shouldDraw) {
+          return ButtonDrawingService.createButton(group, banner, shape, {tagConfig: config});
         }
-        tag.setAttrs(config);
-        const btnSavedCfg = shape.bannerShapeConfig.get(banner.id);
-        btnSavedCfg.tagConfig = tag.getAttrs();
-        tag.cache();
+        return;
+      }
+      tag.setAttrs(config);
+      const btnSavedCfg = shape.bannerShapeConfig.get(banner.id);
+      btnSavedCfg.tagConfig = tag.getAttrs();
+      tag.cache();
     } else {
       const tag = group.findOne('.button-tag');
       const text = group.findOne('.button-text');
@@ -107,7 +109,7 @@ export class ButtonDrawingService {
       const shouldDraw = shape.bannerShapeConfig?.get(banner.id)?.shouldDraw ?? true;
       if (!text) {
         if (shouldDraw) {
-          return this.drawButton(group, banner, shape, {textConfig: config});
+          return ButtonDrawingService.createButton(group, banner, shape, {textConfig: config});
         }
         return null;
       }
@@ -122,5 +124,46 @@ export class ButtonDrawingService {
       tag.cache();
     }
     return null;
+  }
+
+  public drawButton(labelConfig = {}, tagConfig = {}, textConfig = {}): void {
+    const shape = this.dataService.getActiveDataset().find(s => s.userShapeName.slugify() === 'button');
+    if (!shape.bannerShapeConfig) {
+      shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
+    }
+    for (const [index, bannerGroup] of this.konvaService.getBannerGroups().entries()) {
+      const configs = {labelConfig, tagConfig, textConfig};
+      const banner = this.dataService.getBannerById(index);
+      const button = ButtonDrawingService.createButton(bannerGroup, banner, shape, configs);
+
+      if (button !== null) {
+        button.on('dragmove', (dragging) => this.konvaService.moveAllRelatives(dragging, index, 'button'));
+      }
+    }
+    this.konvaService.redraw();
+  }
+
+  public updateButton(changeOf: 'style'|'text', config: Konva.TagConfig|Konva.TextConfig): void {
+    const shape = this.dataService.getActiveDataset().find(s => s.userShapeName.slugify() === 'button');
+    if (!shape.bannerShapeConfig) {
+      shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
+    }
+    const btnsToChange = this.konvaService.shouldTransformRelatives
+      ? [] : this.konvaService.getTransformer().nodes().filter(s => s.name() === 'button');
+
+    for (const [index, bannerGroup] of this.konvaService.getBannerGroups().entries()) {
+      let button = bannerGroup.findOne('.button');
+      if (btnsToChange.length) {
+        if ( !btnsToChange.includes(button)) {
+          continue;
+        }
+      }
+      const banner = this.dataService.getBannerById(index);
+      button = ButtonDrawingService.editButton(changeOf, button as Konva.Label, config, bannerGroup, banner, shape);
+      if (button !== null) {
+        button.on('dragmove', (dragging) => this.konvaService.moveAllRelatives(dragging, index, 'button'));
+      }
+    }
+    this.konvaService.redraw();
   }
 }

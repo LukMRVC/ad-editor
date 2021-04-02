@@ -34,7 +34,7 @@
         <app-text-style [shapeName]="shapeInfo.userShapeName.slugify()"></app-text-style>
       </ng-container>
       <ng-container *ngIf="shapeInfo.isImage" #imageContainer>
-        <app-image-filter (filterChanged)="konva.applyImageFilter(shapeInfo.userShapeName.slugify(), $event)"></app-image-filter>
+        <app-image-filter (filterChanged)="konva.applyFilter(shapeInfo.userShapeName.slugify(), $event)"></app-image-filter>
       </ng-container>
     </ng-template>
 

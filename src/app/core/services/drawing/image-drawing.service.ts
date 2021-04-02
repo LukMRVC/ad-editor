@@ -3,17 +3,38 @@ import Konva from 'konva';
 import {Banner} from '@core/models/banner-layout';
 import {BannerDataService} from '@core/services/banner-data.service';
 import {ShapeInformation} from '@core/models/dataset';
+import {KonvaService} from '@core/services/konva.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ImageService {
+export class ImageDrawingService {
 
   constructor(
-    private dataService: BannerDataService
+    private dataService: BannerDataService,
+    private konvaService: KonvaService,
   ) { }
 
-  public drawImage(bannerGroup: Konva.Group, banner: Banner, shapeData: ShapeInformation, conf: Konva.ImageConfig): Konva.Image {
+  public drawImage(slugifiedShapeName: string, conf: Konva.ImageConfig = {image: null}): void {
+    const shape = this.dataService.getActiveDataset().find(s => s.userShapeName.slugify() === slugifiedShapeName);
+    if (!shape.bannerShapeConfig) {
+      shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
+    }
+    conf.name = slugifiedShapeName;
+    if (!conf.image) { return; }
+    for (const [index, bannerGroup] of this.konvaService.getBannerGroups().entries()) {
+      const banner = this.dataService.getBannerById(index);
+      const img = this.createImage(bannerGroup, banner, shape, conf);
+      if (img !== null) {
+        shape.bannerShapeConfig.set(banner.id, img.getAttrs());
+        img.on('dragmove', (dragging) => this.konvaService.moveAllRelatives(dragging, banner.id, slugifiedShapeName));
+        img.on('transformend', (endedTransform) => this.konvaService.transformRelatives(endedTransform, banner.id, slugifiedShapeName));
+      }
+    }
+    this.konvaService.redraw();
+  }
+
+  private createImage(bannerGroup: Konva.Group, banner: Banner, shapeData: ShapeInformation, conf: Konva.ImageConfig): Konva.Image {
     let konvaImage = null;
     if (shapeData.bannerShapeConfig.has(banner.id)
       && (shapeData.bannerShapeConfig.get(banner.id) as Konva.ImageConfig).image === conf.image) {
@@ -43,7 +64,6 @@ export class ImageService {
         const desiredWidth = logoDimensions.width * scaleX;
         const desiredHeight = currentImgAspectRatio * desiredWidth;
         scaleY = desiredHeight / logoDimensions.height;
-
       }
 
       const logos = bannerGroup.getChildren(children => children.name() === conf.name);
@@ -56,9 +76,7 @@ export class ImageService {
       }
 
       const {x, y} = banner.getPixelPositionFromPercentage(percentages, logoDimensions, {scaleX, scaleY});
-
-      const offsetX = bannerGroup.clipX();
-      const offsetY = bannerGroup.clipY();
+      const { x: offsetX, y: offsetY} = bannerGroup.clip();
       konvaImage = new Konva.Image({x: x + offsetX, y: y + offsetY, scaleX, scaleY, ...conf});
       konvaImage.draggable(true);
       // console.log(`For ${bannerGroup.id()} computed X: ${image.x()} and Y: ${image.y()}`);

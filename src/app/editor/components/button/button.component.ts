@@ -3,6 +3,7 @@ import {KonvaService} from '@core/services/konva.service';
 import {Color} from '@angular-material-components/color-picker';
 import {Subject} from 'rxjs';
 import {debounceTime} from 'rxjs/operators';
+import {ButtonDrawingService} from '@core/services/button-drawing.service';
 
 @Component({
   selector: 'app-button',
@@ -22,6 +23,7 @@ export class ButtonComponent implements OnInit, OnDestroy {
   private bgChanged = new Subject<any>();
 
   constructor(
+    public buttonService: ButtonDrawingService,
     public konva: KonvaService,
   ) { }
 

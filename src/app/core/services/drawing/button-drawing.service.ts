@@ -83,7 +83,6 @@ export class ButtonDrawingService {
 
   private static editButton(
     changeOf: 'style'|'text',
-    btn: Konva.Label,
     config: Konva.TagConfig|Konva.TextConfig,
     group: Konva.Group,
     banner: Banner,
@@ -159,7 +158,7 @@ export class ButtonDrawingService {
         }
       }
       const banner = this.dataService.getBannerById(index);
-      button = ButtonDrawingService.editButton(changeOf, button as Konva.Label, config, bannerGroup, banner, shape);
+      button = ButtonDrawingService.editButton(changeOf, config, bannerGroup, banner, shape);
       if (button !== null) {
         button.on('dragmove', (dragging) => this.konvaService.moveAllRelatives(dragging, index, 'button'));
       }

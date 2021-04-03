@@ -41,17 +41,6 @@ export class KonvaService {
       if (updatedShape.isImage && updatedShapeName.slugify() === 'background') {
         this.drawBackground(updatedShape.shapeConfig as Konva.ImageConfig);
       }
-      // if (updatedShape.isText) {
-      //   this.updateText(updatedShapeName.slugify(), updatedShape.shapeConfig);
-      // } else if (updatedShape.isImage) {
-      //   if (updatedShape.userShapeName.slugify() === 'background') {
-      //     this.drawBackground(updatedShape.shapeConfig as Konva.ImageConfig);
-      //   }
-      // } else if (updatedShape.isButton) {
-      //   this.updateButton('text', updatedShape.shapeConfig);
-      // } else {
-      //   this.drawShape(updatedShape);
-      // }
     });
   }
 
@@ -64,16 +53,19 @@ export class KonvaService {
 
   public editGroup: Konva.Group = null;
 
+  // for components to display context menu
+  public displayContextMenuEvent$ = new EventEmitter<{ pos: Point2D, actions: {name: string, action: any}[]}>();
   public onClickTap$: EventEmitter<Konva.KonvaEventObject<MouseEvent>> = new EventEmitter<Konva.KonvaEventObject<MouseEvent>>();
+  // for drawing services
   public onContextMenu$: EventEmitter<Konva.KonvaEventObject<MouseEvent>> = new EventEmitter<Konva.KonvaEventObject<MouseEvent>>();
   public selectedNodes: Konva.Shape[] = [];
   public shouldTransformRelatives = true;
 
-  static mergeConfig(name: string, id: string, conf: object): any {
+  public static mergeConfig(name: string, id: string, conf: object): any {
     return { ...{name, id}, ...conf };
   }
 
-  static bannerLabel(position: Point2D, text: string): Konva.Label {
+  public static bannerLabel(position: Point2D, text: string): Konva.Label {
     const label = new Konva.Label({
       y: position.y,
       opacity: 0.75,
@@ -99,8 +91,19 @@ export class KonvaService {
     return label;
 }
 
-  static isRadiiBasedShape(shapeClassName): boolean {
+  public static isRadiiBasedShape(shapeClassName): boolean {
     return ['circle', 'wedge', 'arc', 'donut', 'regularpolygon', 'star'].includes(shapeClassName.toLowerCase());
+  }
+
+  public static getRelativePointerPosition(node: Konva.Node, position: Konva.Vector2d = null): Konva.Vector2d {
+    const transform = node.getAbsoluteTransform().copy();
+    transform.invert();
+    if (position !== null) {
+      return transform.point(position);
+    } else {
+      const pos = node.getStage().getPointerPosition();
+      return transform.point(pos);
+    }
   }
 
   private initZoom(stage: Konva.Stage, scaleBy: number): void {
@@ -174,6 +177,10 @@ export class KonvaService {
 
   public getTransformer(): Konva.Transformer {
     return this.transformer;
+  }
+
+  public displayContextMenu(pointerPos: Point2D, actions: {name: string, action: any}[]): void {
+    this.displayContextMenuEvent$.emit({pos: pointerPos, actions});
   }
 
   private createTransformer(): Konva.Transformer {

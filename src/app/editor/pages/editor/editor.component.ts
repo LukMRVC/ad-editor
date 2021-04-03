@@ -6,6 +6,7 @@ import {BannerService} from '@core/services/banner.service';
 import {BannerDataService} from '@core/services/banner-data.service';
 import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
 import {ImageDrawingService} from '@core/services/drawing/image-drawing.service';
+import {PolylineDrawingService} from '@core/services/drawing/polyline-drawing.service';
 
 @Component({
   selector: 'app-editor',
@@ -18,6 +19,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   contextMenu: {visibility: string, top: string, left: string} = {visibility: 'none', top: '', left: ''};
   private subscription: Subscription = new Subscription();
 
+  public contextMenuActions: {name: string, action: any}[] = [];
   downloadTargetId: string;
 
   constructor(
@@ -25,7 +27,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     public bannerService: BannerService,
     public dataService: BannerDataService,
     public imageDrawingService: ImageDrawingService,
-
+    public shapeDrawingService: PolylineDrawingService,
   ) { }
 
   ngAfterViewInit(): void {
@@ -53,6 +55,13 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       height: this.stageWrapper.nativeElement.offsetHeight,
     });
 
+    this.konva.displayContextMenuEvent$.subscribe(event => {
+      this.contextMenuActions = event.actions;
+      this.contextMenu.visibility = 'flex';
+      const containerRect = this.stageWrapper.nativeElement.getBoundingClientRect();
+      this.contextMenu.top = `${containerRect.top + event.pos.y}px`;
+      this.contextMenu.left = `${containerRect.left + event.pos.x}px`;
+    });
     // this.konva.onContextMenu$.subscribe( event => {
     //   if (event.target === this.konva.getInstance()) {
     //     return;

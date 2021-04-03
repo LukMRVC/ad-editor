@@ -22,11 +22,14 @@
 <!--  </div>-->
 
 
-<!--  <div (click)="contextMenu.visibility = 'none'"-->
-<!--       [style.top]="contextMenu.top" [style.left]="contextMenu.left"-->
-<!--       [style.display]="contextMenu.visibility"  id="context-menu">-->
+  <div (click)="contextMenu.visibility = 'none'"
+       [style.top]="contextMenu.top" [style.left]="contextMenu.left"
+       [style.display]="contextMenu.visibility"  id="context-menu">
+    <button mat-button (click)="ctxAction.action($event); contextMenuActions = [];" *ngFor="let ctxAction of contextMenuActions">
+      {{ ctxAction.name }}
+    </button>
 <!--    <button (click)="konva.exportAsImage(this.downloadTargetId, 'image/png')" mat-button>Download</button>-->
-<!--  </div>-->
+  </div>
 
 
   <section id="editor" fxFlex="grow" fxLayout="row nowrap" class="editor">

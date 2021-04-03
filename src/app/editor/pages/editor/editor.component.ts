@@ -5,7 +5,7 @@ import {Subscription} from 'rxjs';
 import {BannerService} from '@core/services/banner.service';
 import {BannerDataService} from '@core/services/banner-data.service';
 import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
-import {$} from 'protractor';
+import {ImageDrawingService} from '@core/services/drawing/image-drawing.service';
 
 @Component({
   selector: 'app-editor',
@@ -24,6 +24,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     public konva: KonvaService,
     public bannerService: BannerService,
     public dataService: BannerDataService,
+    public imageDrawingService: ImageDrawingService,
+
   ) { }
 
   ngAfterViewInit(): void {
@@ -77,7 +79,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   }
 
   @HostListener('window:resize', ['$event'])
-  onWindowResize($event): void {
+  onWindowResize(): void {
     this.konva.getStage().width(this.stageWrapper.nativeElement.offsetWidth);
     this.konva.getStage().height(this.stageWrapper.nativeElement.offsetHeight);
   }

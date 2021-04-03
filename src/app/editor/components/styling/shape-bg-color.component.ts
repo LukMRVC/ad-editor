@@ -10,6 +10,9 @@ import {
 import Konva from 'konva';
 import {Color, NgxMatColorPickerInputEvent} from '@angular-material-components/color-picker';
 import {ComponentStateService} from '@core/services/component-state.service';
+import {ImageGalleryDialogComponent} from '@shared/components/image-gallery-dialog.component';
+import {UploadedImage} from '@core/services/image-gallery.service';
+import {MatDialog} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-shape-bg-color',
@@ -30,18 +33,56 @@ import {ComponentStateService} from '@core/services/component-state.service';
           <mat-button-toggle checked="true" value="color">Solid</mat-button-toggle>
           <mat-button-toggle value="linear-gradient">Linear</mat-button-toggle>
           <mat-button-toggle value="radial-gradient">Radial</mat-button-toggle>
+          <mat-button-toggle value="pattern">Image</mat-button-toggle>
         </mat-button-toggle-group>
       </div>
       <div fxFlex fxLayout="column" fxLayoutGap=".25rem">
-        <mat-form-field>
-          <mat-label>{{ shape | titlecase }} gradient color</mat-label>
-          <input [(ngModel)]="defaultGradientColor" (keydown.enter)="gradientPicker.close()" (focus)="gradientPicker.open()"
-                 [ngxMatColorPicker]="gradientPicker" (colorChange)="fillColorChanged($event)" matInput #gradientColourInput>
-          <ngx-mat-color-toggle matSuffix [for]="gradientPicker"></ngx-mat-color-toggle>
-          <ngx-mat-color-picker [defaultColor]="defaultGradientColor" #gradientPicker [touchUi]="touchUi"></ngx-mat-color-picker>
-        </mat-form-field>
 
-        <ng-container *ngIf="fillStyle !== 'color'">
+        <ng-container *ngIf="fillStyle === 'pattern'">
+
+          <button (click)="openGallery()" fxFlex #uploadBtn mat-raised-button color="primary">
+            <mat-icon>insert_photo</mat-icon>
+            Background image
+          </button>
+
+          <div fxFlex fxLayout="column">
+            <div fxLayout="row" fxLayoutAlign="space-between end">
+              <label>Zoom effect</label>
+              <span>{{ fillPatternScale }}</span>
+            </div>
+            <mat-slider [(ngModel)]="fillPatternScale" thumbLabel min="0.1" max="2" step="0.1"
+                        (valueChange)="fillColorChanged()"></mat-slider>
+          </div>
+
+          <div fxFlex fxLayout="column">
+            <div fxLayout="row" fxLayoutAlign="space-between end">
+              <label>Rotation</label>
+              <span>{{ fillPatternRotation }}</span>
+            </div>
+            <mat-slider [(ngModel)]="fillPatternRotation" thumbLabel min="0" max="360" step="1"
+                        (valueChange)="fillColorChanged()"></mat-slider>
+          </div>
+
+<!--          <mat-form-field appearance="outline">-->
+<!--            <mat-label>Background fit</mat-label>-->
+<!--            <mat-select [(ngModel)]="selectedBackgroundFit" (selectionChange)="konva.positionBackground($event.value); konva.redraw()">-->
+<!--              <mat-option [value]="opt" *ngFor="let opt of this.imageFitOptions">-->
+<!--                {{ opt }}-->
+<!--              </mat-option>-->
+<!--            </mat-select>-->
+<!--          </mat-form-field>-->
+
+        </ng-container>
+
+        <ng-container *ngIf="fillStyle !== 'color' && fillStyle !== 'pattern'">
+          <mat-form-field>
+            <mat-label>{{ shape | titlecase }} gradient color</mat-label>
+            <input [(ngModel)]="defaultGradientColor" (keydown.enter)="gradientPicker.close()" (focus)="gradientPicker.open()"
+                   [ngxMatColorPicker]="gradientPicker" (colorChange)="fillColorChanged($event)" matInput #gradientColourInput>
+            <ngx-mat-color-toggle matSuffix [for]="gradientPicker"></ngx-mat-color-toggle>
+            <ngx-mat-color-picker [defaultColor]="defaultGradientColor" #gradientPicker [touchUi]="touchUi"></ngx-mat-color-picker>
+          </mat-form-field>
+
           <h5>{{ shape | titlecase }} color stops</h5>
           <div fxLayout="row nowrap" aria-label="Color stops">
             <button (click)="setEditableColorStop(i)" *ngFor="let colorStop of colorStops; index as i"
@@ -104,7 +145,7 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Input() shape: string;
 
-  @Output() colorChanged: EventEmitter<Konva.ShapeConfig> = new EventEmitter<Konva.ShapeConfig>();
+  @Output() fillChanged: EventEmitter<Konva.ShapeConfig> = new EventEmitter<Konva.ShapeConfig>();
 
   gradientStage: Konva.Stage;
   gradientBackgroundRect: Konva.Rect;
@@ -122,13 +163,17 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly stageHeight = 200;
   touchUi = false;
 
+  fillPatternImage: HTMLImageElement = null;
+  fillPatternScale = 1;
+  fillPatternRotation = 1;
   // must alternate number and color
   colorStops: {position: number, color: string}[] = [];
   editableColorStopIdx = -1;
   colorStopEditableColor = new Color(255, 255, 255, 255);
 
   constructor(
-    private stateService: ComponentStateService
+    private stateService: ComponentStateService,
+    private dialog: MatDialog,
   ) {
     this.onScreenResize();
   }
@@ -263,13 +308,16 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
       fillRadialGradientStartPoint: getPoint2D(this.gradientPoints[2]),
       fillRadialGradientStartRadius: this.radialGradientStartRadius,
       fillRadialGradientEndRadius: this.radialGradientEndRadius,
+      fillPatternScale: {x: this.fillPatternScale, y: this.fillPatternScale },
+      fillPatternRotation: this.fillPatternRotation,
+      fillPatternImage: this.fillPatternImage,
     };
     // this.konva.selectedNodes.forEach(node => {
     //   node.setAttrs(fillAttributes);
     // });
     this.gradientBackgroundRect.setAttrs(fillAttributes);
     this.gradientStage.batchDraw();
-    this.colorChanged.emit({...fillAttributes,
+    this.fillChanged.emit({...fillAttributes,
       fillLinearGradientStartPoint: getPoint2DPercentage(this.gradientPoints[0], this.stageWidth, this.stageHeight),
       fillLinearGradientEndPoint: getPoint2DPercentage(this.gradientPoints[1], this.stageWidth, this.stageHeight),
       fillRadialGradientEndPoint: getPoint2DPercentage(this.gradientPoints[2], this.stageWidth, this.stageHeight),
@@ -281,7 +329,7 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   changeFillStyle(): void {
-    if (this.fillStyle === 'color') {
+    if (this.fillStyle === 'color' || this.fillStyle === 'pattern') {
       this.gradientPoints.forEach(p => p.opacity(0));
     } else if (this.fillStyle === 'linear-gradient') {
       this.gradientPoints.forEach(p => p.opacity(1));
@@ -302,14 +350,14 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.fillStyle !== 'radial-gradient') {
       this.gradientBackgroundRect.fillLinearGradientStartPoint(getPoint2D(this.gradientPoints[0]));
       this.gradientBackgroundRect.fillLinearGradientEndPoint(getPoint2D(this.gradientPoints[1]));
-      this.colorChanged.emit({
+      this.fillChanged.emit({
         fillLinearGradientStartPoint: getPoint2DPercentage(this.gradientPoints[0], this.stageWidth, this.stageHeight),
         fillLinearGradientEndPoint: getPoint2DPercentage(this.gradientPoints[1], this.stageWidth, this.stageHeight),
       });
     } else {
       this.gradientBackgroundRect.fillRadialGradientEndPoint({ x: this.gradientPoints[2].x(), y: this.gradientPoints[2].y() });
       this.gradientBackgroundRect.fillRadialGradientStartPoint({ x: this.gradientPoints[2].x(), y: this.gradientPoints[2].y() });
-      this.colorChanged.emit({
+      this.fillChanged.emit({
         fillRadialGradientEndPoint: getPoint2DPercentage(this.gradientPoints[2], this.stageWidth, this.stageHeight),
         fillRadialGradientStartPoint: getPoint2DPercentage(this.gradientPoints[2], this.stageWidth, this.stageHeight),
       });
@@ -357,7 +405,7 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
       fillRadialGradientStartRadius: this.radialGradientStartRadius,
       fillRadialGradientEndRadius: this.radialGradientEndRadius,
     };
-    this.colorChanged.emit(attributesToChange);
+    this.fillChanged.emit(attributesToChange);
     this.gradientStage.batchDraw();
   }
 
@@ -376,7 +424,7 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.fillColorChanged();
   }
 
-  trackByIdx(index: number, obj: any): any {
+  trackByIdx(index: number): any {
     return index;
   }
 
@@ -406,5 +454,18 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.colorStops.splice(index, 1);
     this.fillColorChanged();
     this.editableColorStopIdx = null;
+  }
+
+  public async openGallery(): Promise<void> {
+    const dlg = this.dialog.open(ImageGalleryDialogComponent, { width: '70%' });
+    const img: UploadedImage|string = await dlg.afterClosed().toPromise();
+    if (img) {
+      const htmlImg = new Image();
+      htmlImg.onload = () => {
+        this.fillPatternImage = htmlImg;
+        this.fillColorChanged();
+      };
+      htmlImg.src = (img as UploadedImage).src;
+    }
   }
 }

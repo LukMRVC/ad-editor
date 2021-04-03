@@ -13,7 +13,16 @@ export class ImageDrawingService {
   constructor(
     private dataService: BannerDataService,
     private konvaService: KonvaService,
-  ) { }
+  ) {
+    this.dataService.informationUpdated$.subscribe(updatedShapeName => {
+      const updatedShape = this.dataService.getActiveDataset().find(shape => shape.userShapeName === updatedShapeName);
+      if (updatedShape.isImage) {
+        if (updatedShapeName.slugify() !== 'background') {
+          this.drawImage(updatedShapeName.slugify(), updatedShape.shapeConfig as Konva.ImageConfig);
+        }
+      }
+    });
+  }
 
   public drawImage(slugifiedShapeName: string, conf: Konva.ImageConfig = {image: null}): void {
     const shape = this.dataService.getActiveDataset().find(s => s.userShapeName.slugify() === slugifiedShapeName);

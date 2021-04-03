@@ -6,11 +6,9 @@ import {FilterChangedEvent} from '../../editor/components/image-filter.component
 import {BannerDataService} from '@core/services/banner-data.service';
 import {ShapeInformation} from '@core/models/dataset';
 
-// TODO: Add skewing
 // TODO: stylizace banneru
 // TODO: Sablony banneru a tlacitek
-// TODO: Hotovo bannery dat do bakalarky
-// TODO: Font scaling jednotlivych textu
+// TODO: Hotove bannery dat do bakalarky
 // TODO: Vyresit texty
 // TODO: Vice banneru
 // TODO: Undo/Redo
@@ -38,8 +36,11 @@ export class KonvaService {
     });
 
     this.dataService.informationUpdated$.subscribe(updatedShapeName => {
-      // this.shapes = this.dataService.getActiveDataset();
-      // const updatedShape = this.shapes.find(s => s.userShapeName === updatedShapeName);
+      this.shapes = this.dataService.getActiveDataset();
+      const updatedShape = this.shapes.find(s => s.userShapeName === updatedShapeName);
+      if (updatedShape.isImage && updatedShapeName.slugify() === 'background') {
+        this.drawBackground(updatedShape.shapeConfig as Konva.ImageConfig);
+      }
       // if (updatedShape.isText) {
       //   this.updateText(updatedShapeName.slugify(), updatedShape.shapeConfig);
       // } else if (updatedShape.isImage) {
@@ -363,7 +364,7 @@ export class KonvaService {
           width: banner.layout.dimensions.width,
           height: banner.layout.dimensions.height,
         });
-        group.add(new Konva.Rect({
+        const bgRect = new Konva.Rect({
           id: `group-bg-${banner.layout.name}`,
           name: 'background',
           x: posX,
@@ -372,7 +373,49 @@ export class KonvaService {
           height: banner.layout.dimensions.height,
           fill: '#fff',
           transformable: false,
-        }));
+          draggable: true,
+          dragBoundFunc: () => ({x: posX, y: posY }),
+          fillPatternOffsetX: 0,
+          fillPatternOffsetY: 0,
+        });
+
+        bgRect.on('dragstart', dragstart => {
+          dragstart.target.setAttr('dragJustStarted', true);
+        });
+
+        bgRect.on('dragmove', dragging => {
+          bgRect.x(group.clipX());
+          bgRect.y(group.clipY());
+          const justStarted = dragging.target.getAttr('dragJustStarted');
+          if (justStarted) {
+            dragging.target.setAttr('dragFromX', dragging.evt.clientX);
+            dragging.target.setAttr('dragFromY', dragging.evt.clientY);
+            dragging.target.setAttr('dragJustStarted', false);
+            return;
+          }
+          const dragDeltaX = dragging.evt.clientX - dragging.target.getAttr('dragFromX');
+          const dragDeltaY = dragging.evt.clientY - dragging.target.getAttr('dragFromY');
+          dragging.target.setAttr('dragFromX', dragging.evt.clientX);
+          dragging.target.setAttr('dragFromY', dragging.evt.clientY);
+
+
+          for (const bannerGroup2 of this.bannerGroups) {
+            const everyBgRect = bannerGroup2.findOne('.background');
+            if (!this.shouldTransformRelatives) {
+              if (everyBgRect !== dragging.target) {
+                continue;
+              }
+            }
+
+            everyBgRect.setAttrs({
+              fillPatternOffsetX: everyBgRect.getAttr('fillPatternOffsetX') - dragDeltaX,
+              fillPatternOffsetY: everyBgRect.getAttr('fillPatternOffsetY') - dragDeltaY,
+            });
+            everyBgRect.draw();
+          }
+        });
+
+        group.add(bgRect);
 
         const label = KonvaService.bannerLabel({x: 0, y: posY + banner.layout.dimensions.height}, `${banner.layout.dimensions.width}x${banner.layout.dimensions.height}`);
         label.name('banner-label');
@@ -398,89 +441,24 @@ export class KonvaService {
   }
 
   public drawBackground(conf: Konva.ImageConfig): void {
-    // console.log('Drawing background');
-    let firstTimeDrawing = false;
-
     const shape = this.shapes.find(s => s.userShapeName.slugify() === 'background');
     if (!shape.bannerShapeConfig) {
-      firstTimeDrawing = true;
       shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
     }
 
-    for (const [index, bannerGroup] of this.bannerGroups.entries()) {
+    for (const [, bannerGroup] of this.bannerGroups.entries()) {
       // destroy old background so we dont waste memory
-      bannerGroup.getChildren(children => children.name() === 'bg-image').each(c => c.destroy());
       // console.log(shape?.bannerShapeConfig?.get(index));
-
-      const bgImage = new Konva.Image({
-        ...shape?.bannerShapeConfig?.get(index),
-        name: 'bg-image',
-        x: bannerGroup.clipX(),
-        y: bannerGroup.clipY(),
-        width: this.banners[index].layout.dimensions.width,
-        height: this.banners[index].layout.dimensions.height,
-        ...conf,
-        draggable: true,
-        transformable: false,
+      const bgRect = bannerGroup.findOne('.background');
+      bgRect.setAttrs({
+        fillPatternImage: conf.image,
+        fillPriority: 'pattern',
+        fillPatternOffsetX: 0,
+        fillPatternOffsetY: 0,
       });
 
-      bgImage.cropX(shape?.bannerShapeConfig?.get(index)?.cropX);
-      bgImage.cropY(shape?.bannerShapeConfig?.get(index)?.cropY);
-
-      bgImage.on('dragstart', dragstart => {
-        dragstart.target.setAttr('dragJustStarted', true);
-      });
-
-      bgImage.on('dragmove', dragging => {
-        bgImage.x(bannerGroup.clipX());
-        bgImage.y(bannerGroup.clipY());
-        const justStarted = dragging.target.getAttr('dragJustStarted');
-        if (justStarted) {
-          dragging.target.setAttr('dragFromX', dragging.evt.clientX);
-          dragging.target.setAttr('dragFromY', dragging.evt.clientY);
-          dragging.target.setAttr('dragJustStarted', false);
-          return;
-        }
-        const dragDeltaX = dragging.evt.clientX - dragging.target.getAttr('dragFromX');
-        const dragDeltaY = dragging.evt.clientY - dragging.target.getAttr('dragFromY');
-        dragging.target.setAttr('dragFromX', dragging.evt.clientX);
-        dragging.target.setAttr('dragFromY', dragging.evt.clientY);
-
-        for (const bannerGroup2 of this.bannerGroups) {
-          const img = (bannerGroup2.findOne('.bg-image') as Konva.Image);
-          if (!this.shouldTransformRelatives) {
-            if (img !== dragging.target) {
-              continue;
-            }
-          }
-          img.clearCache();
-          if (img.cropX() - dragDeltaX > 0 && (img.cropX() - dragDeltaX + img.cropWidth()) < img.image().width) {
-            img.cropX( img.cropX() - dragDeltaX );
-          }
-          if (img.cropY() - dragDeltaY > 0 && (img.cropY() - dragDeltaY + img.cropHeight()) < img.image().height) {
-            img.cropY( img.cropY() - dragDeltaY );
-          }
-          img.cache();
-          img.draw();
-        }
-      });
-
-      bgImage.on('dragend', () => {
-        for (const [idx, group] of this.bannerGroups.entries()) {
-          const img = (group.findOne('.bg-image') as Konva.Image);
-          shape.bannerShapeConfig.set(idx, img.getAttrs());
-        }
-      });
-
-      shape.bannerShapeConfig.set(index, bgImage.getAttrs());
-      bannerGroup.add(bgImage);
-      bgImage.moveToBottom();
-      bgImage.cache();
-      bannerGroup.findOne('.background').moveToBottom();
     }
-    if (firstTimeDrawing) {
-      this.positionBackground('center-top');
-    }
+
     this.redraw();
   }
 
@@ -673,7 +651,7 @@ export class KonvaService {
 
   public redrawShapes(): void {
     for (const bannerGroup of this.bannerGroups) {
-      bannerGroup.getChildren( node => node.name() !== 'group-bg' && node.name() !== 'banner-label' )
+      bannerGroup.getChildren( node => node.name() !== 'background' && node.name() !== 'banner-label' )
         .each(c => c.destroy());
     }
 
@@ -729,6 +707,7 @@ export class KonvaService {
       if (!shape) {
         continue;
       }
+
       for (const pointKey of Object.keys(pixelPoints)) {
         pixelPoints[pointKey] = this.getPointPixelPositionFromPercentage($event[pointKey], shapeDim(shape));
       }

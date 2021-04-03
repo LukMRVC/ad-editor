@@ -1,22 +1,22 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {Color} from '@angular-material-components/color-picker';
 import {FormControl} from '@angular/forms';
-import {KonvaService} from '@core/services/konva.service';
+import {TextDrawingService} from '@core/services/drawing/text-drawing.service';
 
 @Component({
   selector: 'app-text-style',
   template: `
     <div fxLayout="column" fxLayoutGap="0.5rem">
-      <app-font-chooser (fontFamilyLoaded)="konva.updateText(shapeName.slugify(), { fontFamily: $event })"></app-font-chooser>
-      <app-text-h-alignment (alignmentChanged)="konva.updateText(shapeName.slugify(), {align: $event})"></app-text-h-alignment>
-      <app-text-v-alignment (alignmentChanged)="konva.updateText(shapeName.slugify(), {verticalAlign: $event})"></app-text-v-alignment>
-      <app-text-decoration (decorationChanged)="konva.updateText(shapeName.slugify(), $event)"></app-text-decoration>
+      <app-font-chooser (fontFamilyLoaded)="textService.updateText(shapeName.slugify(), { fontFamily: $event })"></app-font-chooser>
+      <app-text-h-alignment (alignmentChanged)="textService.updateText(shapeName.slugify(), {align: $event})"></app-text-h-alignment>
+      <app-text-v-alignment (alignmentChanged)="textService.updateText(shapeName.slugify(), {verticalAlign: $event})"></app-text-v-alignment>
+      <app-text-decoration (decorationChanged)="textService.updateText(shapeName.slugify(), $event)"></app-text-decoration>
       <div fxFlex fxLayout="column">
         <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
           <label>Line height</label>
           <span>{{ fontLineHeight }}</span>
         </div>
-        <mat-slider (change)="konva.updateText(this.shapeName.slugify(), {lineHeight: fontLineHeight})"
+        <mat-slider (change)="textService.updateText(this.shapeName.slugify(), {lineHeight: fontLineHeight})"
                     [(ngModel)]="fontLineHeight" thumbLabel min="1" max="5" step="0.1" value="1"></mat-slider>
       </div>
 
@@ -25,7 +25,7 @@ import {KonvaService} from '@core/services/konva.service';
           <label>Letter spacing</label>
           <span>{{ fontLetterSpacing }}</span>
         </div>
-        <mat-slider (change)="konva.updateText(this.shapeName.slugify(), {letterSpacing: fontLetterSpacing})"
+        <mat-slider (change)="textService.updateText(this.shapeName.slugify(), {letterSpacing: fontLetterSpacing})"
                     [(ngModel)]="fontLetterSpacing" thumbLabel min="-10" max="10" step="0.1" value="0"></mat-slider>
       </div>
 
@@ -34,7 +34,7 @@ import {KonvaService} from '@core/services/konva.service';
           <label>Font size</label>
           <span>{{ fontScaling }}%</span>
         </div>
-        <mat-slider (change)="konva.updateText(this.shapeName.slugify(), {fontScaling: fontScaling})"
+        <mat-slider (change)="textService.updateText(this.shapeName.slugify(), {fontScaling: fontScaling})"
                     [(ngModel)]="fontScaling" thumbLabel min="-10" max="10" step="0.1" value="0"></mat-slider>
       </div>
 
@@ -42,13 +42,13 @@ import {KonvaService} from '@core/services/konva.service';
         <mat-label>Color</mat-label>
         <input [(ngModel)]="fillColor" (keydown.enter)="fillPicker.close()" (focus)="fillPicker.open()"
                [ngxMatColorPicker]="fillPicker"
-               (colorChange)="konva.updateText(this.shapeName.slugify(), {fill: fillColor.toHex8String()})" matInput #fillColourInput>
+               (colorChange)="textService.updateText(this.shapeName.slugify(), {fill: fillColor.toHex8String()})" matInput #fillColourInput>
         <ngx-mat-color-toggle matSuffix [for]="fillPicker"></ngx-mat-color-toggle>
         <ngx-mat-color-picker defaultColor="#000" #fillPicker touchUi="false"></ngx-mat-color-picker>
       </mat-form-field>
 
       <!-- Shadow controls -->
-      <app-shadow [shadowFor]="shapeName.slugify()" (shadowChange)="konva.updateText(this.shapeName.slugify(), $event)"></app-shadow>
+      <app-shadow [shadowFor]="shapeName.slugify()" (shadowChange)="textService.updateText(this.shapeName.slugify(), $event)"></app-shadow>
     </div>
 
   `,
@@ -70,7 +70,7 @@ export class TextStyleComponent implements OnInit {
   shadow = { enabled: false, color: new Color(0, 0, 0, 255), blur: 3, offsetY: 0, offsetX: 0 };
 
   constructor(
-    public konva: KonvaService,
+    public textService: TextDrawingService,
   ) { }
 
   ngOnInit(): void {

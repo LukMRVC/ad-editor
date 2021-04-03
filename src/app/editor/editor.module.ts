@@ -5,7 +5,6 @@ import { DrawToolbarComponent } from './components/draw-toolbar/draw-toolbar.com
 import {SharedModule} from '@shared/shared.module';
 import {EditorRoutingModule} from './editor-routing.module';
 import {FaIconLibrary, FontAwesomeModule} from '@fortawesome/angular-fontawesome';
-import { CanvasObjectToolbarComponent } from './components/canvas-object-toolbar/canvas-object-toolbar.component';
 import { StageLayersComponent } from './components/stage-layers/stage-layers.component';
 
 import {
@@ -38,7 +37,6 @@ import {ComponentStateService} from '@core/services/component-state.service';
   declarations: [
     EditorComponent,
     DrawToolbarComponent,
-    CanvasObjectToolbarComponent,
     StageLayersComponent,
     LogoComponent,
     HeadlineComponent,

@@ -1,6 +1,5 @@
 import {Component} from '@angular/core';
-import {KonvaService} from '@core/services/konva.service';
-import {TextDrawingService} from '@core/services/text-drawing.service';
+import {TextDrawingService} from '@core/services/drawing/text-drawing.service';
 
 @Component({
   selector: 'app-headline',

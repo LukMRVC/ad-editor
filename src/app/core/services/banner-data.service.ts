@@ -138,7 +138,6 @@ export class BannerDataService {
       shapeInformation.shapeConfig.text = nextValue;
       this.informationUpdated$.next(shapeInformation.userShapeName);
     }
-    // console.log(this.datasets);
   }
 
   public getActiveBanners(): Banner[] {

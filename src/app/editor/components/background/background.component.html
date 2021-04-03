@@ -8,31 +8,30 @@
     </mat-panel-description>
   </mat-expansion-panel-header>
   <div fxLayout="column" fxLayoutAlign="start" fxLayoutGap="0.5rem">
+<!--    <button (click)="openGallery(dataService.activeDataset, logoShapeInfo)" fxFlex #uploadBtn mat-raised-button color="primary">-->
+<!--      <mat-icon>insert_photo</mat-icon>-->
+<!--      Background image-->
+<!--    </button>-->
 
-    <button (click)="openGallery(dataService.activeDataset, logoShapeInfo)" fxFlex #uploadBtn mat-raised-button color="primary">
-      <mat-icon>insert_photo</mat-icon>
-      Background image
-    </button>
+<!--    <mat-form-field appearance="outline">-->
+<!--      <mat-label>Background fit</mat-label>-->
+<!--      <mat-select [(ngModel)]="selectedBackgroundFit" (selectionChange)="konva.positionBackground($event.value); konva.redraw()">-->
+<!--        <mat-option [value]="opt" *ngFor="let opt of this.imageFitOptions">-->
+<!--          {{ opt }}-->
+<!--        </mat-option>-->
+<!--      </mat-select>-->
+<!--    </mat-form-field>-->
 
-    <mat-form-field appearance="outline">
-      <mat-label>Background fit</mat-label>
-      <mat-select [(ngModel)]="selectedBackgroundFit" (selectionChange)="konva.positionBackground($event.value); konva.redraw()">
-        <mat-option [value]="opt" *ngFor="let opt of this.imageFitOptions">
-          {{ opt }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+<!--    <div fxFlex fxLayout="column">-->
+<!--      <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">-->
+<!--        <label>Zoom effect</label>-->
+<!--        <span>{{ zoom }}</span>-->
+<!--      </div>-->
+<!--      <mat-slider [(ngModel)]="zoom" thumbLabel min="0.1" max="2" step="0.1"-->
+<!--                  (valueChange)="konva.zoomBackground($event)"></mat-slider>-->
+<!--    </div>-->
 
-    <div fxFlex fxLayout="column">
-      <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-        <label>Zoom effect</label>
-        <span>{{ zoom }}</span>
-      </div>
-      <mat-slider [(ngModel)]="zoom" thumbLabel min="0.1" max="2" step="0.1"
-                  (valueChange)="konva.zoomBackground($event)"></mat-slider>
-    </div>
-
-    <app-shape-bg-color (colorChanged)="bgChangedEvent($event)" shape="background"></app-shape-bg-color>
+    <app-shape-bg-color (fillChanged)="bgChangedEvent($event)" shape="background"></app-shape-bg-color>
 
   </div>
 </mat-expansion-panel>

@@ -3,7 +3,7 @@ import {KonvaService} from '@core/services/konva.service';
 import {BannerDataService} from '@core/services/banner-data.service';
 import {ShapeInformation} from '@core/models/dataset';
 import Konva from 'konva';
-import {ShapeFactoryService} from '@core/services/shape-factory.service';
+import {ShapeFactoryService} from '@core/services/drawing/shape-factory.service';
 
 @Injectable({
   providedIn: 'root'

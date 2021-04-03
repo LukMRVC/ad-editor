@@ -3,7 +3,7 @@ import {KonvaService} from '@core/services/konva.service';
 import {Color} from '@angular-material-components/color-picker';
 import {Subject} from 'rxjs';
 import {debounceTime} from 'rxjs/operators';
-import {ButtonDrawingService} from '@core/services/button-drawing.service';
+import {ButtonDrawingService} from '@core/services/drawing/button-drawing.service';
 
 @Component({
   selector: 'app-button',

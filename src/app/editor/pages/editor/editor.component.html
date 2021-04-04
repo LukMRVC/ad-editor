@@ -36,7 +36,8 @@
 
     <app-shape-data fxFlexOrder="1"></app-shape-data>
 
-    <div fxLayout="column nowrap" #stageWrapper fxLayoutAlign="start" fxFlex class="canvas-wrapper" fxFlexOrder="2">
+    <div (click)="contextMenu.visibility = 'none'; contextMenuActions = []"
+         fxLayout="column nowrap" #stageWrapper fxLayoutAlign="start" fxFlex class="canvas-wrapper" fxFlexOrder="2">
       <!-- Datasets-->
       <div fxLayout="row nowrap" class="datasets" cdkDropListOrientation="horizontal" cdkDropList
            cdkDropListLockAxis="x" (cdkDropListDropped)="reorderDatasets($event)">

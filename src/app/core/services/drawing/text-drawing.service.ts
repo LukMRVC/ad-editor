@@ -112,6 +112,9 @@ export class TextDrawingService {
 
   public updateText(slugifiedShapeName: string, attributes: Konva.TextConfig): void {
     const shape = this.dataService.getActiveDataset().find(s => s.userShapeName.slugify() === slugifiedShapeName);
+    // if ('text' in attributes) {
+    //   shape.shapeConfig.text = attributes.text;
+    // }
     const textsToUpdate = this.konvaService.shouldTransformRelatives
       ? [] : this.konvaService.getTransformer().nodes().filter(s => s.name() === slugifiedShapeName);
 

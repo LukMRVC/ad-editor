@@ -189,7 +189,6 @@ export class BannerDataService {
         const dataLines = lines.slice(1).filter(l => l != null && l !== '');
         const templateDataset = this.template.shapes as ShapeInformation[];
         // console.log(templateDataset);
-        const takeFromTemplate = columns.filter(shape => !header.includes(shape));
 
         for (const line of dataLines) {
           const dataset = this.createTemplateDatasetCopy();

@@ -67,7 +67,11 @@ export class ButtonDrawingService {
       const savedData = shape.bannerShapeConfig.get(banner.id);
       if (!savedData.shouldDraw) { return null; }
       // console.log('Recovering button from', savedData);
-      button = ButtonDrawingService.createButtonLabel(savedData.labelConfig, savedData.tagConfig, savedData.textConfig);
+      button = ButtonDrawingService.createButtonLabel(
+        { ...savedData.labelConfig, ...configs.labelConfig },
+        { ...savedData.tagConfig, ...configs.tagConfig },
+        { ...savedData.textConfig, ...configs.textConfig }
+      );
     } else {
       const dimensions = { width: banner.layout.dimensions.width / 3, height: banner.layout.dimensions.height / 5 };
       const {x, y} = banner.getPixelPositionFromPercentage(banner.layout.buttonPosition, dimensions);
@@ -75,8 +79,8 @@ export class ButtonDrawingService {
       const offsetY = group.clipY();
       button = ButtonDrawingService.createButtonLabel(
         { x: x + offsetX, y: y + offsetY, ...configs.labelConfig },
-        {...configs.tagConfig},
-        {...configs.textConfig}
+        {...configs.tagConfig },
+        {...configs.textConfig }
       );
       const tag = button.findOne('.button-tag');
       const text = button.findOne('.button-text');

@@ -4,8 +4,6 @@ import {FormControl} from '@angular/forms';
 import {Observable, Subscription} from 'rxjs';
 import {map, startWith} from 'rxjs/operators';
 import {MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
-import * as WebFontLoader from 'webfontloader';
-
 
 @Component({
   selector: 'app-font-chooser',
@@ -37,7 +35,7 @@ export class FontChooserComponent implements OnInit, OnDestroy {
 
   constructor(
     public googleFont: GoogleFontService,
-  ) { }
+  ) {}
 
   autocompleteDisplay = ( (font: WebFont) => font?.family );
 
@@ -58,14 +56,10 @@ export class FontChooserComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  loadFont($event: MatAutocompleteSelectedEvent): void {
+  async loadFont($event: MatAutocompleteSelectedEvent): Promise<void> {
     const optionValue = $event.option.value;
-    WebFontLoader.load({
-      fontactive: (familyName, fvd) => { this.fontFamilyLoaded.emit(familyName); },
-      google: {
-        families: [optionValue.family]
-      }
-    });
+    const loadedFontFamily = await this.googleFont.loadFont(optionValue.family);
+    this.fontFamilyLoaded.emit(loadedFontFamily);
   }
 
   private _filter(fontFamilyName: string): WebFont[] {

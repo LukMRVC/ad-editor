@@ -27,7 +27,9 @@ export class KonvaService {
     this.dataService.datasetChanged$.subscribe(() => {
       this.shapes = this.dataService.getActiveDataset();
       this.transformer.nodes([]);
-      this.redrawShapes();
+      this.clearBanners();
+      const bannerBg = this.shapes.find(s => s.userShapeName.slugify() === 'background');
+      this.updateBackgroundOfShape(bannerBg.shapeConfig, 'background', true);
     });
 
     this.dataService.banners$.subscribe(newBanners => {
@@ -569,14 +571,14 @@ export class KonvaService {
     return eventBanner.getPercentageCenterPositionInBanner({x: xPos, y: yPos}, dimensions);
   }
 
-  public redrawShapes(): void {
+  public clearBanners(): void {
     for (const bannerGroup of this.bannerGroups) {
       bannerGroup.getChildren( node => node.name() !== 'background' && node.name() !== 'banner-label' )
         .each(c => c.destroy());
     }
   }
 
-  public updateBackgroundOfShape($event: Konva.ShapeConfig, slugifiedShapeName: string): void {
+  public updateBackgroundOfShape(bgConfig: Konva.ShapeConfig, slugifiedShapeName: string, restore = false): void {
     let shapeInfo = this.shapes.find(s => s.userShapeName.slugify() === slugifiedShapeName);
     if (slugifiedShapeName === 'button-tag') {
       shapeInfo = this.shapes.find(s => s.userShapeName.slugify() === 'button');
@@ -584,6 +586,7 @@ export class KonvaService {
     if ( !shapeInfo.bannerShapeConfig) {
       shapeInfo.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
     }
+
     const pixelPoints = {
       fillLinearGradientStartPoint: undefined,
       fillLinearGradientEndPoint: undefined,
@@ -594,7 +597,7 @@ export class KonvaService {
     const keysToDelete = [];
     // Dont delete key directly to avoid Undefined behaviour
     for (const key of Object.keys(pixelPoints)) {
-      if ( !(key in $event)) {
+      if ( !(key in bgConfig)) {
         keysToDelete.push(key);
       }
     }
@@ -611,23 +614,29 @@ export class KonvaService {
         continue;
       }
 
+      if (restore) {
+        const attrs = shapeInfo.bannerShapeConfig.get(group.getAttr('bannerId'));
+        shape.setAttrs(attrs);
+        continue;
+      }
+
       for (const pointKey of Object.keys(pixelPoints)) {
-        pixelPoints[pointKey] = KonvaService.getPointPixelPositionFromPercentage($event[pointKey], shapeDim(shape));
+        pixelPoints[pointKey] = KonvaService.getPointPixelPositionFromPercentage(bgConfig[pointKey], shapeDim(shape));
       }
       // dimensions
       const dims = shapeDim(shape);
 
       const radialGradientRadiuses = {
-        fillRadialGradientStartRadius: (($event.fillRadialGradientStartRadius ?? 0) / 100.0) *
+        fillRadialGradientStartRadius: ((bgConfig.fillRadialGradientStartRadius ?? 0) / 100.0) *
           (dims.width >= dims.height ? dims.width : dims.height),
-        fillRadialGradientEndRadius: (($event.fillRadialGradientEndRadius ?? 0) / 100.0) *
+        fillRadialGradientEndRadius: ((bgConfig.fillRadialGradientEndRadius ?? 0) / 100.0) *
           (dims.width >= dims.height ? dims.width : dims.height),
       };
 
-      if ('fillRadialGradientStartRadius' in $event) {
-        shape.setAttrs({ ...$event, ...pixelPoints, ...radialGradientRadiuses });
+      if ('fillRadialGradientStartRadius' in bgConfig) {
+        shape.setAttrs({ ...bgConfig, ...pixelPoints, ...radialGradientRadiuses });
       } else {
-        shape.setAttrs({ ...$event, ...pixelPoints });
+        shape.setAttrs({ ...bgConfig, ...pixelPoints });
       }
       if (slugifiedShapeName === 'button-tag') {
         const shapeCfg = shapeInfo.bannerShapeConfig.get(group.getAttr('bannerId'));

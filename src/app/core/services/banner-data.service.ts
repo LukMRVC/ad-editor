@@ -5,6 +5,7 @@ import {Banner} from '@core/models/banner-layout';
 import {ImageGalleryService} from '@core/services/image-gallery.service';
 import {Dataset, ShapeInformation} from '@core/models/dataset';
 import {BannerService} from '@core/services/banner.service';
+import {GoogleFontService} from '@core/services/google-font.service';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +27,7 @@ export class BannerDataService {
   constructor(
     private imageService: ImageGalleryService,
     private bannerService: BannerService,
+    private fontService: GoogleFontService,
   ) {
     this.template = new Dataset('Template', null, this.createDataset());
     this.activeDataset = 'template';
@@ -266,18 +268,30 @@ export class BannerDataService {
     const json = JSON.parse(fileContent);
     const banners = json.banners;
     this.template = json.template;
+    let fontsToLoad = [];
     for (const shape of this.template.shapes) {
       if (shape.isImage && shape.userShapeName.slugify() !== 'background') {
         shape.shapeConfig.image = await this.imageService.loadImage(shape.shapeConfig.imageSrc);
       }
       shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(shape.serializedBannerShapeConfig ?? []);
+      if (shape.isText) {
+        fontsToLoad = fontsToLoad.concat([...shape.bannerShapeConfig.values()].map(txtConfig => txtConfig.fontFamily));
+      }
+      if (shape.isButton) {
+        const textCfgs = [...shape.bannerShapeConfig.values()].map(btnCfg => btnCfg.textConfig?.fontFamily);
+        fontsToLoad = fontsToLoad.concat(textCfgs);
+      }
+    }
+    fontsToLoad = fontsToLoad.filter( (val, index, self) => self.indexOf(val) === index );
+    for (const fontFamily of fontsToLoad) {
+      await this.fontService.loadFont(fontFamily);
     }
     this.datasets = json.datasets;
-    this.datasets.forEach(dataset => {
-      dataset.shapes.forEach(shape => {
+    for (const dataset of this.datasets) {
+      for (const shape of dataset.shapes) {
         shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(shape.serializedBannerShapeConfig ?? []);
-      });
-    });
+      }
+    }
     this.userShapes = json.userShapes;
     this.setBanners(this.bannerService.toInstances(banners));
     this.setActiveDataset('template');

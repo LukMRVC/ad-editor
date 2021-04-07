@@ -13,7 +13,14 @@ export class TextDrawingService {
   constructor(
     private dataService: BannerDataService,
     private konvaService: KonvaService,
-  ) { }
+  ) {
+    this.dataService.datasetChanged$.subscribe(() => {
+      const allTexts = this.dataService.getActiveDataset().filter(shape => shape.isText);
+      for (const text of allTexts) {
+        this.drawText(text.userShapeName.slugify(), text.shapeConfig);
+      }
+    });
+  }
 
   private static createText(group: Konva.Group, banner: Banner, shape: ShapeInformation, conf: Konva.TextConfig, slug = null): Konva.Text {
     if (slug === null) {
@@ -23,7 +30,7 @@ export class TextDrawingService {
     // Draw shape from saved config
     if (shape.bannerShapeConfig.has(banner.id)) {
       if (!shape.bannerShapeConfig.get(banner.id).shouldDraw) { return text; }
-      text = new Konva.Text({ ...shape.bannerShapeConfig.get(banner.id), ...shape.shapeConfig});
+      text = new Konva.Text({ ...shape.shapeConfig, ...shape.bannerShapeConfig.get(banner.id) });
     } else {
       const dimensions = { width: banner.layout.dimensions.width, height: null };
       conf.width =  banner.layout.dimensions.width;

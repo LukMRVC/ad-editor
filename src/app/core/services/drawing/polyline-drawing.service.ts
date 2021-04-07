@@ -50,7 +50,7 @@ export class PolylineDrawingService {
     });
 
     this.konvaService.onContextMenu$.subscribe(ctxMenu => {
-      if (ctxMenu.target.getParent() === this.konvaService.editGroup) {
+      if (this.konvaService.editGroup !== null && ctxMenu.target.getParent() === this.konvaService.editGroup) {
         const editablePoly = this.konvaService.editGroup.getChildren(c => c.name() !== 'editPoint').toArray()[0];
         const pointerPosition = this.konvaService.getStage().getPointerPosition();
         const actions = [

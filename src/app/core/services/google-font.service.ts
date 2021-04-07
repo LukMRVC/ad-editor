@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {environment} from '@env/environment';
 import {shareReplay} from 'rxjs/operators';
-
+import * as WebFontLoader from 'webfontloader';
 
 @Injectable({
   providedIn: 'root'
@@ -15,9 +15,10 @@ export class GoogleFontService {
   baseUrl = 'https://www.googleapis.com/webfonts/v1/webfonts';
 
   fontData$: Observable<WebFontList>;
+  fontFamilyLoaded$ = new EventEmitter<string>();
 
   constructor(
-    public httpClient: HttpClient
+    public httpClient: HttpClient,
   ) {
     this.fontData$ = this.httpClient.get<WebFontList>(`${this.baseUrl}`, {
       params: {
@@ -29,6 +30,20 @@ export class GoogleFontService {
 
   getAll$(): Observable<WebFontList> {
     return this.fontData$;
+  }
+
+  public loadFont(fontFamilyName: string): Promise<string> {
+    return new Promise( (resolve) => {
+      WebFontLoader.load({
+        fontactive: (familyName) => {
+          this.fontFamilyLoaded$.emit(familyName);
+          resolve(familyName);
+        },
+        google: {
+          families: [fontFamilyName],
+        }
+      });
+    });
   }
 }
 

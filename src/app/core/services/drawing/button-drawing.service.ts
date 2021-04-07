@@ -13,7 +13,13 @@ export class ButtonDrawingService {
   constructor(
     private konvaService: KonvaService,
     private dataService: BannerDataService,
-  ) { }
+  ) {
+    this.dataService.datasetChanged$.subscribe(() => {
+      const button = this.dataService.getActiveDataset().find(shape => shape.userShapeName.slugify() === 'button');
+      this.drawButton(button.shapeConfig.labelConfig, button.shapeConfig.tagConfig, button.shapeConfig.textConfig);
+    });
+
+  }
 
   private static createButtonLabel(conf: Konva.ShapeConfig, tagConfig = {}, textConfig = {}): Konva.Label {
     const button = new Konva.Label({

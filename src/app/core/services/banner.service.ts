@@ -8,11 +8,7 @@ export class BannerService {
 
   constructor() { }
 
-  // get computerBanners(): Banner[] {
-  //   return [...this.computer].map(layout => new Banner(layout));
-  // }
-
-  private readonly computer: BannerLayout[] = [
+  public readonly computer: BannerLayout[] = [
     {
       name: 'big-square',
       dimensions:
@@ -40,24 +36,6 @@ export class BannerService {
       logoPosition: {y: 5, x: 90},
       headlinePosition: {y: 25, x: 1},
       headlineFontSize: 28,
-      buttonPosition: {y: 80, x: 70},
-    },
-    {
-      name: 'small-square',
-      dimensions: {width: 200, height: 200},
-      hasLogo: false,
-      // logoPosition: {y: 5, x: 90},
-      headlinePosition: {y: 5, x: 1},
-      headlineFontSize: 24,
-      buttonPosition: {y: 80, x: 70},
-    },
-    {
-      name: 'square',
-      dimensions: {width: 250, height: 250},
-      hasLogo: true,
-      logoPosition: {y: 5, x: 90},
-      headlinePosition: {y: 25, x: 1},
-      headlineFontSize: 24,
       buttonPosition: {y: 80, x: 70},
     },
     {
@@ -107,17 +85,8 @@ export class BannerService {
     },
   ];
 
-  private readonly mobile: BannerLayout[] = [
+  public readonly mobile: BannerLayout[] = [
     // tslint:disable-next-line:max-line-length
-    {
-      name: 'rectangle',
-      dimensions: {width: 300, height: 250},
-      hasLogo: true,
-      logoPosition: {y: 5, x: 90},
-      headlinePosition: {y: 25, x: 1},
-      headlineFontSize: 16,
-      buttonPosition: {y: 80, x: 90},
-    },
     {
       name: 'wide-narrow-rectangle',
       dimensions: {width: 320, height: 100},
@@ -146,6 +115,14 @@ export class BannerService {
       buttonPosition: {y: 80, x: 90},
     },
   ];
+
+  public toInstances(layouts: BannerLayout[]): Banner[] {
+    layouts = layouts.sort( (a, b) => {
+      return (b.dimensions.width * b.dimensions.height) - (a.dimensions.width * a.dimensions.height);
+    });
+
+    return [...layouts].map( (layout, index) => new Banner(layout, index) );
+  }
 
   public getComputerBanners(): Banner[] {
     return [...this.computer].map((layout, index) => new Banner(layout, index));

@@ -32,6 +32,7 @@ import { TextStyleComponent } from './components/styling/text/text-style.compone
 import { StrokeComponent } from './components/styling/stroke.component';
 import { ShapeBgColorComponent } from './components/styling/shape-bg-color.component';
 import {ComponentStateService} from '@core/services/component-state.service';
+import { BannerDialogComponent } from './components/banner-dialog.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +54,7 @@ import {ComponentStateService} from '@core/services/component-state.service';
     TextStyleComponent,
     StrokeComponent,
     ShapeBgColorComponent,
+    BannerDialogComponent,
   ],
   imports: [
     CommonModule,

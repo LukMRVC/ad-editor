@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
 
 import {KonvaService} from '@core/services/konva.service';
 import {Subscription} from 'rxjs';
@@ -7,6 +7,9 @@ import {BannerDataService} from '@core/services/banner-data.service';
 import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
 import {ImageDrawingService} from '@core/services/drawing/image-drawing.service';
 import {PolylineDrawingService} from '@core/services/drawing/polyline-drawing.service';
+import {MatDialog} from '@angular/material/dialog';
+import {BannerDialogComponent} from '../../components/banner-dialog.component';
+import {Banner, BannerLayout} from '@core/models/banner-layout';
 
 @Component({
   selector: 'app-editor',
@@ -24,13 +27,13 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     public konva: KonvaService,
-    public bannerService: BannerService,
+    public dialog: MatDialog,
     public dataService: BannerDataService,
     public imageDrawingService: ImageDrawingService,
     public shapeDrawingService: PolylineDrawingService,
   ) { }
 
-  ngAfterViewInit(): void {
+  async ngAfterViewInit(): Promise<void> {
     this.konva.init({
       container: 'stage',
       draggable: true,
@@ -62,24 +65,10 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       this.contextMenu.top = `${containerRect.top + event.pos.y}px`;
       this.contextMenu.left = `${containerRect.left + event.pos.x}px`;
     });
-    // this.konva.onContextMenu$.subscribe( event => {
-    //   if (event.target === this.konva.getInstance()) {
-    //     return;
-    //   }
-    //   this.contextMenu.visibility = 'flex';
-    //   const ancestor = event.target.findAncestor('Group', true);
-    //   // console.log(ancestor);
-    //   // console.log(ancestor.id());
-    //   console.assert(ancestor !== undefined);
-    //   this.downloadTargetId = ancestor.id();
-    //   const containerRect = this.stageWrapper.nativeElement.getBoundingClientRect();
-    //   this.contextMenu.top = containerRect.top + this.konva.getInstance().getPointerPosition().y + 'px';
-    //   this.contextMenu.left = containerRect.left + this.konva.getInstance().getPointerPosition().x + 'px';
-    // });
 
-    this.dataService.setBanners(this.bannerService.getComputerBanners());
-    // this.konva.drawHeadline({ draggable: true, padding: 10, /*text: 'Test text', fontStyle: 'italic bold' */});
-    // this.konva.drawButton();
+    const bannerDialog = this.dialog.open(BannerDialogComponent, { width: '70%' });
+    const banners: Banner[] = await bannerDialog.afterClosed().toPromise();
+    this.dataService.setBanners(banners);
   }
 
   ngOnDestroy(): void {

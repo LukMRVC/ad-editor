@@ -4,6 +4,7 @@ import {BehaviorSubject, Subject} from 'rxjs';
 import {Banner} from '@core/models/banner-layout';
 import {ImageGalleryService} from '@core/services/image-gallery.service';
 import {Dataset, ShapeInformation} from '@core/models/dataset';
+import {BannerService} from '@core/services/banner.service';
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +25,7 @@ export class BannerDataService {
 
   constructor(
     private imageService: ImageGalleryService,
+    private bannerService: BannerService,
   ) {
     this.template = new Dataset('Template', null, this.createDataset());
     this.activeDataset = 'template';
@@ -238,5 +240,24 @@ export class BannerDataService {
     }
     this.datasets.splice(datasetIndex, 1);
 
+  }
+
+  public serialized(): string {
+    const datasets = {
+      template: this.template,
+      banners: this.banners$.value.map(banner => banner.layout),
+      datasets: [...this.datasets],
+      userShapes: [...this.userShapes],
+    };
+    return JSON.stringify(datasets);
+  }
+
+  import(fileContent: string): void {
+    const json = JSON.parse(fileContent);
+    const banners = json.banners;
+    this.template = json.template;
+    this.datasets = json.datasets;
+    this.userShapes = json.userShapes;
+    this.setBanners(this.bannerService.toInstances(banners));
   }
 }

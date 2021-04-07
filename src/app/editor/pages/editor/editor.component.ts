@@ -68,11 +68,13 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
     const bannerDialog = this.dialog.open(BannerDialogComponent, { width: '70%' });
     const banners: Banner[] = await bannerDialog.afterClosed().toPromise();
-    this.dataService.setBanners(banners);
+    if (banners) {
+      this.dataService.setBanners(banners);
+    }
   }
 
   ngOnDestroy(): void {
-    console.log(`Destroying editor component`);
+    // console.log(`Destroying editor component`);
     this.subscription.unsubscribe();
   }
 

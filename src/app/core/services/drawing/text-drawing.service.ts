@@ -30,7 +30,7 @@ export class TextDrawingService {
     // Draw shape from saved config
     if (shape.bannerShapeConfig.has(banner.id)) {
       if (!shape.bannerShapeConfig.get(banner.id).shouldDraw) { return text; }
-      text = new Konva.Text({ ...shape.shapeConfig, ...shape.bannerShapeConfig.get(banner.id) });
+      text = new Konva.Text({ ...shape.bannerShapeConfig.get(banner.id), ...shape.shapeConfig, });
     } else {
       const dimensions = { width: banner.layout.dimensions.width, height: null };
       conf.width =  banner.layout.dimensions.width;

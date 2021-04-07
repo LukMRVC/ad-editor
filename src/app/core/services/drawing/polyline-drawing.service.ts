@@ -25,6 +25,13 @@ export class PolylineDrawingService {
     private dataService: BannerDataService,
     private shapeFactory: ShapeFactoryService,
   ) {
+    this.dataService.datasetChanged$.subscribe(() => {
+      const shapes = this.dataService.getActiveDataset().filter(s => !s.isText && !s.isButton && !s.isImage);
+      for (const shape of shapes) {
+        this.drawShape(shape);
+      }
+    });
+
     this.konvaService.onClickTap$.subscribe(ev => {
       if (this.konvaService.editGroup !== null && ev.target.getParent() !== this.konvaService.editGroup) {
         this.konvaService.editGroup.getChildren(c => c.name() === 'editPoint').each(c => c.destroy());

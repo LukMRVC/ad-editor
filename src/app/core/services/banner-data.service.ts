@@ -12,6 +12,15 @@ import {GoogleFontService} from '@core/services/google-font.service';
 })
 export class BannerDataService {
 
+  constructor(
+    private imageService: ImageGalleryService,
+    private bannerService: BannerService,
+    private fontService: GoogleFontService,
+  ) {
+    this.template = new Dataset('Template', null, this.createDataset());
+    this.activeDataset = 'template';
+  }
+
   userShapes: ShapeInformation[] = [];
   public datasetChanged$ = new Subject<string>();
   public informationUpdated$ = new Subject<string>();
@@ -24,13 +33,17 @@ export class BannerDataService {
   public activeDataset: string = null;
   private banners: Banner[] = [];
 
-  constructor(
-    private imageService: ImageGalleryService,
-    private bannerService: BannerService,
-    private fontService: GoogleFontService,
-  ) {
-    this.template = new Dataset('Template', null, this.createDataset());
-    this.activeDataset = 'template';
+  private static parseCsvHeader(lines: string[], expectedHeaders: string[]): string[] {
+    const header = [];
+    for (const column of lines[0].split(';')) {
+      if (column === '') {
+        continue;
+      } else if (!expectedHeaders.includes(column)) {
+        throw new Error(`Unknown header \'${column}\' found in dataset!`);
+      }
+      header.push(column);
+    }
+    return header;
   }
 
   private createDataset(): ShapeInformation[] {
@@ -64,6 +77,15 @@ export class BannerDataService {
       }
     ];
     return datasetShapes.concat( JSON.parse(JSON.stringify(this.userShapes)) );
+  }
+
+  private createTemplateDatasetCopy(): ShapeInformation[] {
+    const templateDeepShapesCopy = JSON.parse(JSON.stringify(this.template.shapes));
+    this.restoreShapesAndLoadFonts(templateDeepShapesCopy);
+    // for (const [index, shape] of templateDeepShapesCopy.entries()) {
+    //   shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(this.template.shapes[index].bannerShapeConfig.entries());
+    // }
+    return templateDeepShapesCopy;
   }
 
   public addDataset(): void {
@@ -162,14 +184,15 @@ export class BannerDataService {
         const lines = result.split(/\r?\n/);
         let columns = this.userShapes.map(s => s.userShapeName.slugify());
         columns = columns.concat(['headline', 'background', 'logo', 'button']);
-        const header = this.parseCsvHeader(lines, columns);
+        const header = BannerDataService.parseCsvHeader(lines, columns);
 
-        const dataLines = lines.slice(1).filter(l => l != null);
+        const dataLines = lines.slice(1).filter(l => l != null && l !== '');
         const templateDataset = this.template.shapes as ShapeInformation[];
         // console.log(templateDataset);
+        const takeFromTemplate = columns.filter(shape => !header.includes(shape));
 
         for (const line of dataLines) {
-          const dataset = this.createDataset();
+          const dataset = this.createTemplateDatasetCopy();
           const values = line.split(';');
           for (let i = 0; i < header.length; ++i) {
             const shapeInfo = dataset.find(s => s.userShapeName.slugify() === header[i]);
@@ -198,7 +221,7 @@ export class BannerDataService {
               dataset,
             )
           );
-          // this.datasets.set(, dataset);
+
         }
 
       };
@@ -209,19 +232,6 @@ export class BannerDataService {
 
   public getTemplateDataset(): ShapeInformation[] {
     return this.template.shapes;
-  }
-
-  private parseCsvHeader(lines: string[], expectedHeaders: string[]): string[] {
-    const header = [];
-    for (const column of lines[0].split(';')) {
-      if (column === '') {
-        continue;
-      } else if (!expectedHeaders.includes(column)) {
-        throw new Error(`Unknown header \'${column}\' found in dataset!`);
-      }
-      header.push(column);
-    }
-    return header;
   }
 
   removeDataset(datasetIndex: number): void {
@@ -264,16 +274,20 @@ export class BannerDataService {
     return JSON.stringify(datasets);
   }
 
-  async import(fileContent: string): Promise<void> {
-    const json = JSON.parse(fileContent);
-    const banners = json.banners;
-    this.template = json.template;
+  private async restoreShapesAndLoadFonts(datasetToRestore: ShapeInformation[] = null): Promise<void> {
     let fontsToLoad = [];
-    for (const shape of this.template.shapes) {
+    const restore = datasetToRestore === null ? this.template.shapes : datasetToRestore;
+    for (const shape of restore) {
+      let templateShape = null;
+      if (datasetToRestore !== null) {
+        templateShape = this.template.shapes.find(s => s.userShapeName === shape.userShapeName);
+      }
+
       if (shape.isImage && shape.userShapeName.slugify() !== 'background') {
         shape.shapeConfig.image = await this.imageService.loadImage(shape.shapeConfig.imageSrc);
       }
-      shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(shape.serializedBannerShapeConfig ?? []);
+      shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(
+        shape.serializedBannerShapeConfig ?? templateShape?.bannerShapeConfig?.entries());
       if (shape.isText) {
         fontsToLoad = fontsToLoad.concat([...shape.bannerShapeConfig.values()].map(txtConfig => txtConfig.fontFamily));
       }
@@ -282,10 +296,19 @@ export class BannerDataService {
         fontsToLoad = fontsToLoad.concat(textCfgs);
       }
     }
+
     fontsToLoad = fontsToLoad.filter( (val, index, self) => self.indexOf(val) === index );
     for (const fontFamily of fontsToLoad) {
       await this.fontService.loadFont(fontFamily);
     }
+
+  }
+
+  async import(fileContent: string): Promise<void> {
+    const json = JSON.parse(fileContent);
+    const banners = json.banners;
+    this.template = json.template;
+    await this.restoreShapesAndLoadFonts();
     this.datasets = json.datasets;
     for (const dataset of this.datasets) {
       for (const shape of dataset.shapes) {

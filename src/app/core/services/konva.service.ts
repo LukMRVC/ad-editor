@@ -119,7 +119,7 @@ export class KonvaService {
     stage.on('wheel', ev => {
       let scaling = scaleBy;
 
-      if (ev.evt.ctrlKey) {
+      if (ev.evt.altKey) {
         scaling += 0.06;
       }
 
@@ -577,7 +577,13 @@ export class KonvaService {
   }
 
   public updateBackgroundOfShape($event: Konva.ShapeConfig, slugifiedShapeName: string): void {
-    // console.log($event);
+    let shapeInfo = this.shapes.find(s => s.userShapeName.slugify() === slugifiedShapeName);
+    if (slugifiedShapeName === 'button-tag') {
+      shapeInfo = this.shapes.find(s => s.userShapeName.slugify() === 'button');
+    }
+    if ( !shapeInfo.bannerShapeConfig) {
+      shapeInfo.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
+    }
     const pixelPoints = {
       fillLinearGradientStartPoint: undefined,
       fillLinearGradientEndPoint: undefined,
@@ -622,6 +628,13 @@ export class KonvaService {
         shape.setAttrs({ ...$event, ...pixelPoints, ...radialGradientRadiuses });
       } else {
         shape.setAttrs({ ...$event, ...pixelPoints });
+      }
+      if (slugifiedShapeName === 'button-tag') {
+        const shapeCfg = shapeInfo.bannerShapeConfig.get(group.getAttr('bannerId'));
+        shapeCfg.tagConfig = shape.getAttrs();
+        shapeInfo.bannerShapeConfig.set(group.getAttr('bannerId'), shapeCfg);
+      } else {
+        shapeInfo.bannerShapeConfig.set(group.getAttr('bannerId'), shape.getAttrs());
       }
       if (shape.isCached()) {
         shape.cache();

@@ -44,7 +44,7 @@ export class PolylineDrawingService {
 
     this.dataService.informationUpdated$.subscribe(updatedShapeName => {
       const shapeInfo = this.dataService.getActiveDataset().find(s => s.userShapeName === updatedShapeName);
-      if ( !shapeInfo.isButton && !shapeInfo.isText && !shapeInfo.isButton) {
+      if ( !shapeInfo.isButton && !shapeInfo.isText && !shapeInfo.isImage) {
         this.drawShape(shapeInfo);
       }
     });

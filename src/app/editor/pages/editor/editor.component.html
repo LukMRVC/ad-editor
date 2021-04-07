@@ -1,26 +1,4 @@
-
 <main class="main" fxLayout="column">
-
-<!--  <div fxLayout="row nowrap" fxLayoutGap="10px" fxLayoutAlign="start end" class="stage-settings">-->
-<!--    <span class="fill-space" fxFlex="25"></span>-->
-<!--&lt;!&ndash;    <mat-checkbox fxFlexAlign="center" [(ngModel)]="konva.addNewShapeToNewLayer">Add new shape to a new layer</mat-checkbox>&ndash;&gt;-->
-<!--    <div class="layerMoveButtonGroup" fxFlexAlign="center">-->
-<!--      <button mat-icon-button (click)="moveObjectInLayer('down')">-->
-<!--        <fa-icon icon="angle-double-down"></fa-icon>-->
-<!--      </button>-->
-<!--      <button mat-icon-button (click)="moveObjectInLayer('down-one')">-->
-<!--        <fa-icon icon="long-arrow-alt-down"></fa-icon>-->
-<!--      </button>-->
-<!--      <button mat-icon-button (click)="moveObjectInLayer('up-one')">-->
-<!--        <fa-icon icon="long-arrow-alt-up"></fa-icon>-->
-<!--      </button>-->
-<!--      <button mat-icon-button (click)="moveObjectInLayer('up')">-->
-<!--        <fa-icon icon="angle-double-up"></fa-icon>-->
-<!--      </button>-->
-<!--    </div>-->
-
-<!--  </div>-->
-
 
   <div (click)="contextMenu.visibility = 'none'"
        [style.top]="contextMenu.top" [style.left]="contextMenu.left"
@@ -28,9 +6,7 @@
     <button mat-button (click)="ctxAction.action($event); contextMenuActions = [];" *ngFor="let ctxAction of contextMenuActions">
       {{ ctxAction.name }}
     </button>
-<!--    <button (click)="konva.exportAsImage(this.downloadTargetId, 'image/png')" mat-button>Download</button>-->
   </div>
-
 
   <section id="editor" fxFlex="grow" fxLayout="row nowrap" class="editor">
 
@@ -58,11 +34,6 @@
 
     <app-draw-toolbar ngClass.lt-sm="draw-toolbar-mobile" fxFlexOrder="3" fxFlexAlign.lt-sm="end"></app-draw-toolbar>
 
-<!--    <aside class="canvas-object-toolbar" fxLayout="column" fxLayoutGap="1em" fxFlexOrder="3">-->
-<!--      <app-canvas-object-toolbar></app-canvas-object-toolbar>-->
-
-<!--&lt;!&ndash;      <app-stage-layers (nodeClicked)="addToSelected($event)" [nestedDataSource]="this.konva.layerTreeData"></app-stage-layers>&ndash;&gt;-->
-<!--    </aside>-->
   </section>
 </main>
 

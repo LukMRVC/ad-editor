@@ -19,7 +19,7 @@ import {MatDialog} from '@angular/material/dialog';
   template: `
     <!-- Gradients -->
     <section fxLayout="column" fxLayoutGap=".25rem">
-      <mat-form-field>
+      <mat-form-field appearance="outline">
         <mat-label>{{ shape | titlecase }} color</mat-label>
         <input [(ngModel)]="fillColor" (keydown.enter)="backgroundColorPicker.close()" (focus)="backgroundColorPicker.open()"
                [ngxMatColorPicker]="backgroundColorPicker" (colorChange)="fillColorChanged($event)" matInput #backgroundFillInput>
@@ -63,19 +63,10 @@ import {MatDialog} from '@angular/material/dialog';
                         (valueChange)="fillColorChanged()"></mat-slider>
           </div>
 
-<!--          <mat-form-field appearance="outline">-->
-<!--            <mat-label>Background fit</mat-label>-->
-<!--            <mat-select [(ngModel)]="selectedBackgroundFit" (selectionChange)="konva.positionBackground($event.value); konva.redraw()">-->
-<!--              <mat-option [value]="opt" *ngFor="let opt of this.imageFitOptions">-->
-<!--                {{ opt }}-->
-<!--              </mat-option>-->
-<!--            </mat-select>-->
-<!--          </mat-form-field>-->
-
         </ng-container>
 
         <ng-container *ngIf="fillStyle !== 'color' && fillStyle !== 'pattern'">
-          <mat-form-field>
+          <mat-form-field appearance="outline">
             <mat-label>{{ shape | titlecase }} gradient color</mat-label>
             <input [(ngModel)]="defaultGradientColor" (keydown.enter)="gradientPicker.close()" (focus)="gradientPicker.open()"
                    [ngxMatColorPicker]="gradientPicker" (colorChange)="fillColorChanged($event)" matInput #gradientColourInput>
@@ -97,7 +88,7 @@ import {MatDialog} from '@angular/material/dialog';
           <div fxLayout="column nowrap">
             <ng-container *ngFor="let colorStop of colorStops; let i = index; trackBy:trackByIdx">
               <div fxLayout="row nowrap" fxLayoutAlign="start start" fxFlex fxLayoutGap=".5rem" fxFlexOrder="1">
-                <mat-form-field *ngIf="editableColorStopIdx === i" style="max-width: 80%">
+                <mat-form-field *ngIf="editableColorStopIdx === i" style="max-width: 80%" appearance="outline">
                   <mat-label>Color stop {{ i }}</mat-label>
                   <input [(ngModel)]="colorStopEditableColor" (keydown.enter)="colorStopPicker.close()" (focus)="colorStopPicker.open()"
                          [ngxMatColorPicker]="colorStopPicker" (colorChange)="changeColorStopColor($event)" matInput #gradientColourInput>
@@ -170,6 +161,7 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
   colorStops: {position: number, color: string}[] = [];
   editableColorStopIdx = -1;
   colorStopEditableColor = new Color(255, 255, 255, 255);
+  private fillPatternImageName = '';
 
   constructor(
     private stateService: ComponentStateService,
@@ -311,6 +303,7 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
       fillPatternScale: {x: this.fillPatternScale, y: this.fillPatternScale },
       fillPatternRotation: this.fillPatternRotation,
       fillPatternImage: this.fillPatternImage,
+      fillPatternImageName: this.fillPatternImageName,
     };
     // this.konva.selectedNodes.forEach(node => {
     //   node.setAttrs(fillAttributes);
@@ -465,6 +458,7 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
         this.fillPatternImage = htmlImg;
         this.fillColorChanged();
       };
+      this.fillPatternImageName = (img as UploadedImage).name;
       htmlImg.src = (img as UploadedImage).src;
     }
   }

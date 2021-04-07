@@ -29,7 +29,6 @@ export class BannerDataService {
   ) {
     this.template = new Dataset('Template', null, this.createDataset());
     this.activeDataset = 'template';
-    // this.datasets.set(`Template #${++this.datasetCounter}`, this.createDataset());
   }
 
   private createDataset(): ShapeInformation[] {
@@ -73,10 +72,8 @@ export class BannerDataService {
   }
 
   public setActiveDataset(setName: string): void {
-    if (this.activeDataset !== setName) {
-      this.activeDataset = setName;
-      this.datasetChanged$.next(setName);
-    }
+    this.activeDataset = setName;
+    this.datasetChanged$.next(setName);
   }
 
   public getActiveDataset(): ShapeInformation[] {
@@ -130,12 +127,11 @@ export class BannerDataService {
       shapeInformation.shapeConfig = { text: nextValue };
       this.informationUpdated$.next(shapeInformation.userShapeName);
     } else if (shapeInformation.isImage) {
-      const image = new Image();
-      image.src = nextValue;
-      image.onload = () => {
-        shapeInformation.shapeConfig = { image };
+      const loadedImage = this.imageService.loadImage(nextValue);
+      loadedImage.then(image => {
+        shapeInformation.shapeConfig = { image, imageSrc: nextValue };
         this.informationUpdated$.next(shapeInformation.userShapeName);
-      };
+      });
     } else if (shapeInformation.isButton) {
       shapeInformation.shapeConfig.text = nextValue;
       this.informationUpdated$.next(shapeInformation.userShapeName);
@@ -243,6 +239,20 @@ export class BannerDataService {
   }
 
   public serialized(): string {
+    this.template.shapes.forEach(shape => {
+      if (shape.bannerShapeConfig) {
+        shape.serializedBannerShapeConfig = Array.from(shape.bannerShapeConfig.entries());
+      }
+    });
+
+    this.datasets.forEach(dataset => {
+      dataset.shapes.forEach(shape => {
+        if (shape.bannerShapeConfig) {
+          shape.serializedBannerShapeConfig = Array.from(shape.bannerShapeConfig.entries());
+        }
+      });
+    });
+
     const datasets = {
       template: this.template,
       banners: this.banners$.value.map(banner => banner.layout),
@@ -252,12 +262,24 @@ export class BannerDataService {
     return JSON.stringify(datasets);
   }
 
-  import(fileContent: string): void {
+  async import(fileContent: string): Promise<void> {
     const json = JSON.parse(fileContent);
     const banners = json.banners;
     this.template = json.template;
+    for (const shape of this.template.shapes) {
+      if (shape.isImage && shape.userShapeName.slugify() !== 'background') {
+        shape.shapeConfig.image = await this.imageService.loadImage(shape.shapeConfig.imageSrc);
+      }
+      shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(shape.serializedBannerShapeConfig ?? []);
+    }
     this.datasets = json.datasets;
+    this.datasets.forEach(dataset => {
+      dataset.shapes.forEach(shape => {
+        shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(shape.serializedBannerShapeConfig ?? []);
+      });
+    });
     this.userShapes = json.userShapes;
     this.setBanners(this.bannerService.toInstances(banners));
+    this.setActiveDataset('template');
   }
 }

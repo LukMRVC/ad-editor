@@ -14,6 +14,13 @@ export class ImageDrawingService {
     private dataService: BannerDataService,
     private konvaService: KonvaService,
   ) {
+    this.dataService.datasetChanged$.subscribe(() => {
+      const allImages = this.dataService.getActiveDataset().filter(shape => shape.isImage && shape.userShapeName !== 'background');
+      for (const img of allImages) {
+        this.drawImage(img.userShapeName.slugify(), img.shapeConfig as Konva.ImageConfig);
+      }
+    });
+
     this.dataService.informationUpdated$.subscribe(updatedShapeName => {
       const updatedShape = this.dataService.getActiveDataset().find(shape => shape.userShapeName === updatedShapeName);
       if (updatedShape.isImage) {
@@ -53,20 +60,22 @@ export class ImageDrawingService {
       konvaImage = new Konva.Image(shapeData.bannerShapeConfig.get(banner.id) as Konva.ImageConfig);
     } else {
       const logoDimensions = {width: conf.image.width as number, height: conf.image.height as number};
-      const templateScale = this.dataService.getTemplateDataset().find(s => s.userShapeName.slugify() === conf.name);
+      const templateShape = this.dataService.getTemplateDataset().find(s => s.userShapeName.slugify() === conf.name);
       let { x: scaleX, y: scaleY } = banner.getScaleForLogo(logoDimensions);
-      if (templateScale.bannerShapeConfig.get(banner.id)) {
-        if (!templateScale.bannerShapeConfig.get(banner.id).shouldDraw) {
+      if (templateShape.bannerShapeConfig.get(banner.id)) {
+        if (!templateShape.bannerShapeConfig.get(banner.id).shouldDraw) {
           return;
         }
-        const templateScaleX = templateScale.bannerShapeConfig.get(banner.id).scaleX;
+        const templateScaleX = templateShape.bannerShapeConfig.get(banner.id).scaleX;
         // not like an actual target, but my goal
         const templateImgDimension = {
-          width: templateScale.bannerShapeConfig.get(banner.id).image.width as number,
-          height: templateScale.bannerShapeConfig.get(banner.id).image.height as number,
+          width: templateShape.shapeConfig.image.width as number,
+          height: templateShape.shapeConfig.image.height as number,
         };
         const currentImgAspectRatio = logoDimensions.height / logoDimensions.width;
         const targetWidth = templateImgDimension.width * templateScaleX;
+        const sameNameImages = bannerGroup.getChildren(children => children.name() === conf.name);
+        sameNameImages.each(logo => logo.destroy());
         // Current image X scale
         scaleX = targetWidth / logoDimensions.width;
         // Now get current image Y scale
@@ -75,13 +84,11 @@ export class ImageDrawingService {
         scaleY = desiredHeight / logoDimensions.height;
       }
 
-      const logos = bannerGroup.getChildren(children => children.name() === conf.name);
-      logos.each(logo => logo.destroy());
       const percentages = {x: 0, y: 0};
 
-      if (templateScale.bannerShapeConfig.has(banner.id) && templateScale.bannerShapeConfig.get(banner.id).percentagePositions) {
-        percentages.x = templateScale.bannerShapeConfig.get(banner.id).percentagePositions.x;
-        percentages.y = templateScale.bannerShapeConfig.get(banner.id).percentagePositions.y;
+      if (templateShape.bannerShapeConfig.has(banner.id) && templateShape.bannerShapeConfig.get(banner.id).percentagePositions) {
+        percentages.x = templateShape.bannerShapeConfig.get(banner.id).percentagePositions.x;
+        percentages.y = templateShape.bannerShapeConfig.get(banner.id).percentagePositions.y;
       }
 
       const {x, y} = banner.getPixelPositionFromPercentage(percentages, logoDimensions, {scaleX, scaleY});

@@ -36,6 +36,9 @@
       <ng-container *ngIf="shapeInfo.isImage" #imageContainer>
         <app-image-filter (filterChanged)="konva.applyFilter(shapeInfo.userShapeName.slugify(), $event)"></app-image-filter>
       </ng-container>
+
+      <app-shape-bg-color (fillChanged)="shapeBgChanged($event, shapeInfo.userShapeName.slugify())"
+                          [shape]="shapeInfo.userShapeName"></app-shape-bg-color>
     </ng-template>
 
 

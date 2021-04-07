@@ -28,6 +28,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   constructor(
     public konva: KonvaService,
     public dialog: MatDialog,
+    private bannerService: BannerService,
     public dataService: BannerDataService,
     public imageDrawingService: ImageDrawingService,
     public shapeDrawingService: PolylineDrawingService,
@@ -68,13 +69,13 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
     const bannerDialog = this.dialog.open(BannerDialogComponent, { width: '70%' });
     const banners: Banner[] = await bannerDialog.afterClosed().toPromise();
+    // const banners = this.bannerService.getComputerBanners();
     if (banners) {
       this.dataService.setBanners(banners);
     }
   }
 
   ngOnDestroy(): void {
-    // console.log(`Destroying editor component`);
     this.subscription.unsubscribe();
   }
 

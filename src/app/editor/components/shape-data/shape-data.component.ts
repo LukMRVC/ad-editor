@@ -31,7 +31,7 @@ export class ShapeDataComponent implements OnInit {
     const dlg = this.dialog.open(ImageGalleryDialogComponent, { width: '70%' });
     const img: UploadedImage|string = await dlg.afterClosed().toPromise();
     if (img) {
-      this.dataService.changeValue(datasetKey, shapeInfo, (img as UploadedImage).src);
+      this.dataService.changeValue(datasetKey, shapeInfo, (img as UploadedImage).name);
     }
   }
 

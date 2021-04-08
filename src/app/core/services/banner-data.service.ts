@@ -283,8 +283,17 @@ export class BannerDataService {
       }
 
       if (shape.isImage && shape.userShapeName.slugify() !== 'background') {
-        shape.shapeConfig.image = await this.imageService.loadImage(shape.shapeConfig.imageSrc);
+        if (shape.shapeConfig.imageSrc !== undefined && shape.shapeConfig.imageSrc !== null) {
+          shape.shapeConfig.image = await this.imageService.loadImage(shape.shapeConfig.imageSrc);
+        }
       }
+
+      if ('fillPatternImageName' in shape.shapeConfig) {
+        if (shape.shapeConfig.fillPatternImageName !== undefined && shape.shapeConfig.fillPatternImageName !== null) {
+          shape.shapeConfig.fillPatternImage = await this.imageService.loadImage(shape.shapeConfig.fillPatternImageName);
+        }
+      }
+
       shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(
         shape.serializedBannerShapeConfig ?? templateShape?.bannerShapeConfig?.entries());
       if (shape.isText) {
@@ -313,6 +322,7 @@ export class BannerDataService {
       for (const shape of dataset.shapes) {
         shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(shape.serializedBannerShapeConfig ?? []);
       }
+      this.restoreShapesAndLoadFonts(dataset.shapes);
     }
     this.userShapes = json.userShapes;
     this.setBanners(this.bannerService.toInstances(banners));

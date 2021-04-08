@@ -606,6 +606,10 @@ export class KonvaService {
       delete pixelPoints[key];
     }
 
+    if ('fillPatternImageName' in bgConfig) {
+      shapeInfo.shapeConfig.fillPatternImageName = bgConfig.fillPatternImageName;
+    }
+
     // shape dimensions
     const shapeDim = (shape: Konva.Node): Dimension2D => ({width: shape.width(), height: shape.height()});
     for (const group of this.bannerGroups) {
@@ -616,6 +620,7 @@ export class KonvaService {
 
       if (restore) {
         const attrs = shapeInfo.bannerShapeConfig.get(group.getAttr('bannerId'));
+        attrs.fillPatternImage = shapeInfo.shapeConfig.fillPatternImage;
         shape.setAttrs(attrs);
         continue;
       }

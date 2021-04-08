@@ -15,7 +15,9 @@ export class ImageDrawingService {
     private konvaService: KonvaService,
   ) {
     this.dataService.datasetChanged$.subscribe(() => {
-      const allImages = this.dataService.getActiveDataset().filter(shape => shape.isImage && shape.userShapeName !== 'background');
+      const allImages = this.dataService.getActiveDataset()
+        .filter(shape => shape.isImage && shape.userShapeName !== 'background')
+        .filter(shape => shape.shapeConfig.image !== undefined);
       for (const img of allImages) {
         this.drawImage(img.userShapeName.slugify(), img.shapeConfig as Konva.ImageConfig);
       }

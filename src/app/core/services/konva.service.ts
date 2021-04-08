@@ -656,4 +656,8 @@ export class KonvaService {
     }
     this.redraw();
   }
+
+  public exportGroupToImage(group: Konva.Group, exportConfig): string {
+    return group.toDataURL(exportConfig);
+  }
 }

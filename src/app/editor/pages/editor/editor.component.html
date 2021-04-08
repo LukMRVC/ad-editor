@@ -1,3 +1,17 @@
+<mat-toolbar class="toolbar-small" color="primary">
+  <button [mat-menu-trigger-for]="mainMenu" mat-icon-button aria-label="Menu button" >
+    <mat-icon>menu</mat-icon>
+  </button>
+  <mat-menu #mainMenu="matMenu">
+    <button (click)="saveProject()" mat-menu-item>Save project</button>
+    <button (click)="projectImportInput.click()" mat-menu-item>Import project</button>
+    <button (click)="exportBanners()" mat-menu-item>Export banners</button>
+  </mat-menu>
+  <input #projectImportInput (change)="importProject()" type="file" style="display: none" accept=".ade">
+  <span>
+    {{ title }}
+  </span>
+</mat-toolbar>
 <main class="main" fxLayout="column">
 
   <div (click)="contextMenu.visibility = 'none'"

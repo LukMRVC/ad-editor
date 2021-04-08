@@ -322,7 +322,7 @@ export class BannerDataService {
       for (const shape of dataset.shapes) {
         shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(shape.serializedBannerShapeConfig ?? []);
       }
-      this.restoreShapesAndLoadFonts(dataset.shapes);
+      await this.restoreShapesAndLoadFonts(dataset.shapes);
     }
     this.userShapes = json.userShapes;
     this.setBanners(this.bannerService.toInstances(banners));

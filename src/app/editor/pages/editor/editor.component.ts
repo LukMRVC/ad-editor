@@ -9,7 +9,9 @@ import {ImageDrawingService} from '@core/services/drawing/image-drawing.service'
 import {PolylineDrawingService} from '@core/services/drawing/polyline-drawing.service';
 import {MatDialog} from '@angular/material/dialog';
 import {BannerDialogComponent} from '../../components/banner-dialog.component';
-import {Banner, BannerLayout} from '@core/models/banner-layout';
+import {Banner} from '@core/models/banner-layout';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {ExportDialogComponent} from '../../components/export-dialog.component';
 
 @Component({
   selector: 'app-editor',
@@ -18,16 +20,18 @@ import {Banner, BannerLayout} from '@core/models/banner-layout';
 })
 export class EditorComponent implements AfterViewInit, OnDestroy {
 
+  public readonly title = 'AdEditor';
+  @ViewChild('projectImportInput') importInput: ElementRef<HTMLInputElement>;
   @ViewChild('stageWrapper') stageWrapper: ElementRef;
   contextMenu: {visibility: string, top: string, left: string} = {visibility: 'none', top: '', left: ''};
   private subscription: Subscription = new Subscription();
 
   public contextMenuActions: {name: string, action: any}[] = [];
-  downloadTargetId: string;
 
   constructor(
     public konva: KonvaService,
     public dialog: MatDialog,
+    public snackBar: MatSnackBar,
     private bannerService: BannerService,
     public dataService: BannerDataService,
     public imageDrawingService: ImageDrawingService,
@@ -77,6 +81,33 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
+  }
+
+  saveProject(): void {
+    const projectJsonData = this.dataService.serialized();
+    const dataUri = `data:application/json;charset=UTF-8,${encodeURIComponent(projectJsonData)}`;
+    const downloadLink = document.createElement('a');
+    downloadLink.href = dataUri;
+    downloadLink.download = 'project.ade';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  }
+
+  async importProject(): Promise<void> {
+    const file = this.importInput.nativeElement.files[0];
+    const fileContent = await file.text();
+    try {
+      this.dataService.import(fileContent);
+    } catch (err) {
+      console.error(err);
+      this.snackBar.open('Project could not be imported', 'OK', { duration: 2500 });
+    }
+  }
+
+  async exportBanners(): Promise<void> {
+    const dialog = this.dialog.open(ExportDialogComponent, { width: '60%' });
+    const toExport = await dialog.afterClosed().toPromise();
   }
 
   @HostListener('window:resize', ['$event'])

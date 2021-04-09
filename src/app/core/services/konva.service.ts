@@ -625,14 +625,20 @@ export class KonvaService {
     this.redraw();
   }
 
-  public exportGroupToImage(group: Konva.Group, exportConfig): string {
-    const currentScale = this.stage.scale();
-    this.stage.scale({ x: 1, y: 1});
-    const groupLabel = group.findOne('.banner-label');
-    groupLabel.hide();
-    const groupImg = group.toDataURL(exportConfig);
-    this.stage.scale(currentScale);
-    groupLabel.show();
-    return groupImg;
+  public exportGroupToImage(group: Konva.Group, exportConfig): Promise<string> {
+    return new Promise( (resolve, reject) => {
+      const currentScale = this.stage.scale();
+      this.stage.scale({ x: 1, y: 1});
+      const groupLabel = group.findOne('.banner-label');
+      groupLabel.hide();
+      try {
+        const groupImg = group.toDataURL(exportConfig);
+        this.stage.scale(currentScale);
+        groupLabel.show();
+        resolve(groupImg);
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 }

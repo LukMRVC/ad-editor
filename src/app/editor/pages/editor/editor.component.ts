@@ -109,17 +109,17 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   }
 
   async exportBanners(): Promise<void> {
-    const dialog = this.dialog.open(ExportDialogComponent, { maxWidth: '70%', minWidth: '30%' });
+    const dialog = this.dialog.open(ExportDialogComponent, { maxWidth: '70%', minWidth: '40%' });
+    this.exporting = true;
     const exportConfig: ExportDialogResult = await dialog.afterClosed().toPromise();
-    if (exportConfig.withTemplate) {
-      exportConfig.datasets.push('template');
-    }
-
     if ( !exportConfig) {
       return;
     }
-    this.exporting = true;
 
+    // wait for template re-render
+    if (exportConfig.withTemplate) {
+      exportConfig.datasets.push('template');
+    }
     const archive = new JSZip();
     for (const datasetName of exportConfig.datasets) {
       const folder = archive.folder(datasetName);
@@ -127,8 +127,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
       for (const group of this.konva.getBannerGroups()) {
         const coordsConfig = { x: group.x(), y: group.y(), width: group.width(), height: group.height() };
-        let imageDataURL = this.konva.exportGroupToImage(group, { ...coordsConfig, ...exportConfig});
-        imageDataURL = imageDataURL.replace(/^data:image\/(png|jpg);base64,/, '');
+        let imageDataURL = await this.konva.exportGroupToImage(group, { ...coordsConfig, ...exportConfig});
+        imageDataURL = imageDataURL.replace(/^data:image\/(png|jpeg);base64,/, '');
         const fileName = group.id().replace('group-', '').concat('.', exportConfig.mimeType.replace('image/', ''));
         folder.file(fileName, imageDataURL, { base64: true });
       }

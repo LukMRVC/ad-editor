@@ -1,4 +1,3 @@
-<mat-progress-bar *ngIf="exporting" color="accent" mode="indeterminate"></mat-progress-bar>
 <mat-toolbar class="toolbar-small" color="primary">
   <button [mat-menu-trigger-for]="mainMenu" mat-icon-button aria-label="Menu button" >
     <mat-icon>menu</mat-icon>
@@ -15,6 +14,12 @@
 </mat-toolbar>
 
 <main class="main" fxLayout="column">
+
+  <div  *ngIf="exporting" class="export-backdrop">
+    <div class="progress-center">
+      <mat-progress-bar color="accent" mode="indeterminate"></mat-progress-bar>
+    </div>
+  </div>
 
   <div (click)="contextMenu.visibility = 'none'"
        [style.top]="contextMenu.top" [style.left]="contextMenu.left"

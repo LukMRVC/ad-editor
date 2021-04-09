@@ -75,10 +75,10 @@ export class ExportDialogComponent implements OnInit {
     this.calcMaxEstimatedSize();
   }
 
-  public calcMaxEstimatedSize(): void {
+  public async calcMaxEstimatedSize(): Promise<void> {
     const sizes = [];
     for (const group of this.konvaService.getBannerGroups()) {
-      const img = this.konvaService.exportGroupToImage(group, this.exportSettings());
+      const img = await this.konvaService.exportGroupToImage(group, this.exportSettings());
       const imgSize = this.calcImageSizeFromBase64(img);
       sizes.push(Math.round(imgSize / 1024) );
     }
@@ -115,7 +115,7 @@ export class ExportDialogComponent implements OnInit {
     this.dlgRef.close(this.exportSettings());
   }
 
-  calcImageSizeFromBase64(base64img: string): number {
+  public calcImageSizeFromBase64(base64img: string): number {
     // some magic constants taken from
     // https://stackoverflow.com/questions/29939635/how-to-get-file-size-of-newly-created-image-if-src-is-base64-string/49750491#49750491
     return 4 * Math.ceil( base64img.length / 3 ) * 0.5624896334383812;

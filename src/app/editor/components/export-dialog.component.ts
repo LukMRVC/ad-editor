@@ -28,7 +28,7 @@ import {KonvaService} from '@core/services/konva.service';
           <div #outputFormatDiv fxLayout="column" fxLayoutGap=".25rem">
             <mat-form-field appearance="outline">
               <mat-label>Output format</mat-label>
-              <mat-select (change)="calcMaxEstimatedSize()" [(ngModel)]="outputFormat">
+              <mat-select (valueChange)="calcMaxEstimatedSize()" [(ngModel)]="outputFormat">
                 <mat-option value="jpeg">JPG</mat-option>
                 <mat-option value="png">PNG</mat-option>
               </mat-select>
@@ -59,7 +59,7 @@ export class ExportDialogComponent implements OnInit {
 
   outputFormat = 'png';
   jpegQuality = 100;
-  selectedDatasets = [];
+  selectedDatasets: string[] = [];
   includeTemplate = true;
   pixelRatio = 1;
   maxEstimatedSize = 0;
@@ -101,11 +101,11 @@ export class ExportDialogComponent implements OnInit {
     }
   }
 
-  private exportSettings(): {} {
+  private exportSettings(): ExportDialogResult {
     return {
       withTemplate: this.includeTemplate,
       datasets: this.selectedDatasets,
-      mimeType: `image/${this.outputFormat}`,
+      mimeType: (`image/${this.outputFormat}` as 'image/jpeg'|'image/png'),
       quality: this.jpegQuality / 100,
       pixelRatio: this.pixelRatio,
     };
@@ -120,4 +120,12 @@ export class ExportDialogComponent implements OnInit {
     // https://stackoverflow.com/questions/29939635/how-to-get-file-size-of-newly-created-image-if-src-is-base64-string/49750491#49750491
     return 4 * Math.ceil( base64img.length / 3 ) * 0.5624896334383812;
   }
+}
+
+export interface ExportDialogResult {
+  withTemplate: boolean;
+  datasets: string[];
+  mimeType: 'image/jpeg'|'image/png';
+  quality: number;
+  pixelRatio: number;
 }

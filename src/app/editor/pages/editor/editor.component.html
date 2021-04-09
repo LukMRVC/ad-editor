@@ -1,3 +1,4 @@
+<mat-progress-bar *ngIf="exporting" color="accent" mode="indeterminate"></mat-progress-bar>
 <mat-toolbar class="toolbar-small" color="primary">
   <button [mat-menu-trigger-for]="mainMenu" mat-icon-button aria-label="Menu button" >
     <mat-icon>menu</mat-icon>
@@ -12,6 +13,7 @@
     {{ title }}
   </span>
 </mat-toolbar>
+
 <main class="main" fxLayout="column">
 
   <div (click)="contextMenu.visibility = 'none'"

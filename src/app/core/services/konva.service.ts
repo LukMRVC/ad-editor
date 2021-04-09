@@ -70,6 +70,7 @@ export class KonvaService {
 
   public static bannerLabel(position: Point2D, text: string): Konva.Label {
     const label = new Konva.Label({
+      name: 'banner-label',
       y: position.y,
       opacity: 0.75,
       transformable: false,
@@ -222,13 +223,6 @@ export class KonvaService {
     return tr;
   }
 
-  // public updateSelected(updatedValues: object): void {
-  //   for (const shape of this.selectedNodes) {
-  //     shape.setAttrs(updatedValues);
-  //   }
-  //   this.layers.forEach(layer => layer.batchDraw());
-  // }
-
   public redraw(): void {
     if (this.transformer !== null) {
       this.transformer.moveToTop();
@@ -261,32 +255,6 @@ export class KonvaService {
 
     this.redraw();
   }
-
-  // public exportAsImage(target: string, mime: 'image/jpeg' | 'image/png'): void {
-  //   const group = this.bannerGroups.find(g => g.group.id() === target);
-  //   console.log(group.group.getChildren().toArray());
-  //   console.log(target);
-  //   console.assert(group !== undefined);
-  //
-  //   group.group.getChildren().each(c => {
-  //     c.clearCache();
-  //     c.draw();
-  //   });
-  //   group.bg.clearCache();
-  //   // group.group.draw();
-  //
-  //   // const layer = this.canvas.getLayers()[2];
-  //   // const dataUrl = layer.toDataURL({
-  //   //   mimeType: mime,
-  //   // });
-  //   const dataUrl = group.group.toDataURL({ mimeType: mime, pixelRatio: 1 });
-  //   const link = document.createElement('a');
-  //   link.download = 'Ad1-file.jpeg';
-  //   link.href = dataUrl;
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   document.body.removeChild(link);
-  // }
 
   public applyFilter(shapeName: string, filters: FilterChangedEvent): void {
     const shouldRemoveFilter = (contains, value, minValue = 0): boolean => {
@@ -658,6 +626,13 @@ export class KonvaService {
   }
 
   public exportGroupToImage(group: Konva.Group, exportConfig): string {
-    return group.toDataURL(exportConfig);
+    const currentScale = this.stage.scale();
+    this.stage.scale({ x: 1, y: 1});
+    const groupLabel = group.findOne('.banner-label');
+    groupLabel.hide();
+    const groupImg = group.toDataURL(exportConfig);
+    this.stage.scale(currentScale);
+    groupLabel.show();
+    return groupImg;
   }
 }

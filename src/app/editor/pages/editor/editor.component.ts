@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild} from '@angular/core';
 
 import {KonvaService} from '@core/services/konva.service';
 import {Subscription} from 'rxjs';
@@ -11,7 +11,9 @@ import {MatDialog} from '@angular/material/dialog';
 import {BannerDialogComponent} from '../../components/banner-dialog.component';
 import {Banner} from '@core/models/banner-layout';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {ExportDialogComponent} from '../../components/export-dialog.component';
+import {ExportDialogComponent, ExportDialogResult} from '../../components/export-dialog.component';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-editor',
@@ -27,6 +29,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   private subscription: Subscription = new Subscription();
 
   public contextMenuActions: {name: string, action: any}[] = [];
+  public exporting = false;
 
   constructor(
     public konva: KonvaService,
@@ -106,8 +109,36 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   }
 
   async exportBanners(): Promise<void> {
-    const dialog = this.dialog.open(ExportDialogComponent, { width: '60%' });
-    const toExport = await dialog.afterClosed().toPromise();
+    const dialog = this.dialog.open(ExportDialogComponent, { maxWidth: '70%', minWidth: '30%' });
+    const exportConfig: ExportDialogResult = await dialog.afterClosed().toPromise();
+    if (exportConfig.withTemplate) {
+      exportConfig.datasets.push('template');
+    }
+
+    if ( !exportConfig) {
+      return;
+    }
+    this.exporting = true;
+
+    const archive = new JSZip();
+    for (const datasetName of exportConfig.datasets) {
+      const folder = archive.folder(datasetName);
+      this.dataService.setActiveDataset(datasetName);
+
+      for (const group of this.konva.getBannerGroups()) {
+        const coordsConfig = { x: group.x(), y: group.y(), width: group.width(), height: group.height() };
+        let imageDataURL = this.konva.exportGroupToImage(group, { ...coordsConfig, ...exportConfig});
+        imageDataURL = imageDataURL.replace(/^data:image\/(png|jpg);base64,/, '');
+        const fileName = group.id().replace('group-', '').concat('.', exportConfig.mimeType.replace('image/', ''));
+        folder.file(fileName, imageDataURL, { base64: true });
+      }
+    }
+
+    archive.generateAsync({ type: 'blob', mimeType: 'application/zip' }).then( (content) => {
+      this.exporting = false;
+      saveAs(content, 'export.zip');
+    });
+
   }
 
   @HostListener('window:resize', ['$event'])

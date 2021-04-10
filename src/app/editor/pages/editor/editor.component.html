@@ -22,7 +22,6 @@
 </mat-toolbar>
 
 <main class="main" fxLayout="column">
-
   <div  *ngIf="exporting" class="export-backdrop">
     <div class="progress-center">
       <mat-progress-bar color="accent" mode="indeterminate"></mat-progress-bar>
@@ -39,7 +38,7 @@
 
   <section id="editor" fxFlex="grow" fxLayout="row nowrap" class="editor">
 
-    <app-shape-data fxFlexOrder="1"></app-shape-data>
+    <app-shape-data class="shape-data" fxFlexOrder="1"></app-shape-data>
 
     <div (click)="contextMenu.visibility = 'none'; contextMenuActions = []"
          fxLayout="column nowrap" #stageWrapper fxLayoutAlign="start" fxFlex class="canvas-wrapper" fxFlexOrder="2">
@@ -61,7 +60,7 @@
       <div id="stage" (dragover)="$event.preventDefault()" class="canvas-stage" ></div>
     </div>
 
-    <app-draw-toolbar ngClass.lt-sm="draw-toolbar-mobile" fxFlexOrder="3" fxFlexAlign.lt-sm="end"></app-draw-toolbar>
+    <app-draw-toolbar class="draw-toolbar" ngClass.lt-sm="draw-toolbar-mobile" fxFlexOrder="3" fxFlexAlign.lt-sm="end"></app-draw-toolbar>
 
   </section>
 </main>

@@ -7,6 +7,8 @@
 
 .main {
   position: relative;
+  // 50px is height of toolbar
+  height: calc(100% - 50px);
 }
 
 .draw-toolbar-mobile {
@@ -20,8 +22,10 @@
 .canvas-wrapper {
   width: 100%;
   overflow: auto;
-  min-height: 93vh;
+  //min-height: 93vh;
+  max-height: 100%;
   background-color: white;
+  position: relative;
 }
 
 .stage-settings {
@@ -57,6 +61,8 @@
 
 .canvas-stage {
   background-color: #e0e0e0;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .canvas-stage.drawing:hover {
@@ -75,6 +81,9 @@
 
 .datasets {
   background-color: #f8f8f8;
+  position: absolute;
+  width: 100%;
+  z-index: 10;
 }
 
 .datasets > * {
@@ -134,4 +143,16 @@
   max-width: 500px;
   width: 50%;
   transform: translateY(-200px);
+}
+
+.shape-data {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.draw-toolbar {
+  max-height: calc(100vh - 50px);
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }

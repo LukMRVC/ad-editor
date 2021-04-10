@@ -1,4 +1,4 @@
-<mat-expansion-panel expanded="true" class="mat-elevation-z0 expansion-panel radius-none">
+<mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none">
   <mat-expansion-panel-header>
     <mat-panel-title>
       {{ 'cta' | translate | uppercase }}
@@ -76,16 +76,6 @@
         <!-- Style tab content -->
         <div fxLayout="column"  fxLayoutGap="0.5rem">
           <app-shape-bg-color (fillChanged)="backgroundChanged($event)" shape="button"></app-shape-bg-color>
-
-          <!--          &lt;!&ndash; Button fill color &ndash;&gt;-->
-  <!--          <mat-form-field fxFlex style="margin-top: .25rem" appearance="outline">-->
-  <!--            <mat-label>Button color</mat-label>-->
-  <!--            <input [(ngModel)]="buttonFillColor" (keydown.enter)="buttonFillPicker.close()" (focus)="buttonFillPicker.open()"-->
-  <!--                   [ngxMatColorPicker]="buttonFillPicker"-->
-  <!--                   (colorChange)="konva.changeButton('style',{fill: buttonFillColor.toHex8String()})" matInput #fillColourInput>-->
-  <!--            <ngx-mat-color-toggle matSuffix [for]="buttonFillPicker"></ngx-mat-color-toggle>-->
-  <!--            <ngx-mat-color-picker defaultColor="#000" #buttonFillPicker touchUi="false"></ngx-mat-color-picker>-->
-  <!--          </mat-form-field>-->
 
           <div fxFlex fxLayout="column">
             <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">

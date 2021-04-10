@@ -1,0 +1,25 @@
+.filter-slider {
+  display: flex;
+  flex-flow: row nowrap;
+  place-content: space-between;
+  align-items: flex-start;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  gap: 5px;
+}
+
+.filter-slider label {
+  margin-top: 13px;
+}
+
+.filter-slider > *:nth-child(2) {
+  flex: 1 1 0;
+  padding: 0;
+  height: 32px;
+}
+
+.filter-slider span {
+  font-weight: bold;
+  margin-top: 13px;
+  min-width: 1.2rem;
+}

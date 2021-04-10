@@ -6,15 +6,15 @@ import {KonvaService} from '@core/services/konva.service';
 @Component({
   selector: 'app-export-dialog',
   template: `
-    <h2 mat-dialog-title>Export</h2>
+    <h2 mat-dialog-title>{{ 'export' | translate | capitalize }}</h2>
     <mat-dialog-content>
       <div fxLayout="column" fxLayoutGap=".5rem">
         <div fxLayout="row" fxLayoutGap="1rem" fxLayoutAlign="space-evenly stretch" >
           <div #bannerCheckboxes fxLayout="column" fxLayoutGap="0.25rem">
-            <mat-checkbox [(ngModel)]="includeTemplate">Include template</mat-checkbox>
+            <mat-checkbox [(ngModel)]="includeTemplate">{{ 'include template' | translate | titlecase }}</mat-checkbox>
             <mat-checkbox [indeterminate]="this.selectedDatasets.length > 0 && this.selectedDatasets.length !== this.dataService.datasets.length"
                           [checked]="this.selectedDatasets.length === this.dataService.datasets.length"
-                          (change)="setAll($event.checked)" color="primary">All datasets</mat-checkbox>
+                          (change)="setAll($event.checked)" color="primary">{{ 'all datasets' | translate | titlecase }}</mat-checkbox>
             <ul style="list-style-type: none;">
               <li *ngFor="let dataset of dataService.datasets">
                 <mat-checkbox (change)="pushOrRemove($event.checked, dataset.datasetName)"
@@ -27,7 +27,7 @@ import {KonvaService} from '@core/services/konva.service';
 
           <div #outputFormatDiv fxLayout="column" fxLayoutGap=".25rem">
             <mat-form-field appearance="outline">
-              <mat-label>Output format</mat-label>
+              <mat-label>{{ 'output format' | translate | titlecase }}</mat-label>
               <mat-select (valueChange)="calcMaxEstimatedSize()" [(ngModel)]="outputFormat">
                 <mat-option value="jpeg">JPG</mat-option>
                 <mat-option value="png">PNG</mat-option>
@@ -35,21 +35,21 @@ import {KonvaService} from '@core/services/konva.service';
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Pixel ratio</mat-label>
+              <mat-label>{{ 'pixel ratio' | translate | titlecase }}</mat-label>
               <input (change)="calcMaxEstimatedSize()" min="1" step="1" type="number" matInput [(ngModel)]="pixelRatio">
             </mat-form-field>
 
             <div *ngIf="outputFormat === 'jpeg'">
-              <label>Image quality</label>
+              <label>{{ 'image quality' | translate | titlecase }}</label>
               <mat-slider (change)="calcMaxEstimatedSize()" [(ngModel)]="jpegQuality" min="1" max="100" color="accent" thumbLabel></mat-slider>
             </div>
           </div>
         </div>
-        <h4>Biggest estimated file size: {{ this.maxEstimatedSize }} KB</h4>
+        <h4>{{ 'biggest estimated file size' | translate | capitalize }}: {{ this.maxEstimatedSize }} KB</h4>
       </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button color="primary" (click)="closeDialog()" mat-raised-button>Export</button>
+      <button color="primary" (click)="closeDialog()" mat-raised-button>{{ 'export' | translate | capitalize }}</button>
     </mat-dialog-actions>
   `,
   styles: [

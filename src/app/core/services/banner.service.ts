@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {Banner, BannerLayout} from '@core/models/banner-layout';
+import {Banner, BannerLayout, Dimension2D} from '@core/models/banner-layout';
 
 @Injectable({
   providedIn: 'root'
@@ -116,10 +116,22 @@ export class BannerService {
     },
   ];
 
-  public toInstances(layouts: BannerLayout[]): Banner[] {
-    layouts = layouts.sort( (a, b) => {
-      return (b.dimensions.width * b.dimensions.height) - (a.dimensions.width * a.dimensions.height);
-    });
+  public toInstances(layouts: BannerLayout[], sort = true): Banner[] {
+    if (sort) {
+      layouts = layouts.sort( (a, b) => {
+        const isRect = (dims: Dimension2D) => dims.width === dims.height;
+        if (  isRect(a.dimensions) && isRect(b.dimensions) ) {
+          return (b.dimensions.width * b.dimensions.height) - (a.dimensions.width * a.dimensions.height);
+        } else if (isRect(a.dimensions) && !isRect(b.dimensions)) {
+          return -1;
+        } else if ( !isRect(a.dimensions) && isRect(b.dimensions)) {
+          return 1;
+        } else { // none are rect
+          return 0;
+        }
+
+      });
+    }
 
     return [...layouts].map( (layout, index) => new Banner(layout, index) );
   }

@@ -1,7 +1,7 @@
 <mat-expansion-panel class="mat-elevation-z0 expansion-panel radius-none">
   <mat-expansion-panel-header>
     <mat-panel-title>
-      Headline
+      {{ 'headline' | translate | capitalize }}
     </mat-panel-title>
     <mat-panel-description>
       <mat-icon>format_size</mat-icon>
@@ -12,7 +12,7 @@
     <div fxLayout="column" fxLayoutGap="0.5rem">
 
       <mat-form-field fxFlex appearance="outline">
-        <mat-label>Headline</mat-label>
+        <mat-label>{{ 'headline' | translate | capitalize }}</mat-label>
         <textarea [(ngModel)]="headlineText"
                   (input)="textService.updateText('headline', {text: headlineText})" matInput>
         </textarea>

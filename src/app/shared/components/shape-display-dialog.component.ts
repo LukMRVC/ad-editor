@@ -16,7 +16,6 @@ export class ShapeDisplayDialogComponent implements OnInit, AfterViewInit {
   disableAnimations = true;
 
   constructor(
-    public dialogRef: MatDialogRef<ShapeDisplayDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public datasetData: ShapeInformation[],
     public bannerData: BannerDataService,
   ) { }

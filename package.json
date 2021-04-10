@@ -1,6 +1,6 @@
 {
   "name": "ad-editor",
-  "version": "0.2.0",
+  "version": "0.2.5",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -27,6 +27,8 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.28",
     "@fortawesome/free-regular-svg-icons": "^5.13.0",
     "@fortawesome/free-solid-svg-icons": "^5.13.0",
+    "@ngx-translate/core": "^13.0.0",
+    "@ngx-translate/http-loader": "^6.0.0",
     "file-saver": "^2.0.5",
     "jszip": "^3.6.0",
     "ngx-build-plus": "^11.0.0",

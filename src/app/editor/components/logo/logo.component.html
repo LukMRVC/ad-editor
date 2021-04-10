@@ -1,7 +1,7 @@
 <mat-expansion-panel #pane class="mat-elevation-z0 expansion-panel radius-none">
   <mat-expansion-panel-header>
     <mat-panel-title>
-      Logo
+      {{ 'logo' | translate | titlecase }}
     </mat-panel-title>
     <mat-panel-description>
       <mat-icon>insert_photo</mat-icon>
@@ -11,7 +11,7 @@
     <div fxLayout="column" fxLayoutAlign="start" fxLayoutGap="0.5rem">
       <button (click)="openGallery(dataService.activeDataset, logoShapeInfo)" fxFlex #uploadBtn mat-raised-button color="primary">
         <mat-icon>insert_photo</mat-icon>
-        Logo
+        {{ 'logo' | translate | titlecase }}
       </button>
       <app-image-filter (filterChanged)="konva.applyFilter('logo', $event)"></app-image-filter>
     </div>

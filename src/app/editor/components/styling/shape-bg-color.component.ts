@@ -20,7 +20,7 @@ import {MatDialog} from '@angular/material/dialog';
     <!-- Gradients -->
     <section fxLayout="column" fxLayoutGap=".25rem">
       <mat-form-field appearance="outline">
-        <mat-label>{{ shape | titlecase }} color</mat-label>
+        <mat-label> {{ 'shape_color' | translate:{ shape: (this.shape | translate ) } | capitalize }}  </mat-label>
         <input [(ngModel)]="fillColor" (keydown.enter)="backgroundColorPicker.close()" (focus)="backgroundColorPicker.open()"
                [ngxMatColorPicker]="backgroundColorPicker" (colorChange)="fillColorChanged($event)" matInput #backgroundFillInput>
         <ngx-mat-color-toggle matSuffix [for]="backgroundColorPicker"></ngx-mat-color-toggle>
@@ -30,10 +30,10 @@ import {MatDialog} from '@angular/material/dialog';
       <div fxLayout="row nowrap" fxLayoutGap="0.25rem">
         <div fxFlex [id]="shape + '-gradient-stage'" class="preview-stage"></div>
         <mat-button-toggle-group vertical fxFlexAlign="start" (change)="changeFillStyle()" [(ngModel)]="fillStyle" name="fillStyle" aria-label="Fill Style">
-          <mat-button-toggle checked="true" value="color">Solid</mat-button-toggle>
-          <mat-button-toggle value="linear-gradient">Linear</mat-button-toggle>
-          <mat-button-toggle value="radial-gradient">Radial</mat-button-toggle>
-          <mat-button-toggle value="pattern">Image</mat-button-toggle>
+          <mat-button-toggle checked="true" value="color">{{ 'solid' | translate | capitalize }}</mat-button-toggle>
+          <mat-button-toggle value="linear-gradient">{{ 'linear' | translate | capitalize }}</mat-button-toggle>
+          <mat-button-toggle value="radial-gradient">{{ 'radial' | translate | capitalize }}</mat-button-toggle>
+          <mat-button-toggle value="pattern">{{ 'image' | translate | capitalize }}</mat-button-toggle>
         </mat-button-toggle-group>
       </div>
       <div fxFlex fxLayout="column" fxLayoutGap=".25rem">
@@ -42,39 +42,38 @@ import {MatDialog} from '@angular/material/dialog';
 
           <button (click)="openGallery()" fxFlex #uploadBtn mat-raised-button color="primary">
             <mat-icon>insert_photo</mat-icon>
-            Background image
+            {{ 'image_for'|translate:{shape: ('background' | translate) } | capitalize }}
           </button>
 
-          <div fxFlex fxLayout="column">
-            <div fxLayout="row" fxLayoutAlign="space-between end">
-              <label>Zoom effect</label>
-              <span>{{ fillPatternScale }}</span>
-            </div>
-            <mat-slider [(ngModel)]="fillPatternScale" thumbLabel min="0.1" max="2" step="0.1"
+          <div class="filter-slider">
+            <label>{{ 'zoom effect' | translate | capitalize }}</label>
+
+            <mat-slider (input)="fillPatternScale = $event.value;"
+                        [(ngModel)]="fillPatternScale" thumbLabel min="0.1" max="2" step="0.1"
                         (valueChange)="fillColorChanged()"></mat-slider>
+            <span>{{ fillPatternScale }}</span>
           </div>
 
-          <div fxFlex fxLayout="column">
-            <div fxLayout="row" fxLayoutAlign="space-between end">
-              <label>Rotation</label>
-              <span>{{ fillPatternRotation }}</span>
-            </div>
-            <mat-slider [(ngModel)]="fillPatternRotation" thumbLabel min="0" max="360" step="1"
+          <div class="filter-slider">
+            <label>{{ 'rotation' | translate | capitalize }}</label>
+            <mat-slider (input)="fillPatternRotation = $event.value;"
+                        [(ngModel)]="fillPatternRotation" thumbLabel min="0" max="360" step="1"
                         (valueChange)="fillColorChanged()"></mat-slider>
+            <span>{{ fillPatternRotation }}</span>
           </div>
 
         </ng-container>
 
         <ng-container *ngIf="fillStyle !== 'color' && fillStyle !== 'pattern'">
           <mat-form-field appearance="outline">
-            <mat-label>{{ shape | titlecase }} gradient color</mat-label>
+            <mat-label>{{ 'gradient color' | translate | capitalize }}</mat-label>
             <input [(ngModel)]="defaultGradientColor" (keydown.enter)="gradientPicker.close()" (focus)="gradientPicker.open()"
                    [ngxMatColorPicker]="gradientPicker" (colorChange)="fillColorChanged($event)" matInput #gradientColourInput>
             <ngx-mat-color-toggle matSuffix [for]="gradientPicker"></ngx-mat-color-toggle>
             <ngx-mat-color-picker [defaultColor]="defaultGradientColor" #gradientPicker [touchUi]="touchUi"></ngx-mat-color-picker>
           </mat-form-field>
 
-          <h5>{{ shape | titlecase }} color stops</h5>
+          <h5>{{ 'color stops' | translate | capitalize }}</h5>
           <div fxLayout="row nowrap" aria-label="Color stops">
             <button (click)="setEditableColorStop(i)" *ngFor="let colorStop of colorStops; index as i"
                     [style.backgroundColor]="colorStop.color"
@@ -89,7 +88,7 @@ import {MatDialog} from '@angular/material/dialog';
             <ng-container *ngFor="let colorStop of colorStops; let i = index; trackBy:trackByIdx">
               <div fxLayout="row nowrap" fxLayoutAlign="start start" fxFlex fxLayoutGap=".5rem" fxFlexOrder="1">
                 <mat-form-field *ngIf="editableColorStopIdx === i" style="max-width: 80%" appearance="outline">
-                  <mat-label>Color stop {{ i }}</mat-label>
+                  <mat-label>{{ 'color stop' | translate | capitalize }} {{ i }}</mat-label>
                   <input [(ngModel)]="colorStopEditableColor" (keydown.enter)="colorStopPicker.close()" (focus)="colorStopPicker.open()"
                          [ngxMatColorPicker]="colorStopPicker" (colorChange)="changeColorStopColor($event)" matInput #gradientColourInput>
                   <ngx-mat-color-toggle matSuffix [for]="colorStopPicker"></ngx-mat-color-toggle>
@@ -101,36 +100,41 @@ import {MatDialog} from '@angular/material/dialog';
                 </button>
               </div>
 
-
-              <div *ngIf="i % 2 === 0" fxLayout="row nowrap" fxFlexOrder="2" fxLayoutAlign="start start" fxLayoutGap=".25rem">
-                <span class="slider-label">{{ i + 1 }}</span>
-                <mat-slider [(ngModel)]="colorStops[i].position" (valueChange)="changeColorStop()"
-                            fxFill thumbLabel min="0" step="0.01" max="1"></mat-slider>
+              <div *ngIf="i % 2 === 0" class="filter-slider">
+                <label>{{ i + 1 }}</label>
+                <mat-slider (input)="colorStops[i].position = $event.value;"
+                            [(ngModel)]="colorStops[i].position" (valueChange)="changeColorStop()"
+                            min="0" step="0.01" max="1"></mat-slider>
+                <span>{{ colorStops[i].position }}</span>
               </div>
 
             </ng-container>
           </div>
         </ng-container>
 
-        <div fxLayout="column" fxFlex *ngIf="fillStyle === 'radial-gradient'">
-          <span>Start gradient radius</span>
-          <mat-slider thumbLabel (change)="radialGradientRadiusChanged()" [(ngModel)]="radialGradientStartRadius"
+        <div class="filter-slider" *ngIf="fillStyle === 'radial-gradient'">
+          <label>{{ 'start gradient radius' | translate | titlecase }} </label>
+          <mat-slider (input)="radialGradientStartRadius = $event.value;"
+                      (change)="radialGradientRadiusChanged()" [(ngModel)]="radialGradientStartRadius"
                       min="1" step="1" max="100" >
           </mat-slider>
+          <span>{{ radialGradientStartRadius }}</span>
         </div>
-        <div fxLayout="column" fxFlex *ngIf="fillStyle === 'radial-gradient'">
-          <span>End gradient radius</span>
-          <mat-slider thumbLabel (change)="radialGradientRadiusChanged()" [(ngModel)]="radialGradientEndRadius"
+        <div class="filter-slider" *ngIf="fillStyle === 'radial-gradient'">
+          <label>{{ 'end gradient radius' | translate | titlecase }}</label>
+          <mat-slider (input)="radialGradientEndRadius = $event.value;"
+                      (change)="radialGradientRadiusChanged()" [(ngModel)]="radialGradientEndRadius"
                       min="1" step="1" max="100" >
           </mat-slider>
+          <span>{{ radialGradientEndRadius }}</span>
         </div>
       </div>
     </section>
   `,
   styles: [
     '.preview-stage { border: 1px solid #a0a0a0;}',
-    '.slider-label { margin-top: 15px!important; }',
   ],
+  styleUrls: ['../../../../themed-slider.scss']
 })
 export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
 

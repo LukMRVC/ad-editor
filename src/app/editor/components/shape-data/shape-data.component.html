@@ -1,9 +1,18 @@
 <div class="shape-aside" fxFlex fxLayout="column" fxLayoutGap=".5rem">
 
   <div style="padding: .5rem" fxLayout="column" fxLayoutGap=".5rem">
-    <button (click)="changeDataset('template')" color="primary" mat-flat-button>Template view</button>
-    <button (click)="dataService.addDataset()" mat-flat-button color="accent" fxFlex>Add dataset</button>
-    <button (click)="datasetUpload.click()" mat-flat-button color="accent" fxFlex>Upload dataset</button>
+    <button (click)="changeDataset('template')" color="primary" mat-flat-button>
+      {{ 'template view' | translate | capitalize }}
+    </button>
+    <button (click)="displayOptions()" color="primary" mat-flat-button>
+      {{ 'display options' | translate | capitalize }}
+    </button>
+    <button (click)="dataService.addDataset()" mat-flat-button color="accent" fxFlex>
+      {{ 'add' | translate | titlecase }} {{  'dataset' | translate }}
+    </button>
+    <button (click)="datasetUpload.click()" mat-flat-button color="accent" fxFlex>
+      {{ 'upload' | translate | titlecase }} {{ 'dataset' | translate }}
+    </button>
 
     <input type="file" (change)="dataService.uploadDatasets($event)" style="display: none" #datasetUpload name="file" class="hidden" accept="text/csv">
   </div>

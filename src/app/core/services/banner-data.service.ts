@@ -325,7 +325,7 @@ export class BannerDataService {
       await this.restoreShapesAndLoadFonts(dataset.shapes);
     }
     this.userShapes = json.userShapes;
-    this.setBanners(this.bannerService.toInstances(banners));
+    this.setBanners(this.bannerService.toInstances(banners, false));
     this.setActiveDataset('template');
   }
 }

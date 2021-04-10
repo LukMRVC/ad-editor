@@ -13,7 +13,9 @@ import {Banner} from '@core/models/banner-layout';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {ExportDialogComponent, ExportDialogResult} from '../../components/export-dialog.component';
 import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
+import { saveAs as saveAs } from 'file-saver';
+import {environment} from '@env/environment';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'app-editor',
@@ -39,6 +41,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     public dataService: BannerDataService,
     public imageDrawingService: ImageDrawingService,
     public shapeDrawingService: PolylineDrawingService,
+    public translateService: TranslateService,
   ) { }
 
   async ngAfterViewInit(): Promise<void> {
@@ -74,12 +77,19 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       this.contextMenu.left = `${containerRect.left + event.pos.x}px`;
     });
 
-    const bannerDialog = this.dialog.open(BannerDialogComponent, { width: '70%' });
-    const banners: Banner[] = await bannerDialog.afterClosed().toPromise();
-    // const banners = this.bannerService.getComputerBanners();
-    if (banners) {
+
+    if (environment.production) {
+      const bannerDialog = this.dialog.open(BannerDialogComponent, { width: '70%' });
+      const banners: Banner[] = await bannerDialog.afterClosed().toPromise();
+      // const banners = this.bannerService.getComputerBanners();
+      if (banners) {
+        this.dataService.setBanners(banners);
+      }
+    } else {
+      const banners: Banner[] = this.bannerService.toInstances(this.bannerService.mobile.concat(this.bannerService.computer));
       this.dataService.setBanners(banners);
     }
+
   }
 
   ngOnDestroy(): void {
@@ -99,13 +109,19 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   async importProject(): Promise<void> {
     const file = this.importInput.nativeElement.files[0];
-    const fileContent = await file.text();
-    try {
-      this.dataService.import(fileContent);
-    } catch (err) {
-      console.error(err);
-      this.snackBar.open('Project could not be imported', 'OK', { duration: 2500 });
+    if (file) {
+      this.exporting = true;
+      try {
+        const fileContent = await file.text();
+        await this.dataService.import(fileContent);
+      } catch (err) {
+        console.error(err);
+        this.snackBar.open('Project could not be imported', 'OK', { duration: 2500 });
+      } finally {
+        this.exporting = false;
+      }
     }
+
   }
 
   async exportBanners(): Promise<void> {

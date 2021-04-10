@@ -1,7 +1,9 @@
 <aside fxLayout="column" fxLayoutAlign="start" class="drawing-toolbar">
 
   <div style="padding: .5rem">
-    <mat-checkbox [(ngModel)]="konva.shouldTransformRelatives">Modify relatives</mat-checkbox>
+    <mat-checkbox [(ngModel)]="konva.shouldTransformRelatives">
+      {{ 'modify relatives' | translate | capitalize }}
+    </mat-checkbox>
   </div>
 
   <app-logo></app-logo>

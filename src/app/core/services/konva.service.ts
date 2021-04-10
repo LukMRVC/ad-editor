@@ -471,8 +471,6 @@ export class KonvaService {
     const shapeData = this.shapes.find(s => s.userShapeName.slugify() === shapeName);
 
     if (shapeData.userShapeName.slugify() === 'button') {
-      // save button data
-      console.log(transformEvent.target.name());
       shapeData.bannerShapeConfig.get(bannerGroupIndex).labelConfig = transformEvent.target.getAttrs();
     } else {
       shapeData.bannerShapeConfig.set(bannerGroupIndex, transformEvent.target.getAttrs());

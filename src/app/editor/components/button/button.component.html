@@ -1,7 +1,7 @@
 <mat-expansion-panel expanded="true" class="mat-elevation-z0 expansion-panel radius-none">
   <mat-expansion-panel-header>
     <mat-panel-title>
-      CTA
+      {{ 'cta' | translate | uppercase }}
     </mat-panel-title>
     <mat-panel-description>
       <mat-icon>smart_button</mat-icon>
@@ -14,14 +14,15 @@
 
       <!-- Tab label -->
       <ng-template mat-tab-label>
-        <mat-icon>text_fields</mat-icon> Text
+        <mat-icon>text_fields</mat-icon>
+        {{ 'text' | translate | capitalize }}
       </ng-template>
 
       <!-- Tab text content -->
       <div fxLayout="column" style="margin-top: .5rem" fxLayoutGap="0.5rem">
 
           <mat-form-field fxFlex appearance="outline">
-            <mat-label>CTA content</mat-label>
+            <mat-label>{{ 'content_for' | translate:{for: ('cta' | translate) } | titlecase }}</mat-label>
             <textarea matInput (input)="buttonService.updateButton('text', { text: $event.target.value })"></textarea>
 <!--              <textarea (input)="konva.changeButton('text', { text: $event.target.value })-->
 <!--                      changeValue(dataset.key, shapeInfo, $event)" [value]="shapeInfo.shapeConfig.text"-->
@@ -32,7 +33,7 @@
         <app-font-chooser (fontFamilyLoaded)="buttonService.updateButton('text', { fontFamily: $event })"></app-font-chooser>
 
         <mat-form-field fxFlex appearance="outline">
-          <mat-label>Text color</mat-label>
+          <mat-label>{{ 'text color' | translate | capitalize }}</mat-label>
           <input [(ngModel)]="fontFillColor" (keydown.enter)="fontFillPicker.close()" (focus)="fontFillPicker.open()"
                  [ngxMatColorPicker]="fontFillPicker"
                  (colorChange)="buttonService.updateButton('text',{fill: fontFillColor.toHex8String()})" matInput #fillColourInput>
@@ -50,7 +51,7 @@
 
         <div fxFlex fxLayout="column">
           <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-            <label>Font size</label>
+            <label>{{ 'font size' | translate | capitalize }}</label>
             <span>{{ fontSize }}</span>
           </div>
           <mat-slider value="0" (change)="buttonService.updateButton('text', { fontScaling: $event.value })"
@@ -68,7 +69,8 @@
 
       <!-- Tab style label -->
       <ng-template mat-tab-label>
-        <mat-icon>palette</mat-icon> Style
+        <mat-icon>palette</mat-icon>
+        {{ 'style' | translate | capitalize }}
       </ng-template>
       <ng-template matTabContent>
         <!-- Style tab content -->
@@ -87,7 +89,7 @@
 
           <div fxFlex fxLayout="column">
             <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-              <label>Button padding</label>
+              <label>{{ 'button padding' | translate | capitalize }}</label>
               <span>{{ padding }}</span>
             </div>
             <mat-slider (change)="buttonService.updateButton('text', { padding: $event.value })"
@@ -97,7 +99,7 @@
           <!-- Corner radius-->
           <div fxFlex fxLayout="column">
             <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-              <label>Corner radius</label>
+              <label>{{ 'corner radius' | translate | capitalize }}</label>
               <span>{{ cornerRadius }}</span>
             </div>
             <mat-slider (valueChange)="buttonService.updateButton('style', { cornerRadius: $event })"

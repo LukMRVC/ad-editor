@@ -1,5 +1,6 @@
-<h2 mat-dialog-title>Display options for dataset</h2>
-
+<h2 mat-dialog-title>
+  {{ 'display options for dataset' | translate | titlecase }}
+</h2>
 
 <mat-dialog-content style="padding: 1rem;" fxLayout="column" fxLayoutGap=".5rem">
 
@@ -12,7 +13,7 @@
                       (change)="toggleAllDrawingOnBanner(shapeInfo, $event.checked);"
                       [indeterminate]="someSizes(shapeInfo)"
                       [checked]="allSizes(shapeInfo)">
-          Display on all banners
+          {{ 'display on all banners' | translate | titlecase }}
         </mat-checkbox>
       </mat-panel-description>
     </mat-expansion-panel-header>
@@ -29,5 +30,5 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-dialog-close mat-raised-button>Close</button>
+  <button mat-dialog-close mat-raised-button>{{ 'close' | translate | capitalize }}</button>
 </mat-dialog-actions>

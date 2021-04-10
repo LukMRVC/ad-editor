@@ -6,99 +6,88 @@ import {Component, EventEmitter, OnInit, Output} from '@angular/core';
     <div fxLayout="column" fxLayoutGap=".5rem">
       <h4>Filters</h4>
 
-      <div fxFlex fxLayout="column">
-        <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-          <label>Image blur</label>
-          <span>{{ blurRadius }}</span>
-        </div>
-        <mat-slider [(ngModel)]="blurRadius" thumbLabel min="0" max="40" step="0.5"
+      <div class="filter-slider">
+        <label>{{ 'blur' | translate | titlecase }}</label>
+        <mat-slider (input)="blurRadius = $event.value;" [(ngModel)]="blurRadius" min="0" max="40" step="1"
                     (valueChange)="filterChanged.emit({ filterName: 'Blur', filterProperty: {blurRadius: $event}, minValue: 0 })"></mat-slider>
+        <span>{{ blurRadius }}</span>
       </div>
 
-      <div fxFlex fxLayout="column">
-        <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-          <label>Brighten image</label>
-          <span>{{ brighten }}</span>
-        </div>
-        <mat-slider [(ngModel)]="brighten" thumbLabel min="-1" max="1" step="0.1"
+      <div class="filter-slider">
+        <label>{{ 'brighten' | translate | titlecase }}</label>
+        <mat-slider (input)="brighten = $event.value;" [(ngModel)]="brighten" min="-1" max="1" step="0.1"
                     (valueChange)="filterChanged.emit({ filterName: 'Brighten', filterProperty: {brightness: $event}, minValue: -1 })"></mat-slider>
+        <span>{{ brighten }}</span>
       </div>
 
-      <div fxFlex fxLayout="column">
-        <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-          <label>Contrast</label>
-          <span>{{ contrast }}</span>
-        </div>
-        <mat-slider [(ngModel)]="contrast" thumbLabel min="-100" max="100" step="1"
+      <div class="filter-slider">
+        <label>{{ 'contrast' | translate | titlecase }}</label>
+        <mat-slider (input)="contrast = $event.value;" [(ngModel)]="contrast" min="-100" max="100" step="1"
                     (valueChange)="filterChanged.emit({ filterName: 'Contrast', filterProperty: {contrast: $event}, minValue: -100 })"></mat-slider>
+        <span>{{ contrast }}</span>
       </div>
 
-      <div fxFlex fxLayout="column">
-        <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-          <label>Enhance</label>
-          <span>{{ enhance }}</span>
-        </div>
-        <mat-slider [(ngModel)]="enhance" thumbLabel min="-1" max="1" step="0.1"
+      <div class="filter-slider">
+        <label>{{ 'enhance' | translate | titlecase }}</label>
+
+        <mat-slider (input)="enhance = $event.value;" [(ngModel)]="enhance" min="-1" max="1" step="0.1"
                     (valueChange)="filterChanged.emit({ filterName: 'Enhance', filterProperty: {enhance: $event} })"></mat-slider>
+        <span>{{ enhance }}</span>
       </div>
 
-      <mat-slide-toggle (change)="filterChanged.emit({ filterName: 'Grayscale', filterValues: $event.checked })" #grayscale>
-        Grayscale
-      </mat-slide-toggle>
+      <div fxLayoutGap=".5rem" fxLayout="row wrap">
+        <mat-slide-toggle (change)="filterChanged.emit({ filterName: 'Grayscale', filterValues: $event.checked })" #grayscale>
+          {{ 'grayscale' | translate | capitalize }}
+        </mat-slide-toggle>
 
-      <mat-slide-toggle (change)="filterChanged.emit({ filterName: 'Invert', filterValues: $event.checked })" #invert>
-        Invert
-      </mat-slide-toggle>
+        <mat-slide-toggle (change)="filterChanged.emit({ filterName: 'Invert', filterValues: $event.checked })" #invert>
+          {{ 'invert' | translate | titlecase }}
+        </mat-slide-toggle>
 
-      <mat-slide-toggle (change)="filterChanged.emit({ filterName: 'Solarize', filterValues: $event.checked })" #solarize>
-        Solarize
-      </mat-slide-toggle>
+        <mat-slide-toggle (change)="filterChanged.emit({ filterName: 'Solarize', filterValues: $event.checked })" #solarize>
+          {{ 'solarize' | translate | titlecase }}
+        </mat-slide-toggle>
 
-      <mat-slide-toggle (change)="filterChanged.emit({ filterName: 'Sepia', filterValues: $event.checked })" #sepia>
-        Sepia
-      </mat-slide-toggle>
+        <mat-slide-toggle (change)="filterChanged.emit({ filterName: 'Sepia', filterValues: $event.checked })" #sepia>
+          {{ 'sepia' | translate | titlecase }}
+        </mat-slide-toggle>
+      </div>
 
+      <div class="filter-slider">
+        <label>{{ 'mask' | translate | titlecase }}</label>
 
-      <div fxFlex fxLayout="column">
-        <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-          <label>Mask</label>
-          <span>{{ maskThreshold }}</span>
-        </div>
-        <mat-slider [(ngModel)]="maskThreshold" thumbLabel min="0" max="300" step="1"
+        <mat-slider (input)="maskThreshold = $event.value;" [(ngModel)]="maskThreshold" min="0" max="300" step="1"
                     (valueChange)="filterChanged.emit({ filterName: 'Mask', filterProperty: {threshold: $event}, minValue: 0 })"></mat-slider>
+        <span>{{ maskThreshold }}</span>
       </div>
 
-      <div fxFlex fxLayout="column">
-        <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-          <label>Noise</label>
-          <span>{{ noise }}</span>
-        </div>
-        <mat-slider [(ngModel)]="noise" thumbLabel min="0" max="5" step="0.1"
+      <div class="filter-slider">
+        <label>{{ 'noise' | translate | titlecase }}</label>
+
+        <mat-slider (input)="noise = $event.value;" [(ngModel)]="noise" min="0" max="5" step="0.1"
                     (valueChange)="filterChanged.emit({ filterName: 'Noise', filterProperty: {noise: $event}, minValue: 0 })"></mat-slider>
+        <span>{{ noise }}</span>
       </div>
 
-      <div fxFlex fxLayout="column">
-        <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-          <label>Pixelate</label>
-          <span>{{ pixelSize }}</span>
-        </div>
-        <mat-slider [(ngModel)]="pixelSize" thumbLabel min="1" max="30" step="1"
+      <div class="filter-slider">
+        <label>{{ 'pixelate' | translate | titlecase }}</label>
+
+        <mat-slider (input)="pixelSize = $event.value;" [(ngModel)]="pixelSize" min="1" max="30" step="1"
                     (valueChange)="filterChanged.emit({ filterName: 'Pixelate', filterProperty: {pixelSize: $event}, minValue: 1 })"></mat-slider>
+        <span>{{ pixelSize }}</span>
       </div>
 
-      <div fxFlex fxLayout="column">
-        <div class="slider-label" fxLayout="row" fxLayoutAlign="space-between end">
-          <label>Posterize</label>
-          <span>{{ posterizationLevel }}</span>
-        </div>
-        <mat-slider [(ngModel)]="posterizationLevel" thumbLabel min="0" max="1" step="0.1"
+      <div class="filter-slider">
+        <label>{{ 'posterize' | translate | titlecase }}</label>
+
+        <mat-slider (input)="posterizationLevel = $event.value;" [(ngModel)]="posterizationLevel" min="0" max="1" step="0.1"
                     (valueChange)="filterChanged.emit({ filterName: 'Posterize', minValue: 0, filterProperty: {levels: $event } })"></mat-slider>
+        <span>{{ posterizationLevel }}</span>
       </div>
 
     </div>
   `,
-  styles: [
-  ]
+  styleUrls: ['./draw-toolbar/draw-toolbar.component.scss']
 })
 export class ImageFilterComponent implements OnInit {
 

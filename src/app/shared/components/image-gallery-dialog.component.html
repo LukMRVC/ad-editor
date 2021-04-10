@@ -1,9 +1,13 @@
-<h2 mat-dialog-title>Image gallery</h2>
+<h2 mat-dialog-title>{{ 'image gallery' | translate | titlecase }}</h2>
 
 <mat-dialog-content style="padding: 1rem;" fxLayout="column" fxLayoutGap=".5rem">
-  <h1 *ngIf="imageService.getImages().length <= 0">The gallery seems to be empty.</h1>
+  <h1 *ngIf="imageService.getImages().length <= 0">
+    {{ 'the gallery seems to be empty.' | translate | capitalize }}
+  </h1>
   <button *ngIf="imageService.getImages().length > 0" color="warn" fxFlexAlign="start"
-          mat-flat-button (click)="imageService.removeAllImages()">Remove all</button>
+          mat-flat-button (click)="imageService.removeAllImages()">
+    {{ 'remove all' | translate | titlecase }}
+  </button>
 
   <div fxLayout="row wrap" fxLayoutAlign="start" fxLayoutGap=".5rem" class="gallery">
 
@@ -18,7 +22,9 @@
       <mat-grid-tile class="img-select" (click)="this.dialogRef.close(img)" *ngFor="let img of imageService.getImages()">
         <mat-grid-tile-header fxLayout="row" fxLayoutAlign="space-between center">
           {{ img.name }}
-          <button mat-button color="warn" (click)="imageService.removeImage(img.id)">Remove</button>
+          <button mat-button color="warn" (click)="imageService.removeImage(img.id)">
+            {{ 'remove' | translate | capitalize }}
+          </button>
 
         </mat-grid-tile-header>
         <img [src]="img.src" [alt]="img.name" class="gallery-img" />
@@ -28,15 +34,15 @@
   </div>
 
   <button fxFlex="25" (click)="fileInput.click()" mat-raised-button color="accent">
-    Upload images
+    {{ 'upload images' | translate | capitalize }}
     <mat-icon>insert_photo</mat-icon>
   </button>
   <input (change)="upload($event)" style="display: none;" #fileInput type="file" multiple accept="image/jpeg,image/png">
-  <ngx-file-drop dropZoneLabel="Drop images here" (onFileDrop)="fileDropped($event)"></ngx-file-drop>
+  <ngx-file-drop dropZoneLabel="{{ 'drop images here' | translate | titlecase }}" (onFileDrop)="fileDropped($event)"></ngx-file-drop>
 
 
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-dialog-close mat-raised-button>Close</button>
+  <button mat-dialog-close mat-raised-button>{{ 'close' | translate | capitalize }}</button>
 </mat-dialog-actions>

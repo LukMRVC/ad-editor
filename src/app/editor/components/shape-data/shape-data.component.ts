@@ -6,6 +6,7 @@ import {UploadedImage} from '@core/services/image-gallery.service';
 import {KonvaService} from '@core/services/konva.service';
 import {ShapeInformation} from '@core/models/dataset';
 import {ShapeNameDialogComponent} from '../shape-name-dialog.component';
+import {ShapeDisplayDialogComponent} from '@shared/components/shape-display-dialog.component';
 
 @Component({
   selector: 'app-shape-data',
@@ -40,13 +41,13 @@ export class ShapeDataComponent implements OnInit {
     this.dataService.setActiveDataset(key);
   }
 
-  // TODO: move to corresponding shape name
-  // async displayOptions(dataset: ShapeInformation[]): Promise<void> {
-  //   const dlg = this.dialog.open(ShapeDisplayDialogComponent, { maxWidth: '70%', minWidth: '50%', data: dataset });
-  //   const result = await dlg.afterClosed().toPromise();
-  //   // console.log(result);
-  //   this.konva.redrawShapes();
-  // }
+  async displayOptions(): Promise<void> {
+    const dlg = this.dialog.open(ShapeDisplayDialogComponent, {
+      maxWidth: '70%', minWidth: '50%', data: this.dataService.getActiveDataset()
+    });
+    await dlg.afterClosed().toPromise();
+    this.dataService.setActiveDataset(this.dataService.activeDataset);
+  }
 
   async addShape(shapeType: 'image'|'text'|'rect'|'circle'): Promise<void> {
     const dlg = this.dialog.open(ShapeNameDialogComponent);

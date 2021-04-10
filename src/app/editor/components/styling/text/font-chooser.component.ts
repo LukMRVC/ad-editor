@@ -9,7 +9,7 @@ import {MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
   selector: 'app-font-chooser',
   template: `
     <mat-form-field appearance="outline">
-      <mat-label>Font family</mat-label>
+      <mat-label>{{ 'font family' | translate | capitalize }}</mat-label>
       <input [formControl]="fontFamilyControl" type="text" matInput aria-label="Font family" [matAutocomplete]="auto">
       <!-- Font family -->
       <mat-autocomplete (optionSelected)="loadFont($event)"

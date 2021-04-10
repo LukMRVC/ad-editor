@@ -3,14 +3,22 @@
     <mat-icon>menu</mat-icon>
   </button>
   <mat-menu #mainMenu="matMenu">
-    <button (click)="saveProject()" mat-menu-item>Save project</button>
-    <button (click)="projectImportInput.click()" mat-menu-item>Import project</button>
-    <button (click)="exportBanners()" mat-menu-item>Export banners</button>
+    <button (click)="saveProject()" mat-menu-item>{{ 'save project' | translate | capitalize }}</button>
+    <button (click)="projectImportInput.click()" mat-menu-item>{{ 'import project' | translate | capitalize }}</button>
+    <button (click)="exportBanners()" mat-menu-item>{{ 'export banners' | translate | capitalize }}</button>
   </mat-menu>
   <input #projectImportInput (change)="importProject()" type="file" style="display: none" accept=".ade">
   <span>
     {{ title }}
   </span>
+
+  <div fxFlex fxFlexAlign="center" fxLayout="row nowrap" fxLayoutAlign="end center">
+    <button (click)="translateService.use('cs')" mat-button>CZ</button>
+    <button (click)="translateService.use('en')" mat-button>
+      EN
+    </button>
+  </div>
+
 </mat-toolbar>
 
 <main class="main" fxLayout="column">
@@ -25,7 +33,7 @@
        [style.top]="contextMenu.top" [style.left]="contextMenu.left"
        [style.display]="contextMenu.visibility"  id="context-menu">
     <button mat-button (click)="ctxAction.action($event); contextMenuActions = [];" *ngFor="let ctxAction of contextMenuActions">
-      {{ ctxAction.name }}
+      {{ ctxAction.name | translate }}
     </button>
   </div>
 

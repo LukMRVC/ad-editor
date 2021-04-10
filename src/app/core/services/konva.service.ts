@@ -586,8 +586,10 @@ export class KonvaService {
 
       if (restore) {
         const attrs = shapeInfo.bannerShapeConfig.get(group.getAttr('bannerId'));
-        attrs.fillPatternImage = shapeInfo.shapeConfig.fillPatternImage;
-        shape.setAttrs(attrs);
+        if (attrs) {
+          attrs.fillPatternImage = shapeInfo.shapeConfig.fillPatternImage;
+          shape.setAttrs(attrs);
+        }
         continue;
       }
 

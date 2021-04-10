@@ -187,7 +187,20 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('document:keydown.delete')
   onDeletePressed(): void {
-    // this.konva.deleteSelected();
+    if (this.konva.getTransformer().nodes().length) {
+      for (const node of this.konva.getTransformer().nodes()) {
+        const group = node.findAncestor('.banner-group');
+        const bannerId = group.getAttr('bannerId');
+        const dataNode = this.dataService.getActiveDataset().find(s => s.userShapeName.slugify() === node.name());
+        node.setAttr('shouldDraw', false);
+        if (dataNode.bannerShapeConfig) {
+          dataNode.bannerShapeConfig.set(bannerId, node.getAttrs());
+          node.hide();
+        }
+        this.konva.getTransformer().nodes([]);
+        this.konva.redraw();
+      }
+    }
   }
 
   reorderDatasets($event: CdkDragDrop<string[]>): void {

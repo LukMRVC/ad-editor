@@ -3,6 +3,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {BannerDataService} from '@core/services/banner-data.service';
 import {Banner} from '@core/models/banner-layout';
 import {ShapeInformation} from '@core/models/dataset';
+import Konva from 'konva';
 
 @Component({
   selector: 'app-shape-display-dialog',
@@ -22,7 +23,7 @@ export class ShapeDisplayDialogComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.bannerSizes = this.bannerData.getActiveBanners();
-    console.log(this.datasetData);
+    // console.log(this.datasetData);
   }
 
   // Expansion panel flickering workaround
@@ -42,7 +43,7 @@ export class ShapeDisplayDialogComponent implements OnInit, AfterViewInit {
   isDrawnOnBanner(shapeInfo: ShapeInformation, i: number): boolean {
     const bannerCfg = shapeInfo?.bannerShapeConfig?.get(i);
     if (!bannerCfg) {
-      return false;
+      return true;
     } else {
       return bannerCfg.shouldDraw;
     }
@@ -52,6 +53,12 @@ export class ShapeDisplayDialogComponent implements OnInit, AfterViewInit {
     const bannerCfg = shapeInfo?.bannerShapeConfig?.get(bannerIdx);
     if (bannerCfg) {
       bannerCfg.shouldDraw = checked;
+    } else {
+      shapeInfo.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
+      for (const banner of this.bannerSizes) {
+        shapeInfo.bannerShapeConfig.set(banner.id, { shouldDraw: true });
+      }
+      shapeInfo.bannerShapeConfig.set(bannerIdx, { shouldDraw: checked });
     }
   }
 

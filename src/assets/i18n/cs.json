@@ -16,6 +16,7 @@
   "logo": "logo",
   "headline": "titulek",
   "text": "text",
+  "text_for": "text {{for}}",
   "style": "styl",
   "color": "barva",
   "size": "velikost",
@@ -88,5 +89,9 @@
   "display on all banners": "zobrazit na všech bannerech",
   "display options for dataset": "volby zobrazení pro dataset",
   "shape name (must be unique)": "název tvaru (musí být unikátní)",
-  "display options": "volby zobrazení"
+  "display options": "volby zobrazení",
+  "shape already exists": "tvar už existuje",
+  "modifying mode": "mód úprav",
+  "pixel mode": "na pixely",
+  "percentage mode": "na procenta"
 }

@@ -16,6 +16,7 @@
   "logo": "logo",
   "headline": "headline",
   "text": "text",
+  "text_for": "{{for}} text",
   "style": "style",
   "color": "color",
   "size": "size",
@@ -50,7 +51,7 @@
   "line height": "line height",
   "letter spacing": "letter spacing",
   "filters": "filters",
-  "brighten image": "brighten image",
+  "brighten": "brighten",
   "contrast": "contrast",
   "enhance": "enhance",
   "grayscale": "grayscale",
@@ -88,5 +89,9 @@
   "display on all banners": "display on all banners",
   "shape name (must be unique)": "shape name (must be unique)",
   "display options for dataset": "display options for dataset",
-  "display options": "display options"
+  "display options": "display options",
+  "shape already exists": "shape already exists",
+  "modifying mode": "modifying mode",
+  "pixel mode": "pixel mode",
+  "percentage mode": "percentage mode"
 }

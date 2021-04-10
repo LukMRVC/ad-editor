@@ -4,7 +4,7 @@ import {Component, EventEmitter, OnInit, Output} from '@angular/core';
   selector: 'app-image-filter',
   template: `
     <div fxLayout="column" fxLayoutGap=".5rem">
-      <h4>Filters</h4>
+      <h4>{{ 'filters' | translate | capitalize }}</h4>
 
       <div class="filter-slider">
         <label>{{ 'blur' | translate | titlecase }}</label>

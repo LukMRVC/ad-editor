@@ -5,19 +5,17 @@ import {Banner, Dimension2D, Point2D} from '@core/models/banner-layout';
 import {FilterChangedEvent} from '../../editor/components/image-filter.component';
 import {BannerDataService} from '@core/services/banner-data.service';
 import {ShapeInformation} from '@core/models/dataset';
-import {PolylineDrawingService} from '@core/services/drawing/polyline-drawing.service';
 
 // TODO: stylizace banneru
 // TODO: Sablony banneru a tlacitek
 // TODO: Hotove bannery dat do bakalarky
 // TODO: Vyresit texty
-// TODO: Vice banneru
-// TODO: Undo/Redo
 // TODO: Groupovani
 @Injectable({
   providedIn: 'root',
 })
 export class KonvaService {
+  private modifyMode: 'pixel' | 'percentage' = 'percentage';
 
   constructor(
     public dataService: BannerDataService,
@@ -278,7 +276,7 @@ export class KonvaService {
     let propName = '';
     let propValue = null;
 
-    for (const key of Object.keys(filters.filterProperty) ) {
+    for (const key of Object.keys(filters.filterProperty ?? {}) ) {
       propName = key;
       propValue = filters.filterProperty[key];
     }
@@ -423,6 +421,7 @@ export class KonvaService {
 
   public moveAllRelatives(dragEvent: Konva.KonvaEventObject<Konva.Shape>, bannerGroupIndex: number, shapeName: string): void {
     const centerPercentage = this.getShapeCenterPercentageInBannerFromEvent(dragEvent, bannerGroupIndex);
+    console.log(centerPercentage);
     const shapeData = this.shapes.find(s => s.userShapeName.slugify() === shapeName);
     if (!shapeData.bannerShapeConfig) {
       shapeData.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
@@ -462,9 +461,7 @@ export class KonvaService {
   }
 
   public transformRelatives(transformEvent: Konva.KonvaEventObject<Konva.Shape>, bannerGroupIndex, shapeName: string): void {
-    if (transformEvent.target.isCached()) {
-      transformEvent.target.cache();
-    }
+
     // Object image center in percentage
     const percentages = this.getShapeCenterPercentageInBannerFromEvent(transformEvent, bannerGroupIndex);
     // current shape data
@@ -482,29 +479,60 @@ export class KonvaService {
     dimensionsWidthPercentage *= 100;
     let aspectRatio = transformEvent.target.height() * transformEvent.target.scaleY();
     aspectRatio /= transformEvent.target.width() * transformEvent.target.scaleX();
-
+    if (transformEvent.target.getClassName().toLowerCase() !== 'image') {
+      transformEvent.target.setAttrs({
+        width: transformEvent.target.width() * transformEvent.target.scaleX(),
+        height: transformEvent.target.height() * transformEvent.target.scaleY(),
+        scale: { x: 1, y: 1}
+      });
+    }
     if (!this.shouldTransformRelatives) { return; }
     for (const [index, bannerGroup] of this.bannerGroups.entries()) {
       if (bannerGroup === transformEvent.target.getParent()) { continue; }
       const relative = bannerGroup.findOne(`.${shapeName}`);
       // some relatives might not exist, because the user set it
       if (!relative) { continue; }
-      const finalWidth = (dimensionsWidthPercentage / 100) * bannerGroup.width();
-      // to preserve aspect ration
-      const finalHeight = finalWidth * aspectRatio;
-      // if (transformEvent.target.getClassName() === 'image') {
-      //
-      // }
-      relative.scaleX( finalWidth / relative.width() );
-      relative.scaleY( finalHeight / relative.height() );
-      const pos = this.getPixelPositionsWithinBanner(index, percentages, relative);
-      relative.x(pos.x);
-      relative.y(pos.y);
-      relative.rotation(transformEvent.target.getAbsoluteRotation());
+      if (this.modifyMode === 'pixel') {
+        if (transformEvent.target.getClassName().toLowerCase() !== 'image') {
+          relative.width( transformEvent.target.width() * transformEvent.target.scaleX() );
+          relative.height( transformEvent.target.height() * transformEvent.target.scaleY() );
+        } else {
+          relative.scale(transformEvent.target.scale());
+        }
+      } else {
+        let finalWidth = (dimensionsWidthPercentage / 100) * bannerGroup.width();
+        let finalHeight = finalWidth * aspectRatio;
+        if (finalWidth > bannerGroup.width()) {
+          finalWidth = bannerGroup.width();
+          finalHeight = finalWidth * aspectRatio;
+        } else if (finalHeight > bannerGroup.height()) {
+          finalHeight = bannerGroup.height();
+          finalWidth = finalHeight * aspectRatio;
+        }
+
+        if (transformEvent.target.getClassName().toLowerCase() !== 'image') {
+          relative.setAttrs({
+            width: finalWidth,
+            height: finalHeight,
+            scale: { x: 1, y: 1}
+          });
+        } else {
+          relative.scaleX( finalWidth / relative.width() );
+          relative.scaleY( finalHeight / relative.height() );
+        }
+      }
+
+      // const pos = this.getPixelPositionsWithinBanner(index, percentages, relative);
+      // relative.x(pos.x);
+      // relative.y(pos.y);
+      relative.rotation(transformEvent.target.rotation());
       shapeData.bannerShapeConfig.set(index, relative.getAttrs());
       if (relative.isCached()) {
         relative.cache();
       }
+    }
+    if (transformEvent.target.isCached()) {
+      transformEvent.target.cache();
     }
     this.redraw();
   }
@@ -516,9 +544,7 @@ export class KonvaService {
     };
     const banner = this.banners[index];
     const {x: actualXPos, y: actualYPos} = banner.getPixelPositionFromPercentage(percentages, dimensions);
-    const offsetX = this.bannerGroups[index].clipX();
-    const offsetY = this.bannerGroups[index].clipY();
-    return { x: actualXPos + offsetX, y: actualYPos + offsetY };
+    return { x: actualXPos, y: actualYPos };
   }
 
   public getShapeCenterPercentageInBannerFromEvent(ev: Konva.KonvaEventObject<Konva.Shape>, bannerGroupIndex: number): Point2D {
@@ -640,5 +666,13 @@ export class KonvaService {
         reject(err);
       }
     });
+  }
+
+  public setModifyMode(mode: 'pixel'|'percentage'): void {
+    this.modifyMode = mode;
+  }
+
+  public getModifyMode(): 'pixel'|'percentage' {
+    return this.modifyMode;
   }
 }

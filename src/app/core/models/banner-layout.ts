@@ -16,8 +16,9 @@ export class Banner {
     const heightDelta = this.layout.dimensions.height - objectDimensions.height <= 0
      ? this.layout.dimensions.height : this.layout.dimensions.height - objectDimensions.height;
 
-    const x = (position.x / widthDelta) * 100;
-    const y = (position.y / heightDelta) * 100;
+
+    const x = Math.max(Math.min((position.x / widthDelta) * 100, 100), 0);
+    const y = Math.max(Math.min((position.y / heightDelta) * 100, 100), 0);
     return {x, y};
   }
 

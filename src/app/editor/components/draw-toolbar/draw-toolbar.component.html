@@ -1,9 +1,17 @@
 <aside fxLayout="column" fxLayoutAlign="start" class="drawing-toolbar">
 
-  <div style="padding: .5rem">
+  <div style="padding: .5rem" fxLayout="row" fxLayoutGap=".5rem" fxLayoutAlign="center center">
     <mat-checkbox [(ngModel)]="konva.shouldTransformRelatives">
       {{ 'modify relatives' | translate | capitalize }}
     </mat-checkbox>
+
+    <mat-form-field>
+      <mat-label>{{ 'modifying mode' | translate | capitalize }}</mat-label>
+      <mat-select value="percentage" (valueChange)="konva.setModifyMode($event)">
+        <mat-option value="pixel">{{ 'pixel mode' | translate | capitalize }}</mat-option>
+        <mat-option value="percentage">{{ 'percentage mode' | translate | capitalize }}</mat-option>
+      </mat-select>
+    </mat-form-field>
   </div>
 
   <app-logo></app-logo>
@@ -25,21 +33,33 @@
 
     <ng-template matExpansionPanelContent>
       <ng-container *ngIf="shapeInfo.isText;">
-        <mat-form-field>
-          <mat-label>{{ shapeInfo.userShapeName + ' content' }}</mat-label>
-          <textarea (input)="dataService.changeValue(dataService.activeDataset, shapeInfo, $event.target.value)"
-                    [value]="shapeInfo.shapeConfig.text"
-                    matInput [placeholder]="shapeInfo.userShapeName + ' text'" >
-          </textarea>
-        </mat-form-field>
+        <!-- Is text-->
+        <div fxLayout="column" fxLayoutGap="0.5rem">
+          <mat-form-field fxFlex appearance="outline">
+            <mat-label>{{ 'content_for' | translate: {for: ( shapeInfo.userShapeName )} | titlecase }}</mat-label>
+            <textarea (input)="dataService.changeValue(dataService.activeDataset, shapeInfo, $event.target.value)"
+                      [value]="shapeInfo.shapeConfig.text"
+                      matInput [placeholder]="('text_for' | translate:{for: shapeInfo.userShapeName}) | capitalize" >
+            </textarea>
+          </mat-form-field>
 
-        <app-text-style [shapeName]="shapeInfo.userShapeName.slugify()"></app-text-style>
+          <app-text-style [shapeName]="shapeInfo.userShapeName.slugify()"></app-text-style>
+        </div>
       </ng-container>
+      <!-- Is image -->
       <ng-container *ngIf="shapeInfo.isImage" #imageContainer>
-        <app-image-filter (filterChanged)="konva.applyFilter(shapeInfo.userShapeName.slugify(), $event)"></app-image-filter>
+        <div fxLayout="column" fxLayoutAlign="start" fxLayoutGap="0.5rem">
+          <button (click)="openGallery(dataService.activeDataset, shapeInfo)" fxFlex #uploadBtn mat-raised-button color="primary">
+            <mat-icon>insert_photo</mat-icon>
+            {{ shapeInfo.userShapeName | translate | capitalize }}
+          </button>
+          <app-image-filter (filterChanged)="konva.applyFilter(shapeInfo.userShapeName.slugify(), $event)"></app-image-filter>
+        </div>
       </ng-container>
 
-      <app-shape-bg-color (fillChanged)="shapeBgChanged($event, shapeInfo.userShapeName.slugify())"
+      <!-- Is shape -->
+      <app-shape-bg-color *ngIf=" !shapeInfo.isImage && !shapeInfo.isText && !shapeInfo.isButton"
+                          (fillChanged)="shapeBgChanged($event, shapeInfo.userShapeName.slugify())"
                           [shape]="shapeInfo.userShapeName"></app-shape-bg-color>
     </ng-template>
 

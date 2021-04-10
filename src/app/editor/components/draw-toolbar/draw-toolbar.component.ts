@@ -4,6 +4,9 @@ import {MatDialog} from '@angular/material/dialog';
 import {BannerDataService} from '@core/services/banner-data.service';
 import {Subject} from 'rxjs';
 import {debounceTime} from 'rxjs/operators';
+import {ShapeInformation} from '@core/models/dataset';
+import {ImageGalleryDialogComponent} from '@shared/components/image-gallery-dialog.component';
+import {UploadedImage} from '@core/services/image-gallery.service';
 
 @Component({
   selector: 'app-draw-toolbar',
@@ -35,6 +38,14 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
 
   shapeBgChanged($event, shapeNameSlug: string): void {
     this.shapeBgSubject$.next({ event: $event, shapeNameSlug });
+  }
+
+  async openGallery(datasetKey: string, shapeInfo: ShapeInformation): Promise<void> {
+    const dlg = this.dialog.open(ImageGalleryDialogComponent, { width: '70%' });
+    const img: UploadedImage|string = await dlg.afterClosed().toPromise();
+    if (img) {
+      this.dataService.changeValue(datasetKey, shapeInfo, (img as UploadedImage).name);
+    }
   }
 }
 

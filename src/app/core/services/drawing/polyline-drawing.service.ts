@@ -59,7 +59,8 @@ export class PolylineDrawingService {
     this.konvaService.onContextMenu$.subscribe(ctxMenu => {
       if (this.konvaService.editGroup !== null && ctxMenu.target.getParent() === this.konvaService.editGroup) {
         const editablePoly = this.konvaService.editGroup.getChildren(c => c.name() !== 'editPoint').toArray()[0];
-        const pointerPosition = this.konvaService.getStage().getPointerPosition();
+        let pointerPosition = this.konvaService.getStage().getPointerPosition();
+        console.log('Normal PP', pointerPosition);
         const actions = [
           { name: 'Add point', action: () => this.addPointToPoly(editablePoly, pointerPosition)},
         ];
@@ -68,6 +69,8 @@ export class PolylineDrawingService {
             name: 'Remove point', action: () => this.removePointFromPoly(editablePoly as Konva.Line, ctxMenu.target as Konva.Circle),
           });
         }
+        // pointerPosition = KonvaService.getRelativePointerPosition(this.konvaService.editGroup);
+        // console.log('Relative PP', pointerPosition);
         this.konvaService.displayContextMenu(pointerPosition, actions);
       }
     });
@@ -111,6 +114,10 @@ export class PolylineDrawingService {
       }
       shapeToDraw.on('dragmove', (dragging) =>
         this.konvaService.moveAllRelatives(dragging, index, shapeInfo.userShapeName.slugify()));
+      shapeToDraw.on('transform', () => {
+
+
+      });
       shapeToDraw.on('transformend', (endedTransform) =>
         this.konvaService.transformRelatives(endedTransform, index, shapeInfo.userShapeName.slugify()));
       bannerGroup.add(shapeToDraw);
@@ -130,6 +137,9 @@ export class PolylineDrawingService {
     });
     for (const group of this.konvaService.getBannerGroups()) {
       const shape = group.findOne(`.${target.name()}`);
+      if ( !(shape.getAttr('shouldDraw') ?? true)) {
+        continue;
+      }
       let points = [];
       if ('points' in shape) {
         points = (shape as Konva.Line).points();

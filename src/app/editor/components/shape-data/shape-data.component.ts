@@ -54,6 +54,10 @@ export class ShapeDataComponent implements OnInit {
     const userShapeName = await dlg.afterClosed().toPromise();
     if (userShapeName) {
       this.dataService.addShape(userShapeName, shapeType);
+      if (shapeType === 'image') {
+        const addedShape = this.dataService.getActiveDataset().find(s => s.userShapeName === userShapeName);
+        await this.openGallery(this.dataService.activeDataset, addedShape);
+      }
     }
   }
 }

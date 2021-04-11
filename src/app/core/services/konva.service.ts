@@ -421,7 +421,6 @@ export class KonvaService {
 
   public moveAllRelatives(dragEvent: Konva.KonvaEventObject<Konva.Shape>, bannerGroupIndex: number, shapeName: string): void {
     const centerPercentage = this.getShapeCenterPercentageInBannerFromEvent(dragEvent, bannerGroupIndex);
-    console.log(centerPercentage);
     const shapeData = this.shapes.find(s => s.userShapeName.slugify() === shapeName);
     if (!shapeData.bannerShapeConfig) {
       shapeData.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
@@ -537,11 +536,19 @@ export class KonvaService {
     this.redraw();
   }
 
+  private getActualTextDimensionsOfText(dims: Dimension2D, node: Konva.Node): void {
+    if (node.getClassName().toLowerCase() === 'text') {
+      dims.width = (node as Konva.Text).getTextWidth() * node.scaleX();
+      dims.height = (node as Konva.Text).height() * node.scaleY();
+    }
+  }
+
   private getPixelPositionsWithinBanner(index: number, percentages: Point2D, relative: Konva.Node): Point2D {
     const dimensions = {
       width: relative.width() * relative.scaleX(),
       height: relative.height() * relative.scaleY()
     };
+    this.getActualTextDimensionsOfText(dimensions, relative);
     const banner = this.banners[index];
     const {x: actualXPos, y: actualYPos} = banner.getPixelPositionFromPercentage(percentages, dimensions);
     return { x: actualXPos, y: actualYPos };
@@ -552,6 +559,8 @@ export class KonvaService {
       width: ev.target.width() * ev.target.scaleX(),
       height: ev.target.height() * ev.target.scaleY()
     };
+    this.getActualTextDimensionsOfText(dimensions, ev.target);
+
     let { x: xPos, y: yPos } = ev.target.getPosition();
     if (KonvaService.isRadiiBasedShape(ev.target.getClassName())) {
       xPos -= ev.target.getAttr('radius');

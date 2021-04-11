@@ -1,4 +1,12 @@
-import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  ViewChild
+} from '@angular/core';
 
 import {KonvaService} from '@core/services/konva.service';
 import {Subscription} from 'rxjs';
@@ -42,6 +50,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     public imageDrawingService: ImageDrawingService,
     public shapeDrawingService: PolylineDrawingService,
     public translateService: TranslateService,
+    public cdr: ChangeDetectorRef,
   ) { }
 
   async ngAfterViewInit(): Promise<void> {

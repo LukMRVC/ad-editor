@@ -13,10 +13,8 @@
   </span>
 
   <div fxFlex fxFlexAlign="center" fxLayout="row nowrap" fxLayoutAlign="end center">
-    <button (click)="translateService.use('cs')" mat-button>CZ</button>
-    <button (click)="translateService.use('en')" mat-button>
-      EN
-    </button>
+    <button (click)="translateService.use('cs'); this.cdr.detectChanges()" mat-button>CZ</button>
+    <button (click)="translateService.use('en'); this.cdr.detectChanges()" mat-button>EN</button>
   </div>
 
 </mat-toolbar>

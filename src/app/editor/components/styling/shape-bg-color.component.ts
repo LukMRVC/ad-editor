@@ -132,7 +132,7 @@ import {MatDialog} from '@angular/material/dialog';
     </section>
   `,
   styles: [
-    '.preview-stage { border: 1px solid #a0a0a0;}',
+    '.preview-stage { border: 1px solid #a0a0a0; max-width: 200px; max-height: 200px; }',
   ],
   styleUrls: ['../../../../themed-slider.scss']
 })

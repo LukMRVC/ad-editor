@@ -20,6 +20,13 @@ export class TextDrawingService {
         this.drawText(text.userShapeName.slugify(), text.shapeConfig);
       }
     });
+
+    this.dataService.informationUpdated$.subscribe(shapeName => {
+      const textShape = this.dataService.getActiveDataset().find(s => s.userShapeName === shapeName);
+      if (textShape.isText) {
+        this.updateText(shapeName.slugify(), textShape.shapeConfig);
+      }
+    });
   }
 
   private static createText(group: Konva.Group, banner: Banner, shape: ShapeInformation, conf: Konva.TextConfig, slug = null): Konva.Text {
@@ -112,6 +119,10 @@ export class TextDrawingService {
 
   public updateText(slugifiedShapeName: string, attributes: Konva.TextConfig): void {
     const shape = this.dataService.getActiveDataset().find(s => s.userShapeName.slugify() === slugifiedShapeName);
+    // console.log(shape);
+    if ( !shape) {
+      return;
+    }
     // if ('text' in attributes) {
     //   shape.shapeConfig.text = attributes.text;
     // }
@@ -119,7 +130,7 @@ export class TextDrawingService {
       ? [] : this.konvaService.getTransformer().nodes().filter(s => s.name() === slugifiedShapeName);
 
     for (const [index, bannerGroup] of this.konvaService.getBannerGroups().entries()) {
-      const textShape = bannerGroup.findOne(`.${slugifiedShapeName}`);
+      let textShape = bannerGroup.findOne(`.${slugifiedShapeName}`);
       if (textsToUpdate.length) {
         if (!textsToUpdate.includes(textShape)) {
           continue;
@@ -129,7 +140,14 @@ export class TextDrawingService {
       const text = TextDrawingService.editText(textShape as Konva.Text, bannerGroup, banner, shape, attributes, slugifiedShapeName);
       if (text !== null) {
         this.bindTextEvents(text, index, slugifiedShapeName);
+        textShape = text;
       }
+      if ((textShape as Konva.Text).shadowEnabled()) {
+        textShape.cache();
+      } else if (textShape.isCached()) {
+        textShape.clearCache();
+      }
+
     }
     this.konvaService.redraw();
   }

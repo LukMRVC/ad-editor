@@ -1,4 +1,4 @@
-import {AfterContentInit, Component, OnInit} from '@angular/core';
+import {AfterContentInit, AfterViewInit, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 
 @Component({
@@ -6,7 +6,7 @@ import {TranslateService} from '@ngx-translate/core';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements AfterContentInit {
+export class AppComponent implements AfterViewInit {
 
   private readonly supportedLanguages = [
     'cs',
@@ -14,10 +14,10 @@ export class AppComponent implements AfterContentInit {
   ];
 
   constructor(
-    public translateService: TranslateService
+    public translateService: TranslateService,
   ) {}
 
-  ngAfterContentInit(): void {
+  ngAfterViewInit(): void {
     const browserLang = this.translateService.getBrowserLang();
     if ( (localStorage.getItem('preferredLang') ?? null) !== null) {
       this.translateService.setDefaultLang(localStorage.getItem('preferredLang'));

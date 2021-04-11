@@ -36,12 +36,12 @@ export class KonvaService {
       this.drawBanners();
     });
 
-    this.dataService.informationUpdated$.subscribe(updatedShapeName => {
-      this.shapes = this.dataService.getActiveDataset();
-      const updatedShape = this.shapes.find(s => s.userShapeName === updatedShapeName);
-      // if (updatedShape.isImage && updatedShapeName.slugify() === 'background') {
-      //   this.drawBackground(updatedShape.shapeConfig as Konva.ImageConfig);
-      // }
+    this.dataService.shapeDeleted$.subscribe(deletedShapeName => {
+      const slugifiedShapeName = deletedShapeName.slugify();
+      for (const bannerGroup of this.getBannerGroups()) {
+        bannerGroup.getChildren(c => c.name() === slugifiedShapeName).each(c => c.destroy());
+      }
+      this.redraw();
     });
   }
 
@@ -120,7 +120,7 @@ export class KonvaService {
     stage.on('wheel', ev => {
       let scaling = scaleBy;
 
-      if (ev.evt.altKey) {
+      if (ev.evt.ctrlKey) {
         scaling += 0.06;
       }
 
@@ -440,15 +440,25 @@ export class KonvaService {
       positionFix = dragEvent.target.getAttr('radius');
     }
 
-    for (const [index, bannerGroup] of this.bannerGroups.entries()) {
-      if (bannerGroup === dragEvent.target.getParent()) { continue; }
-      const relativeShape = bannerGroup.findOne(`.${shapeName}`);
+    for (const [index, group] of this.bannerGroups.entries()) {
+      if (group === dragEvent.target.getParent()) { continue; }
+      const relativeShape = group.findOne(`.${shapeName}`);
       if (!relativeShape) { continue; }
+      const dimensions = {
+        w: relativeShape.width() * relativeShape.scaleX(),
+        h: relativeShape.height() * relativeShape.scaleY(),
+      };
       relativeShape.setAttr('percentagePositions', centerPercentage);
       const pos = this.getPixelPositionsWithinBanner(index, centerPercentage, relativeShape);
-      // console.log(`Settings position for ${bannerGroup.id()} to ${pos.x}`);
-      relativeShape.x(pos.x + positionFix);
-      relativeShape.y(pos.y + positionFix);
+      if (pos.y + positionFix + dimensions.h > group.height()) {
+        pos.y = relativeShape.y();
+      }
+
+      if (pos.x + positionFix + dimensions.w > group.width()) {
+        pos.x = relativeShape.x();
+      }
+
+      relativeShape.position({ x: pos.x + positionFix, y: pos.y + positionFix });
       if (shapeData.userShapeName.slugify() === 'button') {
         shapeData.bannerShapeConfig.get(index).labelConfig = relativeShape.getAttrs();
       } else {
@@ -478,12 +488,15 @@ export class KonvaService {
     dimensionsWidthPercentage *= 100;
     let aspectRatio = transformEvent.target.height() * transformEvent.target.scaleY();
     aspectRatio /= transformEvent.target.width() * transformEvent.target.scaleX();
-    if (transformEvent.target.getClassName().toLowerCase() !== 'image') {
+    if (! ['image', 'label'].includes(transformEvent.target.getClassName().toLowerCase())) {
       transformEvent.target.setAttrs({
         width: transformEvent.target.width() * transformEvent.target.scaleX(),
         height: transformEvent.target.height() * transformEvent.target.scaleY(),
         scale: { x: 1, y: 1}
       });
+    }
+    if (transformEvent.target.isCached()) {
+      transformEvent.target.cache();
     }
     if (!this.shouldTransformRelatives) { return; }
     for (const [index, bannerGroup] of this.bannerGroups.entries()) {
@@ -492,7 +505,7 @@ export class KonvaService {
       // some relatives might not exist, because the user set it
       if (!relative) { continue; }
       if (this.modifyMode === 'pixel') {
-        if (transformEvent.target.getClassName().toLowerCase() !== 'image') {
+        if (! ['image', 'label'].includes(transformEvent.target.getClassName().toLowerCase())) {
           relative.width( transformEvent.target.width() * transformEvent.target.scaleX() );
           relative.height( transformEvent.target.height() * transformEvent.target.scaleY() );
         } else {
@@ -506,10 +519,10 @@ export class KonvaService {
           finalHeight = finalWidth * aspectRatio;
         } else if (finalHeight > bannerGroup.height()) {
           finalHeight = bannerGroup.height();
-          finalWidth = finalHeight * aspectRatio;
+          finalWidth = finalHeight / aspectRatio;
         }
 
-        if (transformEvent.target.getClassName().toLowerCase() !== 'image') {
+        if (! ['image', 'label'].includes(transformEvent.target.getClassName().toLowerCase())) {
           relative.setAttrs({
             width: finalWidth,
             height: finalHeight,
@@ -525,14 +538,18 @@ export class KonvaService {
       // relative.x(pos.x);
       // relative.y(pos.y);
       relative.rotation(transformEvent.target.rotation());
-      shapeData.bannerShapeConfig.set(index, relative.getAttrs());
+
+      if (shapeData.userShapeName.slugify() === 'button') {
+        shapeData.bannerShapeConfig.get(index).labelConfig = relative.getAttrs();
+      } else {
+        shapeData.bannerShapeConfig.set(index, relative.getAttrs());
+      }
+
       if (relative.isCached()) {
         relative.cache();
       }
     }
-    if (transformEvent.target.isCached()) {
-      transformEvent.target.cache();
-    }
+
     this.redraw();
   }
 
@@ -667,7 +684,8 @@ export class KonvaService {
       const groupLabel = group.findOne('.banner-label');
       groupLabel.hide();
       try {
-        const groupImg = group.toDataURL(exportConfig);
+        const coordsConfig = {width: group.width(), height: group.height() };
+        const groupImg = group.toDataURL({ ...coordsConfig, ...exportConfig });
         this.stage.scale(currentScale);
         groupLabel.show();
         resolve(groupImg);
@@ -683,5 +701,21 @@ export class KonvaService {
 
   public getModifyMode(): 'pixel'|'percentage' {
     return this.modifyMode;
+  }
+
+  public getShapeAttrs(shapeInfo: ShapeInformation): Konva.ShapeConfig {
+    const shape = this.shapes.find(s => s.userShapeName === shapeInfo.userShapeName);
+    if (this.shouldTransformRelatives) {
+      return shape.bannerShapeConfig.get(0); // return first banner shape config, other banners don't matter
+    } else {
+      if (this.transformer.nodes().length) {
+        const node = this.transformer.nodes().find(n => n.name() === shapeInfo.userShapeName.slugify());
+        if (node) {
+          return node.getAttrs();
+        }
+        return shape.bannerShapeConfig.get(0); // return first banner shape config, other banners don't matter
+      }
+    }
+
   }
 }

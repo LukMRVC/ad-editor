@@ -22,10 +22,13 @@
 
   <app-button></app-button>
 
-  <mat-expansion-panel *ngFor="let shapeInfo of dataService.userShapes" class="mat-elevation-z0 radius-none ">
+  <mat-expansion-panel (opened)="getShapeAttrs(shapeInfo)" *ngFor="let shapeInfo of dataService.userShapes" class="mat-elevation-z0 radius-none ">
     <mat-expansion-panel-header>
       <mat-panel-title>{{ shapeInfo.userShapeName }}</mat-panel-title>
-      <mat-panel-description>
+      <mat-panel-description fxLayoutAlign="end center">
+        <button (click)="$event.stopImmediatePropagation(); removeUserShape(shapeInfo);" mat-icon-button>
+          <mat-icon>delete</mat-icon>
+        </button>
         <mat-icon *ngIf="shapeInfo.isImage">insert_photo</mat-icon>
         <mat-icon *ngIf="shapeInfo.isText">format_size</mat-icon>
       </mat-panel-description>
@@ -37,8 +40,8 @@
         <div fxLayout="column" fxLayoutGap="0.5rem">
           <mat-form-field fxFlex appearance="outline">
             <mat-label>{{ 'content_for' | translate: {for: ( shapeInfo.userShapeName )} | titlecase }}</mat-label>
-            <textarea (input)="dataService.changeValue(dataService.activeDataset, shapeInfo, $event.target.value)"
-                      [value]="shapeInfo.shapeConfig.text"
+            <textarea  (input)="textService.updateText(shapeInfo.userShapeName.slugify(), {text: $event.target.value })"
+                      [value]="userShapeTexts.get(shapeInfo.userShapeName)"
                       matInput [placeholder]="('text_for' | translate:{for: shapeInfo.userShapeName}) | capitalize" >
             </textarea>
           </mat-form-field>

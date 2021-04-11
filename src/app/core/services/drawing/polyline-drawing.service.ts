@@ -59,8 +59,7 @@ export class PolylineDrawingService {
     this.konvaService.onContextMenu$.subscribe(ctxMenu => {
       if (this.konvaService.editGroup !== null && ctxMenu.target.getParent() === this.konvaService.editGroup) {
         const editablePoly = this.konvaService.editGroup.getChildren(c => c.name() !== 'editPoint').toArray()[0];
-        let pointerPosition = this.konvaService.getStage().getPointerPosition();
-        console.log('Normal PP', pointerPosition);
+        const pointerPosition = this.konvaService.getStage().getPointerPosition();
         const actions = [
           { name: 'Add point', action: () => this.addPointToPoly(editablePoly, pointerPosition)},
         ];
@@ -69,8 +68,6 @@ export class PolylineDrawingService {
             name: 'Remove point', action: () => this.removePointFromPoly(editablePoly as Konva.Line, ctxMenu.target as Konva.Circle),
           });
         }
-        // pointerPosition = KonvaService.getRelativePointerPosition(this.konvaService.editGroup);
-        // console.log('Relative PP', pointerPosition);
         this.konvaService.displayContextMenu(pointerPosition, actions);
       }
     });
@@ -107,17 +104,10 @@ export class PolylineDrawingService {
         if ( !savedData.shoulDraw) { return; }
         shapeToDraw.setAttrs(savedData);
       } else {
-        const { x: offsetX, y: offsetY } = bannerGroup.clip();
         shapeInfo.bannerShapeConfig.set(index, shapeToDraw.getAttrs());
-        shapeToDraw.x( shapeToDraw.x() + offsetX );
-        shapeToDraw.y( shapeToDraw.y() + offsetY );
       }
       shapeToDraw.on('dragmove', (dragging) =>
         this.konvaService.moveAllRelatives(dragging, index, shapeInfo.userShapeName.slugify()));
-      shapeToDraw.on('transform', () => {
-
-
-      });
       shapeToDraw.on('transformend', (endedTransform) =>
         this.konvaService.transformRelatives(endedTransform, index, shapeInfo.userShapeName.slugify()));
       bannerGroup.add(shapeToDraw);
@@ -129,62 +119,72 @@ export class PolylineDrawingService {
   private makeEditablePolygon(event): void {
     this.konvaService.getTransformer().nodes([]);
     const target = event.target;
-    // TODO: When making editable second time, points are on same position after moving the line
     this.konvaService.editGroup = new Konva.Group({
       name: 'editGroup',
       draggable: false,
       transformable: false
     });
+    const targetParentGroup = event.target.findAncestor('.banner-group');
+    targetParentGroup.add(this.konvaService.editGroup);
     for (const group of this.konvaService.getBannerGroups()) {
       const shape = group.findOne(`.${target.name()}`);
+
       if ( !(shape.getAttr('shouldDraw') ?? true)) {
         continue;
       }
+      shape.setAttr('transformable', false);
+      shape.setAttr('draggable', false);
       let points = [];
+      let polygon;
+      // was already converted to polygon
       if ('points' in shape) {
         points = (shape as Konva.Line).points();
-      } else if (shape.getClassName().toLowerCase() === 'rect') {
+        polygon = shape as Konva.Line;
+      } else if (shape.getClassName().toLowerCase() === 'rect') { // will be converted to polygon
         points = PolylineDrawingService.getRectPoints(shape as Konva.Rect);
+        polygon = new Konva.Line({
+          name: target.name(),
+          closed: true,
+          fill: (shape as Konva.Shape).fill(),
+          draggable: false,
+          stroke: (shape as Konva.Shape).stroke(),
+          transformable: false,
+          points,
+        });
+        polygon.on('dragmove', (drag) =>
+        this.konvaService.moveAllRelatives(drag, group.getAttr('bannerId'), polygon.name()));
+        polygon.on('transformend', (ev) =>
+        this.konvaService.transformRelatives(ev, polygon.getParent().getAttr('bannerId'), polygon.name()));
+        polygon.on('dblclick', ev => this.makeEditablePolygon(ev));
+        if (shape !== event.target) {
+          group.add(polygon);
+          shape.destroy();
+        }
       }
 
-      const polygon = new Konva.Line({
-        name: event.target.name(),
-        closed: true,
-        fill: (shape as Konva.Shape).fill(),
-        draggable: false,
-        stroke: (shape as Konva.Shape).stroke(),
-        transformable: false,
-        points,
-      });
-
-      polygon.on('dragmove', (drag) =>
-        this.konvaService.moveAllRelatives(drag, group.getAttr('bannerId'), polygon.name()));
-      polygon.on('transformend', (ev) =>
-       this.konvaService.transformRelatives(ev, polygon.getParent().getAttr('bannerId'), polygon.name()));
-      polygon.on('dblclick', ev => this.makeEditablePolygon(ev));
-
       if (shape === event.target) {
-        this.konvaService.editGroup.add(polygon);
+        if (shape.getClassName().toLowerCase() === 'rect') {
+          this.konvaService.editGroup.add(polygon);
+          shape.destroy();
+        } else {
+          shape.moveTo(this.konvaService.editGroup);
+          this.konvaService.editGroup.clearCache();
+        }
         PolylineDrawingService.pairwise(polygon.points(), (cx, cy, pidx) => {
+          const positionFix = polygon.position();
           const editPoint = new Konva.Circle({
             name: 'editPoint',
             pointIdx: pidx,
-            x: cx,
-            y: cy,
+            x: cx + positionFix.x,
+            y: cy + positionFix.y,
             ...this.editPointConfig,
           });
           this.editPointDragEvent(polygon, editPoint);
           this.konvaService.editGroup.add(editPoint);
         });
-      } else {
-        group.add(polygon);
-        shape.destroy();
       }
-
     }
 
-    event.target.getParent().add(this.konvaService.editGroup);
-    event.target.destroy();
     this.konvaService.redraw();
   }
 
@@ -192,22 +192,35 @@ export class PolylineDrawingService {
     editPoint.on('dragmove', (drag) => {
       const pidx = editPoint.getAttr('pointIdx');
       const mainGroup = polygon.findAncestor('.banner-group');
-      const percentage = this.konvaService.getShapeCenterPercentageInBannerFromEvent(drag, mainGroup.getAttr('bannerId'));
 
-
-      for (const group of this.konvaService.getBannerGroups()) {
-        if ( !this.konvaService.shouldTransformRelatives && mainGroup !== group) {
-          continue;
+      if (this.konvaService.getModifyMode() === 'percentage') {
+        const percentage = this.konvaService.getShapeCenterPercentageInBannerFromEvent(drag, mainGroup.getAttr('bannerId'));
+        for (const group of this.konvaService.getBannerGroups()) {
+          if ( !this.konvaService.shouldTransformRelatives && mainGroup !== group) {
+            continue;
+          }
+          const groupPolygon = group.findOne(`.${polygon.name()}`) as Konva.Line;
+          if ( !groupPolygon) {
+            continue;
+          }
+          const dim = { width: group.width(), height: group.height() };
+          const pixelPos = KonvaService.getPointPixelPositionFromPercentage(percentage, dim);
+          const polyPoints = groupPolygon.points();
+          polyPoints[pidx] = pixelPos.x - groupPolygon.position().x;
+          polyPoints[pidx + 1] = pixelPos.y - groupPolygon.position().y;
         }
-        const groupPolygon = group.findOne(`.${polygon.name()}`) as Konva.Line;
-        const dim = {width: group.width(), height: group.height()};
-        const pixelPos = KonvaService.getPointPixelPositionFromPercentage(percentage, dim);
-        const polyPoints = groupPolygon.points();
-        polyPoints[pidx] = pixelPos.x + group.clipX();
-        polyPoints[pidx + 1] = pixelPos.y + group.clipY();
+      } else {
+        for (const group of this.konvaService.getBannerGroups()) {
+          const groupPolygon = group.findOne(`.${polygon.name()}`) as Konva.Line;
+          if ( !groupPolygon) {
+            continue;
+          }
+          const polyPoints = groupPolygon.points();
+          polyPoints[pidx] = drag.target.x() - groupPolygon.position().x;
+          polyPoints[pidx + 1] = drag.target.y() - groupPolygon.position().y;
+        }
       }
       this.konvaService.redraw();
-
     });
   }
 

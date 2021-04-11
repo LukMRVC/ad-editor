@@ -139,6 +139,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     this.exporting = true;
     const exportConfig: ExportDialogResult = await dialog.afterClosed().toPromise();
     if ( !exportConfig) {
+      this.exporting = false;
       return;
     }
 
@@ -146,14 +147,14 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     if (exportConfig.withTemplate) {
       exportConfig.datasets.push('template');
     }
+
     const archive = new JSZip();
     for (const datasetName of exportConfig.datasets) {
       const folder = archive.folder(datasetName);
       this.dataService.setActiveDataset(datasetName);
 
       for (const group of this.konva.getBannerGroups()) {
-        const coordsConfig = { x: group.x(), y: group.y(), width: group.width(), height: group.height() };
-        let imageDataURL = await this.konva.exportGroupToImage(group, { ...coordsConfig, ...exportConfig});
+        let imageDataURL = await this.konva.exportGroupToImage(group, exportConfig);
         imageDataURL = imageDataURL.replace(/^data:image\/(png|jpeg);base64,/, '');
         const fileName = group.id().replace('group-', '').concat('.', exportConfig.mimeType.replace('image/', ''));
         folder.file(fileName, imageDataURL, { base64: true });

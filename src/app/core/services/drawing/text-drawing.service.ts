@@ -37,7 +37,10 @@ export class TextDrawingService {
     // Draw shape from saved config
     if (shape.bannerShapeConfig.has(banner.id)) {
       if (!shape.bannerShapeConfig.get(banner.id).shouldDraw) { return text; }
-      text = new Konva.Text({ ...shape.bannerShapeConfig.get(banner.id), ...shape.shapeConfig, });
+      text = new Konva.Text({ ...shape.shapeConfig, ...shape.bannerShapeConfig.get(banner.id), });
+      if ( !shape.bannerShapeConfig.get(banner.id)?.text) {
+        text.text(shape.shapeConfig.text);
+      }
     } else {
       const dimensions = { width: banner.layout.dimensions.width, height: null };
       conf.width =  banner.layout.dimensions.width;
@@ -119,18 +122,22 @@ export class TextDrawingService {
 
   public updateText(slugifiedShapeName: string, attributes: Konva.TextConfig): void {
     const shape = this.dataService.getActiveDataset().find(s => s.userShapeName.slugify() === slugifiedShapeName);
-    // console.log(shape);
     if ( !shape) {
       return;
     }
-    // if ('text' in attributes) {
-    //   shape.shapeConfig.text = attributes.text;
-    // }
+    if ( !shape.bannerShapeConfig) {
+      shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
+    }
+
     const textsToUpdate = this.konvaService.shouldTransformRelatives
       ? [] : this.konvaService.getTransformer().nodes().filter(s => s.name() === slugifiedShapeName);
 
     for (const [index, bannerGroup] of this.konvaService.getBannerGroups().entries()) {
       let textShape = bannerGroup.findOne(`.${slugifiedShapeName}`);
+      // should not be drawn
+      if ( !(shape.bannerShapeConfig.get(index)?.shouldDraw ?? true)) {
+        continue;
+      }
       if (textsToUpdate.length) {
         if (!textsToUpdate.includes(textShape)) {
           continue;

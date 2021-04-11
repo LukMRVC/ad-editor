@@ -76,4 +76,8 @@ export class TextStyleComponent implements OnInit {
     this.fontSizeControl.setValue(10);
   }
 
+  public setAttrs(): void {
+    console.log('Settings attrs');
+  }
+
 }

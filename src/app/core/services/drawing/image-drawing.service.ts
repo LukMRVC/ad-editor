@@ -35,7 +35,7 @@ export class ImageDrawingService {
 
   public drawImage(slugifiedShapeName: string, conf: Konva.ImageConfig = {image: null}): void {
     const shape = this.dataService.getActiveDataset().find(s => s.userShapeName.slugify() === slugifiedShapeName);
-    if (!shape.bannerShapeConfig) {
+    if ( !shape.bannerShapeConfig) {
       shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
     }
     conf.name = slugifiedShapeName;
@@ -44,7 +44,7 @@ export class ImageDrawingService {
       const banner = this.dataService.getBannerById(index);
       const img = this.createImage(bannerGroup, banner, shape, conf);
       if (img !== null) {
-        shape.bannerShapeConfig.set(banner.id, img.getAttrs());
+        shape.bannerShapeConfig.set(banner.id, { ...shape.bannerShapeConfig.get(index), ...img.getAttrs()});
         img.on('dragmove', (dragging) => this.konvaService.moveAllRelatives(dragging, banner.id, slugifiedShapeName));
         img.on('transformend', (endedTransform) => this.konvaService.transformRelatives(endedTransform, banner.id, slugifiedShapeName));
       }

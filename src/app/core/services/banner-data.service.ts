@@ -24,6 +24,7 @@ export class BannerDataService {
   userShapes: ShapeInformation[] = [];
   public datasetChanged$ = new Subject<string>();
   public informationUpdated$ = new Subject<string>();
+  public shapeDeleted$ = new Subject<string>();
   public banners$ = new BehaviorSubject<Banner[]>([]);
 
   public template: Dataset;
@@ -113,18 +114,14 @@ export class BannerDataService {
       shapeType,
       isText: shapeType === 'text',
       isImage: shapeType === 'image',
-      shapeConfig: {
-        text: shapeType === 'text' ? userShapeName : '',
-      },
+      shapeConfig: {},
     });
     this.template.shapes.push({
       userShapeName,
       shapeType,
       isText: shapeType === 'text',
       isImage: shapeType === 'image',
-      shapeConfig: {
-        text: shapeType === 'text' ? userShapeName : '',
-      },
+      shapeConfig: {},
     });
     for (const dataset of this.datasets) {
       dataset.shapes.push({
@@ -132,9 +129,7 @@ export class BannerDataService {
         shapeType,
         isText: shapeType === 'text',
         isImage: shapeType === 'image',
-        shapeConfig: {
-          text: shapeType === 'text' ? userShapeName : '',
-        },
+        shapeConfig: {},
       });
     }
     this.informationUpdated$.next(userShapeName);
@@ -198,6 +193,12 @@ export class BannerDataService {
             console.assert(shapeInfo !== undefined);
             if (shapeInfo.isText) {
               shapeInfo.shapeConfig.text = values[i];
+              if (shapeInfo.bannerShapeConfig) {
+                for (const configs of shapeInfo.bannerShapeConfig.values()) {
+                  configs.text = values[i];
+                }
+              }
+
             } else if (shapeInfo.isImage) {
                 const image = await this.imageService.loadImage( values[i]);
                 shapeInfo.shapeConfig = { image };
@@ -205,14 +206,15 @@ export class BannerDataService {
             } else if (shapeInfo.isButton) {
               shapeInfo.shapeConfig.text = values[i];
               shapeInfo.shapeConfig.textConfig.text = values[i];
-            }
-            const templateShape = templateDataset.find(s => s.userShapeName === shapeInfo.userShapeName);
-            console.assert(templateShape !== undefined);
-            if (templateShape.bannerShapeConfig) {
-              shapeInfo.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(templateShape.bannerShapeConfig);
+              if (shapeInfo.bannerShapeConfig) {
+                for (const configs of shapeInfo.bannerShapeConfig.values()) {
+                  configs.textConfig.text = values[i];
+                }
+              }
             }
 
           }
+          // console.log(dataset);
           this.datasets.push(
             new Dataset(
               `Dataset #${++this.datasetCounter}`,
@@ -249,8 +251,25 @@ export class BannerDataService {
 
   }
 
+  public removeUserShape(shapeInfo: ShapeInformation): void {
+    const idx = this.userShapes.findIndex(s => s.userShapeName === shapeInfo.userShapeName);
+    this.userShapes.splice(idx, 1);
+    if (this.activeDataset === 'template') {
+      const datasetIdx = this.template.shapes.findIndex(s => s.userShapeName === shapeInfo.userShapeName);
+      this.template.shapes.splice(datasetIdx, 1);
+      for (const dataset of this.datasets) {
+        dataset.shapes.splice(datasetIdx, 1);
+      }
+    } else {
+      const datasetIdx = this.getActiveDataset().findIndex(s => s.userShapeName === shapeInfo.userShapeName);
+      this.getActiveDataset().splice(datasetIdx, 1);
+    }
+    this.shapeDeleted$.next(shapeInfo.userShapeName);
+  }
+
   public serialized(): string {
     this.template.shapes.forEach(shape => {
+      console.log(shape.bannerShapeConfig.get(0));
       if (shape.bannerShapeConfig) {
         shape.serializedBannerShapeConfig = Array.from(shape.bannerShapeConfig.entries());
       }
@@ -282,20 +301,20 @@ export class BannerDataService {
         templateShape = this.template.shapes.find(s => s.userShapeName === shape.userShapeName);
       }
 
-      if (shape.isImage && shape.userShapeName.slugify() !== 'background') {
-        if (shape.shapeConfig.imageSrc !== undefined && shape.shapeConfig.imageSrc !== null) {
+      if ('imageSrc' in shape.shapeConfig && shape.userShapeName !== 'background') {
+        if (shape.shapeConfig.imageSrc) {
           shape.shapeConfig.image = await this.imageService.loadImage(shape.shapeConfig.imageSrc);
         }
       }
 
       if ('fillPatternImageName' in shape.shapeConfig) {
-        if (shape.shapeConfig.fillPatternImageName !== undefined && shape.shapeConfig.fillPatternImageName !== null) {
+        if (shape.shapeConfig.fillPatternImageName) {
           shape.shapeConfig.fillPatternImage = await this.imageService.loadImage(shape.shapeConfig.fillPatternImageName);
         }
       }
 
-      shape.bannerShapeConfig = new Map<number, Konva.ShapeConfig>(
-        shape.serializedBannerShapeConfig ?? templateShape?.bannerShapeConfig?.entries());
+      shape.bannerShapeConfig =
+        new Map<number, Konva.ShapeConfig>(shape.serializedBannerShapeConfig ?? templateShape?.bannerShapeConfig?.entries());
       if (shape.isText) {
         fontsToLoad = fontsToLoad.concat([...shape.bannerShapeConfig.values()].map(txtConfig => txtConfig.fontFamily));
       }
@@ -328,4 +347,5 @@ export class BannerDataService {
     this.setBanners(this.bannerService.toInstances(banners, false));
     this.setActiveDataset('template');
   }
+
 }

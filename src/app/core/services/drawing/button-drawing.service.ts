@@ -17,18 +17,20 @@ export class ButtonDrawingService {
     this.dataService.datasetChanged$.subscribe(() => {
       const button = this.dataService.getActiveDataset().find(shape => shape.userShapeName.slugify() === 'button');
       this.drawButton(button.shapeConfig.labelConfig, button.shapeConfig.tagConfig, button.shapeConfig.textConfig);
+      this.konvaService.redraw();
     });
 
   }
 
-  private static createButtonLabel(conf: Konva.ShapeConfig, tagConfig = {}, textConfig = {}): Konva.Label {
+  private static createButtonLabel(labelConfig: Konva.ShapeConfig, tagConfig = {}, textConfig = {}): Konva.Label {
     const button = new Konva.Label({
       name: 'button',
-      x: conf.x,
-      y: conf.y,
+      x: labelConfig.x,
+      y: labelConfig.y,
       opacity: 1,
       draggable: true,
       transformable: true,
+      ...labelConfig,
     });
 
     button.add(new Konva.Tag({
@@ -65,12 +67,12 @@ export class ButtonDrawingService {
     let button = null;
     if (shape.bannerShapeConfig.has(banner.id)) {
       const savedData = shape.bannerShapeConfig.get(banner.id);
-      if (!savedData.shouldDraw) { return null; }
+      if (! (savedData.shouldDraw ?? true)) { return null; }
       // console.log('Recovering button from', savedData);
       button = ButtonDrawingService.createButtonLabel(
-        { ...savedData.labelConfig, ...configs.labelConfig },
-        { ...savedData.tagConfig, ...configs.tagConfig },
-        { ...savedData.textConfig, ...configs.textConfig }
+        { ...configs.labelConfig, ...savedData.labelConfig, },
+        { ...configs.tagConfig, ...savedData.tagConfig, },
+        { ...configs.textConfig, ...savedData.textConfig,  }
       );
     } else {
       const dimensions = { width: banner.layout.dimensions.width / 3, height: banner.layout.dimensions.height / 5 };
@@ -147,6 +149,7 @@ export class ButtonDrawingService {
 
       if (button !== null) {
         button.on('dragmove', (dragging) => this.konvaService.moveAllRelatives(dragging, index, 'button'));
+        button.on('transformend', (t) => this.konvaService.transformRelatives(t, index, 'button'));
       }
     }
     this.konvaService.redraw();
@@ -171,6 +174,7 @@ export class ButtonDrawingService {
       button = ButtonDrawingService.editButton(changeOf, config, bannerGroup, banner, shape);
       if (button !== null) {
         button.on('dragmove', (dragging) => this.konvaService.moveAllRelatives(dragging, index, 'button'));
+        button.on('transformend', (t) => this.konvaService.transformRelatives(t, index, 'button'));
       }
     }
     this.konvaService.redraw();

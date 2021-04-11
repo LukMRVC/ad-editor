@@ -7,6 +7,7 @@ import {debounceTime} from 'rxjs/operators';
 import {ShapeInformation} from '@core/models/dataset';
 import {ImageGalleryDialogComponent} from '@shared/components/image-gallery-dialog.component';
 import {UploadedImage} from '@core/services/image-gallery.service';
+import {TextDrawingService} from '@core/services/drawing/text-drawing.service';
 
 @Component({
   selector: 'app-draw-toolbar',
@@ -17,10 +18,13 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
 
   private shapeBgSubject$ = new Subject<{event: any, shapeNameSlug: string}>();
 
+  public userShapeTexts = new Map<string, string>();
+
   constructor(
     public konva: KonvaService,
     public dialog: MatDialog,
     public dataService: BannerDataService,
+    public textService: TextDrawingService,
   ) {
 
   }
@@ -46,6 +50,15 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
     if (img) {
       this.dataService.changeValue(datasetKey, shapeInfo, (img as UploadedImage).name);
     }
+  }
+
+  removeUserShape(shapeInfo: ShapeInformation): void {
+    this.dataService.removeUserShape(shapeInfo);
+  }
+
+  getShapeAttrs(shapeInfo: ShapeInformation): void {
+    const shapeAttrs = this.konva.getShapeAttrs(shapeInfo);
+    this.userShapeTexts.set(shapeInfo.userShapeName, shapeAttrs?.text ?? '');
   }
 }
 

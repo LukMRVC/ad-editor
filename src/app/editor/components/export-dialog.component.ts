@@ -40,6 +40,12 @@ import {KonvaService} from '@core/services/konva.service';
             </mat-form-field>
 
             <div *ngIf="outputFormat === 'jpeg'">
+              <div>
+                <mat-form-field appearance="outline">
+                  <mat-label>{{ 'image quality' | translate | titlecase }}</mat-label>
+                  <input type="number" matInput [(ngModel)]="jpegQuality" min="1" max="100">
+                </mat-form-field>
+              </div>
               <label>{{ 'image quality' | translate | titlecase }}</label>
               <mat-slider (change)="calcMaxEstimatedSize()" [(ngModel)]="jpegQuality" min="1" max="100" color="accent" thumbLabel></mat-slider>
             </div>

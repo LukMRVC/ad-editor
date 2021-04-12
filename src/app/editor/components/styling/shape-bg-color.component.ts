@@ -247,7 +247,6 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
       }));
     }
     this.gradientPoints.forEach(p => p.on('dragmove', () => {  this.handleGradPointDrag(); }));
-    this.gradientPoints.forEach(p => p.on('dragend', () => {  this.setSelectedFillStyle(); }));
 
     this.gradientBackgroundRect = new Konva.Rect({
       width: this.gradientStage.width(),
@@ -256,7 +255,10 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
       y: 0,
       fill: this.defaultFillColour.toHex8String(),
       fillPriority: this.fillStyle ?? 'color',
-      listening: false,
+      fillPatternOffsetX: 0,
+      fillPatternOffsetY: 0,
+      listening: true,
+      draggable: true,
       fillRadialGradientStartPoint: { x: this.gradientPoints[2].x(), y: this.gradientPoints[2].y() },
       fillRadialGradientStartRadius: this.radialGradientStartRadius,
       fillRadialGradientEndPoint: { x: this.gradientPoints[2].x() + 10, y: this.gradientPoints[2].y() + 10 },
@@ -266,8 +268,38 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
       fillLinearGradientEndPoint: { x: this.gradientPoints[1].x(), y: this.gradientPoints[1].y() },
       fillLinearGradientColorStops: [0, this.defaultGradientColor.toHex8String(), 1, this.fillColor.toHexString()],
     });
-
     this.layer.add(this.gradientBackgroundRect);
+
+    this.gradientBackgroundRect.on('dragstart', dragstart => dragstart.target.setAttr('dragJustStarted', true));
+
+    this.gradientBackgroundRect.on('dragmove', dragging => {
+      this.gradientBackgroundRect.x(0);
+      this.gradientBackgroundRect.y(0);
+      if (this.gradientBackgroundRect.fillPriority() !== 'pattern') {
+        return;
+      }
+      const justStarted = dragging.target.getAttr('dragJustStarted');
+      if (justStarted) {
+        dragging.target.setAttr('dragFromX', dragging.evt.clientX);
+        dragging.target.setAttr('dragFromY', dragging.evt.clientY);
+        dragging.target.setAttr('dragJustStarted', false);
+        return;
+      }
+      const dragDeltaX = dragging.evt.clientX - dragging.target.getAttr('dragFromX');
+      const dragDeltaY = dragging.evt.clientY - dragging.target.getAttr('dragFromY');
+      dragging.target.setAttr('dragFromX', dragging.evt.clientX);
+      dragging.target.setAttr('dragFromY', dragging.evt.clientY);
+      this.gradientBackgroundRect.setAttrs({
+        fillPatternOffsetX: (this.gradientBackgroundRect.getAttr('fillPatternOffsetX') ?? 0) - dragDeltaX,
+        fillPatternOffsetY: (this.gradientBackgroundRect.getAttr('fillPatternOffsetY') ?? 0) - dragDeltaY,
+      });
+      this.layer.batchDraw();
+      this.fillChanged.emit({
+        fillPatternOffsetX: this.gradientBackgroundRect.fillPatternOffsetX(),
+        fillPatternOffsetY: this.gradientBackgroundRect.fillPatternOffsetY(),
+      });
+    });
+
     this.layer.add(this.gradientPoints[0]);
     this.layer.add(this.gradientPoints[1]);
     this.layer.add(this.gradientPoints[2]);
@@ -309,9 +341,6 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
       fillPatternImage: this.fillPatternImage,
       fillPatternImageName: this.fillPatternImageName,
     };
-    // this.konva.selectedNodes.forEach(node => {
-    //   node.setAttrs(fillAttributes);
-    // });
     this.gradientBackgroundRect.setAttrs(fillAttributes);
     this.gradientStage.batchDraw();
     this.fillChanged.emit({...fillAttributes,
@@ -320,9 +349,6 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
       fillRadialGradientEndPoint: getPoint2DPercentage(this.gradientPoints[2], this.stageWidth, this.stageHeight),
       fillRadialGradientStartPoint: getPoint2DPercentage(this.gradientPoints[2], this.stageWidth, this.stageHeight),
     });
-    // this.konva.redraw();
-    // this.konva.updateSelected({ fill: ev.value.toHex8String(true), alpha: ev.value.a });
-    // this.konva.updateSelectedFillColor(ev.value);
   }
 
   changeFillStyle(): void {
@@ -338,7 +364,6 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.fillColorChanged();
     this.gradientStage.batchDraw();
-    this.setSelectedFillStyle();
   }
 
   private handleGradPointDrag(): void {
@@ -360,37 +385,6 @@ export class ShapeBgColorComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     }
     this.gradientStage.batchDraw();
-  }
-
-  private setSelectedFillStyle(): void {
-    // this.konva.selectedNodes.forEach(node => {
-    //   const ratioX = node.width() / this.gradientBackgroundRect.width();
-    //   const ratioY = node.height() / this.gradientBackgroundRect.height();
-    //   let circularOffset = 0;
-    //   if ('radius' in node) {
-    //     circularOffset = -this.gradientStage.width() / 2;
-    //   }
-    //   // console.log('X ratio:', ratioX);
-    //   node.fillPriority(this.fillStyle);
-    //   const calculatedCoordinates = (pointIdx) => {
-    //     return {
-    //       x: (this.gradientPoints[pointIdx].x() + circularOffset) * ratioX,
-    //       y: (this.gradientPoints[pointIdx].y() + circularOffset) * ratioY,
-    //     };
-    //   };
-    //   node.setAttrs({
-    //     fill: this.fillColor.toHex8String(),
-    //     fillLinearGradientStartPoint: calculatedCoordinates(0),
-    //     fillLinearGradientEndPoint: calculatedCoordinates(1),
-    //     fillLinearGradientColorStops: [0, this.defaultGradientColor.toHex8String(), 1, this.fillColor.toHexString()],
-    //     fillRadialGradientStartPoint: calculatedCoordinates(2),
-    //     fillRadialGradientEndPoint: calculatedCoordinates(2),
-    //     fillRadialGradientStartRadius: 0,
-    //     fillRadialGradientEndRadius: (this.radialGradientEndRadius / 100) * node.width(),
-    //     fillRadialGradientColorStops: [0, this.defaultGradientColor.toHex8String(), 1, this.fillColor.toHexString()],
-    //   });
-    // });
-    // this.konva.redraw();
   }
 
   radialGradientRadiusChanged(): void {

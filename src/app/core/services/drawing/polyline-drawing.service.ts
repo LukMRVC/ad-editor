@@ -97,13 +97,17 @@ export class PolylineDrawingService {
     for (const [index, bannerGroup] of this.konvaService.getBannerGroups().entries()) {
       const shapeToDraw = this.shapeFactory.createShape(shapeInfo, {
         rect: {
-          dblclick: (event) => this.makeEditablePolygon(event),
+          dblclick: (event) => this.makeEditablePolygon(event, shapeInfo),
         },
+        polyline: {
+          dblclick: (event) => this.makeEditablePolygon(event, shapeInfo),
+        }
       });
 
       if (shapeInfo.bannerShapeConfig.has(index)) {
         const savedData = shapeInfo.bannerShapeConfig.get(index);
         if ( !(savedData.shouldDraw ?? true)) { continue; }
+        // console.log(savedData);
         shapeToDraw.setAttrs(savedData);
       } else {
         shapeToDraw.setAttr('shouldDraw', true);
@@ -119,7 +123,7 @@ export class PolylineDrawingService {
   }
 
 
-  private makeEditablePolygon(event): void {
+  private makeEditablePolygon(event, shapeInfo: ShapeInformation): void {
     this.konvaService.getTransformer().nodes([]);
     const target = event.target;
     this.konvaService.editGroup = new Konva.Group({
@@ -152,12 +156,15 @@ export class PolylineDrawingService {
           stroke: (shape as Konva.Shape).stroke(),
           transformable: false,
           points,
+          shouldDraw: true,
         });
+        shapeInfo.shapeType = 'polyline';
+        shapeInfo.bannerShapeConfig.set(group.getAttr('bannerId'), polygon.getAttrs());
         polygon.on('dragmove', (drag) =>
         this.konvaService.moveAllRelatives(drag, group.getAttr('bannerId'), polygon.name()));
         polygon.on('transformend', (ev) =>
         this.konvaService.transformRelatives(ev, polygon.getParent().getAttr('bannerId'), polygon.name()));
-        polygon.on('dblclick', ev => this.makeEditablePolygon(ev));
+        polygon.on('dblclick', ev => this.makeEditablePolygon(ev, shapeInfo));
         if (shape !== event.target) {
           group.add(polygon);
           shape.destroy();

@@ -35,5 +35,4 @@ export class LogoComponent implements OnInit {
       this.dataService.changeValue(datasetKey, shapeInfo, (img as UploadedImage).name);
     }
   }
-
 }

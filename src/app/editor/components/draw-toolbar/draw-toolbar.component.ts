@@ -8,6 +8,7 @@ import {ShapeInformation} from '@core/models/dataset';
 import {ImageGalleryDialogComponent} from '@shared/components/image-gallery-dialog.component';
 import {UploadedImage} from '@core/services/image-gallery.service';
 import {TextDrawingService} from '@core/services/drawing/text-drawing.service';
+import {CdkDragDrop} from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-draw-toolbar',
@@ -20,14 +21,17 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
 
   public userShapeTexts = new Map<string, string>();
 
+  get sortedDataset(): ShapeInformation[] {
+    return this.dataService.getActiveDataset()
+      .sort( (a, b) => b.shapeConfig.zIndex - a.shapeConfig.zIndex );
+  }
+
   constructor(
     public konva: KonvaService,
     public dialog: MatDialog,
     public dataService: BannerDataService,
     public textService: TextDrawingService,
-  ) {
-
-  }
+  ) {}
 
   ngOnInit(): void {
     this.shapeBgSubject$.pipe(debounceTime(250))
@@ -38,6 +42,10 @@ export class DrawToolbarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.shapeBgSubject$.complete();
+  }
+
+  isUserShape(shapeName: string): boolean {
+    return this.dataService.userShapes.some(s => s.userShapeName === shapeName);
   }
 
   shapeBgChanged($event, shapeNameSlug: string): void {

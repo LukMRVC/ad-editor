@@ -4,6 +4,8 @@ import {Color} from '@angular-material-components/color-picker';
 import {Subject} from 'rxjs';
 import {debounceTime} from 'rxjs/operators';
 import {ButtonDrawingService} from '@core/services/drawing/button-drawing.service';
+import {BannerDataService} from '@core/services/banner-data.service';
+import {ShapeInformation} from '@core/models/dataset';
 
 @Component({
   selector: 'app-button',
@@ -21,15 +23,18 @@ export class ButtonComponent implements OnInit, OnDestroy {
   padding = 5;
 
   private bgChanged = new Subject<any>();
+  shapeInfo: ShapeInformation = null;
 
   constructor(
     public buttonService: ButtonDrawingService,
     public konva: KonvaService,
+    public dataService: BannerDataService,
   ) { }
 
   ngOnInit(): void {
     this.bgChanged.pipe(debounceTime(250))
       .subscribe(conf => this.konva.updateBackgroundOfShape(conf, 'button-tag'));
+    this.shapeInfo = this.dataService.getActiveDataset().find(s => s.userShapeName.slugify() === 'button');
   }
 
   ngOnDestroy(): void {

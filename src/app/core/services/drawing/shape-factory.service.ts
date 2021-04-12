@@ -16,7 +16,8 @@ export class ShapeFactoryService {
     x: 20,
     y: 20,
     draggable: true,
-    scale: { x: 1, y: 1}
+    scale: { x: 1, y: 1},
+    points: [],
   };
 
   constructor() { }
@@ -29,6 +30,9 @@ export class ShapeFactoryService {
         break;
       case 'rect':
         shape = new Konva.Rect(this.defaultConfig);
+        break;
+      case 'polyline':
+        shape = new Konva.Line(this.defaultConfig);
         break;
     }
     if (shape.getClassName().toLowerCase() in eventCallbacks) {

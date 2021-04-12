@@ -11,6 +11,7 @@ import {GoogleFontService} from '@core/services/google-font.service';
   providedIn: 'root'
 })
 export class BannerDataService {
+  private startZIndex = 3;
 
   constructor(
     private imageService: ImageGalleryService,
@@ -26,6 +27,7 @@ export class BannerDataService {
   public informationUpdated$ = new Subject<string>();
   public shapeDeleted$ = new Subject<string>();
   public banners$ = new BehaviorSubject<Banner[]>([]);
+  public forceRedraw$ = new Subject<boolean>();
 
   public template: Dataset;
 
@@ -53,6 +55,7 @@ export class BannerDataService {
         userShapeName: 'Logo',
         isImage: true,
         shapeConfig: {
+          zIndex: 5,
           draggable: true,
         },
       },
@@ -60,19 +63,23 @@ export class BannerDataService {
         userShapeName: 'Headline',
         isText: true,
         shapeConfig: {
+          zIndex: 4,
           text: '',
         },
       },
       {
         userShapeName: 'Background',
         isImage: true,
-        shapeConfig: {},
+        shapeConfig: {
+          zIndex: 1,
+        },
       },
       {
         userShapeName: 'Button',
         isButton: true,
         shapeConfig: {
           text: '',
+          zIndex: 3,
           textConfig: {},
         },
       }
@@ -109,19 +116,24 @@ export class BannerDataService {
   }
 
   public addShape(userShapeName: string, shapeType: 'text'|'image'|'rect'|'circle'): void {
+    const zIndex = this.getActiveDataset().length + 2;
     this.userShapes.push({
       userShapeName,
       shapeType,
       isText: shapeType === 'text',
       isImage: shapeType === 'image',
-      shapeConfig: {},
+      shapeConfig: {
+        zIndex,
+      },
     });
     this.template.shapes.push({
       userShapeName,
       shapeType,
       isText: shapeType === 'text',
       isImage: shapeType === 'image',
-      shapeConfig: {},
+      shapeConfig: {
+        zIndex,
+      },
     });
     for (const dataset of this.datasets) {
       dataset.shapes.push({
@@ -129,7 +141,9 @@ export class BannerDataService {
         shapeType,
         isText: shapeType === 'text',
         isImage: shapeType === 'image',
-        shapeConfig: {},
+        shapeConfig: {
+          zIndex,
+        },
       });
     }
     this.informationUpdated$.next(userShapeName);
@@ -143,12 +157,12 @@ export class BannerDataService {
     const shapeInformation = datasetShapes.find(shape => shape.userShapeName === shapeInfo.userShapeName);
     if (!shapeInformation) { return; }
     if (shapeInformation.isText) {
-      shapeInformation.shapeConfig = { text: nextValue };
+      shapeInformation.shapeConfig = { ...shapeInformation.shapeConfig, text: nextValue };
       this.informationUpdated$.next(shapeInformation.userShapeName);
     } else if (shapeInformation.isImage) {
       const loadedImage = this.imageService.loadImage(nextValue);
       loadedImage.then(image => {
-        shapeInformation.shapeConfig = { image, imageSrc: nextValue };
+        shapeInformation.shapeConfig = { ...shapeInformation.shapeConfig, image, imageSrc: nextValue };
         this.informationUpdated$.next(shapeInformation.userShapeName);
       });
     } else if (shapeInformation.isButton) {
@@ -269,7 +283,7 @@ export class BannerDataService {
 
   public serialized(): string {
     this.template.shapes.forEach(shape => {
-      console.log(shape.bannerShapeConfig.get(0));
+      // console.log(shape.bannerShapeConfig.get(0));
       if (shape.bannerShapeConfig) {
         shape.serializedBannerShapeConfig = Array.from(shape.bannerShapeConfig.entries());
       }
@@ -295,6 +309,7 @@ export class BannerDataService {
   private async restoreShapesAndLoadFonts(datasetToRestore: ShapeInformation[] = null): Promise<void> {
     let fontsToLoad = [];
     const restore = datasetToRestore === null ? this.template.shapes : datasetToRestore;
+    let zIndexCounter = this.startZIndex;
     for (const shape of restore) {
       let templateShape = null;
       if (datasetToRestore !== null) {
@@ -322,9 +337,14 @@ export class BannerDataService {
         const textCfgs = [...shape.bannerShapeConfig.values()].map(btnCfg => btnCfg.textConfig?.fontFamily);
         fontsToLoad = fontsToLoad.concat(textCfgs);
       }
+      shape.shapeConfig.zIndex = zIndexCounter++;
+      if (shape.userShapeName.slugify() === 'background') {
+        shape.shapeConfig.zIndex = 1;
+        // decrement counter so not "hole" is in between
+        zIndexCounter--;
+      }
     }
-
-    fontsToLoad = fontsToLoad.filter( (val, index, self) => self.indexOf(val) === index );
+    fontsToLoad = fontsToLoad.filter( (val, index, self) => self.indexOf(val) === index ).filter(val => !!val);
     for (const fontFamily of fontsToLoad) {
       await this.fontService.loadFont(fontFamily);
     }
@@ -348,4 +368,18 @@ export class BannerDataService {
     this.setActiveDataset('template');
   }
 
+  swapZIndexes(plusOrMinus: number, shapeInfo: ShapeInformation): void {
+    const dataset = this.getActiveDataset();
+    const currentZIndex = shapeInfo.shapeConfig.zIndex;
+    const targetZIndex = currentZIndex + plusOrMinus;
+    // the number 2 is to make space for background and banner label
+    if (targetZIndex > (dataset.length + 1) || targetZIndex <= 2) {
+      return;
+    }
+    const next = dataset.find(s => s.shapeConfig.zIndex === targetZIndex);
+
+    shapeInfo.shapeConfig.zIndex = targetZIndex;
+    next.shapeConfig.zIndex = currentZIndex;
+    this.forceRedraw$.next(true);
+  }
 }

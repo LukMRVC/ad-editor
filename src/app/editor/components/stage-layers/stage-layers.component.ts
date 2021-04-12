@@ -47,7 +47,7 @@ export class StageLayersComponent {
         layer.children = layer.children.sort( (a, b) => b.zIdx() - a.zIdx() );
       }
     }
-    console.log(val);
+    // console.log(val);
     this.actualDataSource.data = val;
     this.treeControl.dataNodes.filter(node => expandedNodeIds.find(id => id === node.id))
       .forEach(nodeToExpand => {

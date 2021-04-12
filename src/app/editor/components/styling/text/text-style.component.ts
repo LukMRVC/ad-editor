@@ -77,7 +77,7 @@ export class TextStyleComponent implements OnInit {
   }
 
   public setAttrs(): void {
-    console.log('Settings attrs');
+    // console.log('Settings attrs');
   }
 
 }

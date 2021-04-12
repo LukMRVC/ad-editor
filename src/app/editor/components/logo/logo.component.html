@@ -1,9 +1,20 @@
 <mat-expansion-panel #pane class="mat-elevation-z0 expansion-panel radius-none">
-  <mat-expansion-panel-header>
-    <mat-panel-title>
+  <mat-expansion-panel-header style="align-items: center">
+    <mat-panel-title  style="align-items: center">
+      <div fxLayout="row nowrap">
+        <button mat-icon-button style="width: 20px; height: 40px;"
+                (click)="$event.stopImmediatePropagation(); dataService.swapZIndexes(1, logoShapeInfo);" >
+          <mat-icon>expand_less</mat-icon>
+        </button>
+        <button mat-icon-button style="width: 25px; height: 40px;"
+                (click)="$event.stopImmediatePropagation(); dataService.swapZIndexes(-1, logoShapeInfo);">
+          <mat-icon>expand_more</mat-icon>
+        </button>
+      </div>
+
       {{ 'logo' | translate | titlecase }}
     </mat-panel-title>
-    <mat-panel-description>
+    <mat-panel-description style="align-items: center">
       <mat-icon>insert_photo</mat-icon>
     </mat-panel-description>
   </mat-expansion-panel-header>

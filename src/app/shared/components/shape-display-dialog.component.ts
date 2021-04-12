@@ -23,7 +23,7 @@ export class ShapeDisplayDialogComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.bannerSizes = this.bannerData.getActiveBanners();
-    console.log(this.datasetData);
+    // console.log(this.datasetData);
   }
 
   // Expansion panel flickering workaround

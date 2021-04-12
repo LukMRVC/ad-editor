@@ -21,6 +21,9 @@ export class KonvaService {
     public dataService: BannerDataService,
   ) {
     this.shapes = this.dataService.getActiveDataset();
+    this.dataService.forceRedraw$.subscribe(() => {
+      this.redraw();
+    });
 
     this.dataService.datasetChanged$.subscribe(() => {
       this.shapes = this.dataService.getActiveDataset();
@@ -225,14 +228,31 @@ export class KonvaService {
     if (this.transformer !== null) {
       this.transformer.moveToTop();
     }
+    //
+    const sorted = this.shapes.sort( (a, b) => a.shapeConfig.zIndex - b.shapeConfig.zIndex);
+    // for (const shape of sorted) {
+    // }
+    // adjust Z indices, because konva cant draw them directly
+    for (const shape of sorted) {
+      for (const group of this.bannerGroups) {
+        // const bannerConfig = shape.bannerShapeConfig.get(index);
+        if ('zIndex' in shape.shapeConfig) {
+          const drawnShape = group.findOne(`.${shape.userShapeName.slugify()}`);
+          if (drawnShape) {
+            drawnShape.zIndex(shape.shapeConfig.zIndex >= group.children.length ? group.children.length - 1 : shape.shapeConfig.zIndex);
+          }
+        }
+      }
+    }
+
     this.layer.batchDraw();
   }
 
   public moveObjectZIndices(direction: 'Down' | 'ToBottom' | 'ToTop' | 'Up'): void {
     const selectedNodes = this.transformer.nodes();
     if (this.shouldTransformRelatives) {
-      const nodesNamesToMove = selectedNodes.map(node => node.name()).filter( (nodeName, index, self) =>
-        self.indexOf(nodeName) === index );
+      const nodesNamesToMove = selectedNodes.map(node => node.name()).filter((nodeName, index, self) =>
+        self.indexOf(nodeName) === index);
       for (const bannerGroup of this.bannerGroups) {
         const bg = bannerGroup.findOne('.background');
         for (const nodeName of nodesNamesToMove) {
@@ -251,8 +271,22 @@ export class KonvaService {
         }
       }
     } else {
-      selectedNodes.forEach( node => node[`move${direction}`]() );
+      selectedNodes.forEach(node => {
+        // call method
+        node[`move${direction}`]();
+      });
     }
+
+    // for (const shape of this.shapes) {
+    //   for (const group of this.bannerGroups) {
+    //     const drawnShape = group.findOne(`.${shape.userShapeName.slugify()}`);
+    //     if ( !drawnShape) {
+    //       continue;
+    //     }
+    //     shape.shapeConfig.zIndex = drawnShape.zIndex();
+    //     break;
+    //   }
+    // }
 
     this.redraw();
   }

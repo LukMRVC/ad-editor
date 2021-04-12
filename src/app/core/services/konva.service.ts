@@ -237,6 +237,9 @@ export class KonvaService {
         const bg = bannerGroup.findOne('.background');
         for (const nodeName of nodesNamesToMove) {
           const node = bannerGroup.findOne(`.${nodeName}`);
+          if (!node) { // node is not drawn
+            continue;
+          }
           if (direction === 'Down' && node.zIndex() - 1 <= bg.zIndex()) {
             continue;
           }
@@ -444,17 +447,18 @@ export class KonvaService {
       if (group === dragEvent.target.getParent()) { continue; }
       const relativeShape = group.findOne(`.${shapeName}`);
       if (!relativeShape) { continue; }
-      const dimensions = {
-        w: relativeShape.width() * relativeShape.scaleX(),
-        h: relativeShape.height() * relativeShape.scaleY(),
+      const dimensions: Dimension2D = {
+        width: relativeShape.width() * relativeShape.scaleX(),
+        height: relativeShape.height() * relativeShape.scaleY(),
       };
+      this.getActualTextDimensionsOfText(dimensions, relativeShape);
       relativeShape.setAttr('percentagePositions', centerPercentage);
       const pos = this.getPixelPositionsWithinBanner(index, centerPercentage, relativeShape);
-      if (pos.y + positionFix + dimensions.h > group.height()) {
+      if (pos.y + positionFix + dimensions.height > group.height()) {
         pos.y = relativeShape.y();
       }
 
-      if (pos.x + positionFix + dimensions.w > group.width()) {
+      if (pos.x + positionFix + dimensions.width > group.width()) {
         pos.x = relativeShape.x();
       }
 

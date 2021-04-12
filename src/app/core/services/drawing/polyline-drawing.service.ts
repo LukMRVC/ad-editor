@@ -39,6 +39,9 @@ export class PolylineDrawingService {
         editedPoly.moveTo(this.konvaService.editGroup.getParent());
         for (const group of this.konvaService.getBannerGroups()) {
           const shape = group.findOne(`.${editedPoly.name()}`);
+          if ( !shape) { // should draw is false
+            continue;
+          }
           shape.setAttr('draggable', true);
           shape.setAttr('transformable', true);
         }
@@ -91,7 +94,6 @@ export class PolylineDrawingService {
     if (!shapeInfo.bannerShapeConfig) {
       shapeInfo.bannerShapeConfig = new Map<number, Konva.ShapeConfig>();
     }
-
     for (const [index, bannerGroup] of this.konvaService.getBannerGroups().entries()) {
       const shapeToDraw = this.shapeFactory.createShape(shapeInfo, {
         rect: {
@@ -101,9 +103,10 @@ export class PolylineDrawingService {
 
       if (shapeInfo.bannerShapeConfig.has(index)) {
         const savedData = shapeInfo.bannerShapeConfig.get(index);
-        if ( !savedData.shoulDraw) { return; }
+        if ( !(savedData.shouldDraw ?? true)) { continue; }
         shapeToDraw.setAttrs(savedData);
       } else {
+        shapeToDraw.setAttr('shouldDraw', true);
         shapeInfo.bannerShapeConfig.set(index, shapeToDraw.getAttrs());
       }
       shapeToDraw.on('dragmove', (dragging) =>
@@ -128,8 +131,7 @@ export class PolylineDrawingService {
     targetParentGroup.add(this.konvaService.editGroup);
     for (const group of this.konvaService.getBannerGroups()) {
       const shape = group.findOne(`.${target.name()}`);
-
-      if ( !(shape.getAttr('shouldDraw') ?? true)) {
+      if (!shape || !(shape.getAttr('shouldDraw') ?? true)) {
         continue;
       }
       shape.setAttr('transformable', false);

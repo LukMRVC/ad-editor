@@ -82,7 +82,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       this.contextMenuActions = event.actions;
       this.contextMenu.visibility = 'flex';
       const containerRect = this.stageWrapper.nativeElement.getBoundingClientRect();
-      console.log(containerRect);
+      // console.log(containerRect);
       this.contextMenu.top = `${event.pos.y}px`;
       this.contextMenu.left = `${containerRect.left + event.pos.x}px`;
     });

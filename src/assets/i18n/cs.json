@@ -93,5 +93,7 @@
   "shape already exists": "tvar už existuje",
   "modifying mode": "mód úprav",
   "pixel mode": "na pixely",
-  "percentage mode": "na procenta"
+  "percentage mode": "na procenta",
+  "add point": "přidat bod",
+  "remove point": "odstranit bod"
 }

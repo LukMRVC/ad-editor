@@ -5,6 +5,7 @@ import {Banner, Dimension2D, Point2D} from '@core/models/banner-layout';
 import {FilterChangedEvent} from '../../editor/components/image-filter.component';
 import {BannerDataService} from '@core/services/banner-data.service';
 import {ShapeInformation} from '@core/models/dataset';
+import {getGuides, getLineGuideStops, getObjectSnappingEdges, LineGuide} from '@core/utils/KonvaGuidelines';
 
 // TODO: stylizace banneru
 // TODO: Sablony banneru a tlacitek
@@ -165,6 +166,73 @@ export class KonvaService {
     });
 
     this.layer.add(this.transformer);
+
+    this.layer.on('dragmove', (e) => {
+      if (e.target.name() === 'transformer') {
+        return;
+      }
+      this.layer.find('.guide-line').each(l => l.destroy());
+      const lineGuideStops = getLineGuideStops(e.target.findAncestor('.banner-group') as Konva.Group,
+        e.target as Konva.Shape, this.shapes.map(s => s.userShapeName.slugify()));
+      const snappingEdges = getObjectSnappingEdges(e.target);
+      const guides = getGuides(lineGuideStops, snappingEdges);
+      if (! guides) {
+        return;
+      }
+      this.drawGuides(guides);
+      // now force shape position
+      const absPos = e.target.absolutePosition();
+      for (const guideLine of guides) {
+        switch (guideLine.snap) {
+          case 'start': {
+            switch (guideLine.orientation) {
+              case 'V': {
+                absPos.x = guideLine.lineGuide + guideLine.offset;
+                break;
+              }
+              case 'H': {
+                absPos.y = guideLine.lineGuide + guideLine.offset;
+                break;
+              }
+            }
+            break;
+          }
+          case 'center': {
+            switch (guideLine.orientation) {
+              case 'V': {
+                absPos.x = guideLine.lineGuide + guideLine.offset;
+                break;
+              }
+              case 'H': {
+                absPos.y = guideLine.lineGuide + guideLine.offset;
+                break;
+              }
+            }
+            break;
+          }
+          case 'end': {
+            switch (guideLine.orientation) {
+              case 'V': {
+                absPos.x = guideLine.lineGuide + guideLine.offset;
+                break;
+              }
+              case 'H': {
+                absPos.y = guideLine.lineGuide + guideLine.offset;
+                break;
+              }
+            }
+            break;
+          }
+        }
+
+      }
+      e.target.absolutePosition(absPos);
+    });
+
+    this.layer.on('dragend', (e) => {
+      this.layer.find(`.guide-line`).each(l => l.destroy());
+      this.redraw();
+    });
   }
 
   public getStage(): Konva.Stage {
@@ -189,6 +257,7 @@ export class KonvaService {
 
   private createTransformer(): Konva.Transformer {
     const tr = new Konva.Transformer({
+      name: 'transformer',
       rotationSnaps: [0, 90, 180, 270],
     });
     // tr.moveToTop();
@@ -755,5 +824,43 @@ export class KonvaService {
       }
     }
 
+  }
+
+  private drawGuides(guides: LineGuide[]): void {
+    for (const lineGuide of guides) {
+      if (lineGuide.orientation === 'H') {
+        const line = new Konva.Line({
+          points: [-6000, 0, 6000, 0],
+          stroke: 'rgb(0, 161, 255)',
+          strokeWidth: 1,
+          name: 'guide-line',
+          dash: [4, 6],
+          draggable: false,
+          transformable: false,
+        });
+        this.layer.add(line);
+        line.absolutePosition({
+          x: 0,
+          y: lineGuide.lineGuide,
+        });
+        this.redraw();
+      } else if (lineGuide.orientation === 'V') {
+        const line = new Konva.Line({
+          points: [0, -6000, 0, 6000],
+          stroke: 'rgb(0, 161, 255)',
+          strokeWidth: 1,
+          name: 'guide-line',
+          dash: [4, 6],
+          draggable: false,
+          transformable: false,
+        });
+        this.layer.add(line);
+        line.absolutePosition({
+          x: lineGuide.lineGuide,
+          y: 0,
+        });
+        this.redraw();
+      }
+    }
   }
 }

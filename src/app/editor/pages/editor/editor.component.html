@@ -30,7 +30,7 @@
        [style.top]="contextMenu.top" [style.left]="contextMenu.left"
        [style.display]="contextMenu.visibility"  id="context-menu">
     <button mat-button (click)="ctxAction.action($event); contextMenuActions = [];" *ngFor="let ctxAction of contextMenuActions">
-      {{ ctxAction.name | translate }}
+      {{ ctxAction.name | translate | capitalize }}
     </button>
   </div>
 

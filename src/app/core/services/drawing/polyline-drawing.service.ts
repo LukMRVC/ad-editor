@@ -64,11 +64,11 @@ export class PolylineDrawingService {
         const editablePoly = this.konvaService.editGroup.getChildren(c => c.name() !== 'editPoint').toArray()[0];
         const pointerPosition = this.konvaService.getStage().getPointerPosition();
         const actions = [
-          { name: 'Add point', action: () => this.addPointToPoly(editablePoly, pointerPosition)},
+          { name: 'add point', action: () => this.addPointToPoly(editablePoly, pointerPosition)},
         ];
         if (ctxMenu.target.name() === 'editPoint') {
           actions.push({
-            name: 'Remove point', action: () => this.removePointFromPoly(editablePoly as Konva.Line, ctxMenu.target as Konva.Circle),
+            name: 'remove point', action: () => this.removePointFromPoly(editablePoly as Konva.Line, ctxMenu.target as Konva.Circle),
           });
         }
         this.konvaService.displayContextMenu(pointerPosition, actions);

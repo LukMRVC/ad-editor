@@ -63,6 +63,9 @@ export class ImageDrawingService {
     } else {
       const logoDimensions = {width: conf.image.width as number, height: conf.image.height as number};
       const templateShape = this.dataService.getTemplateDataset().find(s => s.userShapeName.slugify() === conf.name);
+      if (! templateShape) {
+        return;
+      }
       let { x: scaleX, y: scaleY } = banner.getScaleForLogo(logoDimensions);
       if (templateShape.bannerShapeConfig.get(banner.id)) {
         if (!templateShape.bannerShapeConfig.get(banner.id).shouldDraw) {

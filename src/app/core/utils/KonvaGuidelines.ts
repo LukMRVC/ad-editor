@@ -1,31 +1,42 @@
-const GUIDELINE_OFFSET = 1;
+const GUIDELINE_OFFSET = 5;
 
-// tslint:disable-next-line:typedef
-export function getLineGuideStops(stage: any, skipShape: any) {
+import Konva from 'konva';
+
+export interface LineGuideStops {
+  vertical: number[];
+  horizontal: number[];
+}
+
+export function getLineGuideStops(group: Konva.Group, skipShape: Konva.Shape, drawnShapeNames: string[]): LineGuideStops {
   // we can snap to stage borders and the center of the stage
-  const vertical: any[] = [0, stage.width() / 2, stage.width()];
-  const horizontal: any[] = [0, stage.height() / 2, stage.height()];
+  const vertical: any[] = [];
+  const horizontal: any[] = [];
 
   // and we snap over edges and center of each object on the canvas
-  stage.find('.object').forEach((guideItem) => {
-    if (guideItem === skipShape) {
-      return;
-    }
-    const box = guideItem.getClientRect();
-    // and we can snap to all edges of shapes
-    vertical.push([box.x, box.x + box.width, box.x + box.width / 2]);
-    horizontal.push([box.y, box.y + box.height, box.y + box.height / 2]);
-  });
+  for (const shapeName of drawnShapeNames) {
+    group.find(`.${shapeName}`).each((guideItem) => {
+      if (guideItem === skipShape) {
+        return;
+      }
+      const box = guideItem.getClientRect();
+      // and we can snap to all edges of shapes
+      vertical.push([box.x, box.x + box.width, box.x + box.width / 2]);
+      horizontal.push([box.y, box.y + box.height, box.y + box.height / 2]);
+    });
+  }
+
   return {
-    // @ts-ignore
     vertical: vertical.flat(),
-    // @ts-ignore
     horizontal: horizontal.flat(),
   };
 }
 
-// tslint:disable-next-line:typedef
-export function getObjectSnappingEdges(node) {
+export interface SnappingEdges {
+  vertical: {guide: number; offset: number; snap: string; }[];
+  horizontal: {guide: number; offset: number; snap: string; }[];
+}
+
+export function getObjectSnappingEdges(node: Konva.Node): SnappingEdges {
   const box = node.getClientRect();
   const absPos = node.absolutePosition();
 
@@ -67,9 +78,15 @@ export function getObjectSnappingEdges(node) {
   };
 }
 
+export interface LineGuide {
+  lineGuide: number;
+  offset: number;
+  orientation: string;
+  snap: string;
+}
+
 // find all snapping possibilities
-// tslint:disable-next-line:typedef
-export function getGuides(lineGuideStops, itemBounds) {
+export function getGuides(lineGuideStops: LineGuideStops, itemBounds: SnappingEdges): LineGuide[] {
   const resultV = [];
   const resultH = [];
 

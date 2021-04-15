@@ -309,7 +309,7 @@ export class BannerDataService {
     let zIndexCounter = this.startZIndex;
     for (const shape of restore) {
       let templateShape = null;
-      if (datasetToRestore !== null) {
+      if (datasetToRestore) {
         templateShape = this.template.shapes.find(s => s.userShapeName === shape.userShapeName);
       }
 

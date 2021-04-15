@@ -147,7 +147,7 @@ export class ButtonDrawingService {
       const banner = this.dataService.getBannerById(index);
       const button = ButtonDrawingService.createButton(bannerGroup, banner, shape, configs);
 
-      if (button !== null) {
+      if (button) {
         button.on('dragmove', (dragging) => this.konvaService.moveAllRelatives(dragging, index, 'button'));
         button.on('transformend', (t) => this.konvaService.transformRelatives(t, index, 'button'));
       }
@@ -172,7 +172,7 @@ export class ButtonDrawingService {
       }
       const banner = this.dataService.getBannerById(index);
       button = ButtonDrawingService.editButton(changeOf, config, bannerGroup, banner, shape);
-      if (button !== null) {
+      if (button) {
         button.on('dragmove', (dragging) => this.konvaService.moveAllRelatives(dragging, index, 'button'));
         button.on('transformend', (t) => this.konvaService.transformRelatives(t, index, 'button'));
       }

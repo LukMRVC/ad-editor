@@ -1,13 +1,13 @@
-FROM node:14
+FROM node:15
 
 WORKDIR /app
 
-COPY package*.json .
+COPY package*.json ./
 
 RUN npm install
 
-COPY . .
+COPY ./ ./
 
 EXPOSE 4200
 
-CMD [ "npm", "start" ]
+CMD [ "npm", "run", "start_docker" ]

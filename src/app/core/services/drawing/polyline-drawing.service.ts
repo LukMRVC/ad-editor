@@ -33,7 +33,7 @@ export class PolylineDrawingService {
     });
 
     this.konvaService.onClickTap$.subscribe(ev => {
-      if (this.konvaService.editGroup !== null && ev.target.getParent() !== this.konvaService.editGroup) {
+      if (this.konvaService.editGroup && ev.target.getParent() !== this.konvaService.editGroup) {
         this.konvaService.editGroup.getChildren(c => c.name() === 'editPoint').each(c => c.destroy());
         const editedPoly = this.konvaService.editGroup.getChildren().toArray()[0];
         editedPoly.moveTo(this.konvaService.editGroup.getParent());

@@ -43,7 +43,7 @@ export class ImageDrawingService {
     for (const [index, bannerGroup] of this.konvaService.getBannerGroups().entries()) {
       const banner = this.dataService.getBannerById(index);
       const img = this.createImage(bannerGroup, banner, shape, conf);
-      if (img !== null) {
+      if (img) {
         shape.bannerShapeConfig.set(banner.id, { ...shape.bannerShapeConfig.get(index), ...img.getAttrs()});
         img.on('dragmove', (dragging) => this.konvaService.moveAllRelatives(dragging, banner.id, slugifiedShapeName));
         img.on('transformend', (endedTransform) => this.konvaService.transformRelatives(endedTransform, banner.id, slugifiedShapeName));

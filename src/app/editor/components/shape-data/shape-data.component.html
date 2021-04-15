@@ -14,7 +14,7 @@
       {{ 'upload' | translate | titlecase }} {{ 'dataset' | translate }}
     </button>
 
-    <input type="file" (change)="dataService.uploadDatasets($event)" style="display: none" #datasetUpload name="file" class="hidden" accept="text/csv">
+    <input type="file" (change)="uploadDatasets($event)" style="display: none" #datasetUpload name="file" class="hidden" accept="text/csv">
   </div>
 
   <div fxLayout="column" fxLayoutAlign="start" fxLayoutGap=".25rem">

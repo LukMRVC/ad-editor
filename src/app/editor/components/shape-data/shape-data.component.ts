@@ -7,6 +7,9 @@ import {KonvaService} from '@core/services/konva.service';
 import {ShapeInformation} from '@core/models/dataset';
 import {ShapeNameDialogComponent} from '../shape-name-dialog.component';
 import {ShapeDisplayDialogComponent} from '@shared/components/shape-display-dialog.component';
+import {UnknownColumnError} from '@core/unknown-column-error';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'app-shape-data',
@@ -22,6 +25,8 @@ export class ShapeDataComponent implements OnInit {
     public dataService: BannerDataService,
     public dialog: MatDialog,
     public konva: KonvaService,
+    public snackBar: MatSnackBar,
+    public translateService: TranslateService,
   ) { }
 
   ngOnInit(): void {
@@ -59,5 +64,16 @@ export class ShapeDataComponent implements OnInit {
         await this.openGallery(this.dataService.activeDataset, addedShape);
       }
     }
+  }
+
+  async uploadDatasets($event: Event): Promise<void> {
+    // try {
+    await this.dataService.uploadDatasets($event);
+    // } catch (error) {
+    //   if (error instanceof UnknownColumnError) {
+    //     const msg = await this.translateService.get('unknown header in csv file').toPromise();
+    //     this.snackBar.open(msg, 'OK', { duration: 2500 });
+    //   }
+    // }
   }
 }

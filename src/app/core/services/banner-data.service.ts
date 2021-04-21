@@ -312,16 +312,20 @@ export class BannerDataService {
       if (datasetToRestore) {
         templateShape = this.template.shapes.find(s => s.userShapeName === shape.userShapeName);
       }
-
+      
       if ('imageSrc' in shape.shapeConfig && shape.userShapeName !== 'background') {
         if (shape.shapeConfig.imageSrc) {
-          shape.shapeConfig.image = await this.imageService.loadImage(shape.shapeConfig.imageSrc);
+          this.imageService.loadImage(shape.shapeConfig.imageSrc).then( loadedImage => {
+            shape.shapeConfig.image = loadedImage;
+          })
+
         }
       }
-
       if ('fillPatternImageName' in shape.shapeConfig) {
         if (shape.shapeConfig.fillPatternImageName) {
-          shape.shapeConfig.fillPatternImage = await this.imageService.loadImage(shape.shapeConfig.fillPatternImageName);
+          this.imageService.loadImage(shape.shapeConfig.fillPatternImageName).then(loadedImg => {
+            shape.shapeConfig.fillPatternImage = loadedImg;
+          });
         }
       }
 
@@ -343,6 +347,11 @@ export class BannerDataService {
       }
     }
     fontsToLoad = fontsToLoad.filter( (val, index, self) => self.indexOf(val) === index ).filter(val => !!val);
+    const calibriIndex = fontsToLoad.indexOf('Calibri');
+    if (calibriIndex !== -1) {
+      fontsToLoad.splice(calibriIndex, 1);
+    }
+
     for (const fontFamily of fontsToLoad) {
       await this.fontService.loadFont(fontFamily);
     }

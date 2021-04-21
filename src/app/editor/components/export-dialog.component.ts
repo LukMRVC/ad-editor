@@ -43,7 +43,7 @@ import {KonvaService} from '@core/services/konva.service';
               <div>
                 <mat-form-field appearance="outline">
                   <mat-label>{{ 'image quality' | translate | titlecase }}</mat-label>
-                  <input type="number" matInput [(ngModel)]="jpegQuality" min="1" max="100">
+                  <input (ngModelChange)="calcMaxEstimatedSize();" type="number" matInput [(ngModel)]="jpegQuality" min="1" max="100">
                 </mat-form-field>
               </div>
               <label>{{ 'image quality' | translate | titlecase }}</label>

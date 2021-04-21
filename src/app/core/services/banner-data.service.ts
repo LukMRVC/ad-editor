@@ -306,26 +306,25 @@ export class BannerDataService {
   private async restoreShapesAndLoadFonts(datasetToRestore: ShapeInformation[] = null): Promise<void> {
     let fontsToLoad = [];
     const restore = datasetToRestore === null ? this.template.shapes : datasetToRestore;
+    restore.forEach( (shapeInfo, index) => shapeInfo.ordering = index );
+    restore.sort( (a, b) => a.ordering - b.ordering );
     let zIndexCounter = this.startZIndex;
     for (const shape of restore) {
       let templateShape = null;
       if (datasetToRestore) {
         templateShape = this.template.shapes.find(s => s.userShapeName === shape.userShapeName);
       }
-      
+
       if ('imageSrc' in shape.shapeConfig && shape.userShapeName !== 'background') {
         if (shape.shapeConfig.imageSrc) {
-          this.imageService.loadImage(shape.shapeConfig.imageSrc).then( loadedImage => {
-            shape.shapeConfig.image = loadedImage;
-          })
-
+          shape.shapeConfig.image = await this.imageService.loadImage(shape.shapeConfig.imageSrc);
+          restore.sort( (a, b) => a.ordering - b.ordering );
         }
       }
       if ('fillPatternImageName' in shape.shapeConfig) {
         if (shape.shapeConfig.fillPatternImageName) {
-          this.imageService.loadImage(shape.shapeConfig.fillPatternImageName).then(loadedImg => {
-            shape.shapeConfig.fillPatternImage = loadedImg;
-          });
+          shape.shapeConfig.fillPatternImage = await this.imageService.loadImage(shape.shapeConfig.fillPatternImageName);
+          restore.sort( (a, b) => a.ordering - b.ordering );
         }
       }
 

@@ -27,5 +27,6 @@ export interface ShapeInformation {
   shapeType?: string;
   shapeConfig?: Konva.ShapeConfig;
   bannerShapeConfig?: Map<number, Konva.ShapeConfig>;
-  serializedBannerShapeConfig?: any[],
+  serializedBannerShapeConfig?: any[];
+  ordering?: number;
 }

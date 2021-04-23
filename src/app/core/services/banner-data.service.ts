@@ -341,7 +341,7 @@ export class BannerDataService {
       shape.shapeConfig.zIndex = zIndexCounter++;
       if (shape.userShapeName.slugify() === 'background') {
         shape.shapeConfig.zIndex = 1;
-        // decrement counter so not "hole" is in between
+        // decrement counter so no "hole" is in between
         zIndexCounter--;
       }
     }

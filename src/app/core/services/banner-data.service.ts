@@ -315,9 +315,16 @@ export class BannerDataService {
         templateShape = this.template.shapes.find(s => s.userShapeName === shape.userShapeName);
       }
 
+      const templateDeepCopy = JSON.parse(JSON.stringify(Array.from(templateShape?.bannerShapeConfig?.entries() ?? [])));
+      shape.bannerShapeConfig =
+        new Map<number, Konva.ShapeConfig>(shape.serializedBannerShapeConfig ?? templateDeepCopy);
+
       if ('imageSrc' in shape.shapeConfig && shape.userShapeName !== 'background') {
         if (shape.shapeConfig.imageSrc) {
           shape.shapeConfig.image = await this.imageService.loadImage(shape.shapeConfig.imageSrc);
+          for (const val of shape.bannerShapeConfig.values()) {
+            val.image = shape.shapeConfig.image;
+          }
           restore.sort( (a, b) => a.ordering - b.ordering );
         }
       }
@@ -328,9 +335,6 @@ export class BannerDataService {
         }
       }
 
-      const templateDeepCopy = JSON.parse(JSON.stringify(Array.from(templateShape?.bannerShapeConfig?.entries() ?? [])));
-      shape.bannerShapeConfig =
-        new Map<number, Konva.ShapeConfig>(shape.serializedBannerShapeConfig ?? templateDeepCopy);
       if (shape.isText) {
         fontsToLoad = fontsToLoad.concat([...shape.bannerShapeConfig.values()].map(txtConfig => txtConfig.fontFamily));
       }
@@ -338,7 +342,7 @@ export class BannerDataService {
         const textCfgs = [...shape.bannerShapeConfig.values()].map(btnCfg => btnCfg.textConfig?.fontFamily);
         fontsToLoad = fontsToLoad.concat(textCfgs);
       }
-      shape.shapeConfig.zIndex = zIndexCounter++;
+      shape.shapeConfig.zIndex = shape.shapeConfig.zIndex ?? zIndexCounter++;
       if (shape.userShapeName.slugify() === 'background') {
         shape.shapeConfig.zIndex = 1;
         // decrement counter so no "hole" is in between
